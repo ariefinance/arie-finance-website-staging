@@ -1,0 +1,14 @@
+{
+  "name": "arie-finance-website",
+  "version": "1.2.2",
+  "private": true,
+  "description": "ARIE Finance production website and Vercel serverless form handler.",
+  "engines": {
+    "node": "24.x"
+  },
+  "dependencies": {
+    "nodemailer": "^9.0.3",
+    "saxes": "^6.0.0",
+    "yauzl": "^3.4.0"
+  }
+}

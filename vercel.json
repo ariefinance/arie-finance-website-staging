@@ -1,0 +1,18 @@
+{
+  "redirects": [
+    { "source": "/services", "destination": "/#services", "permanent": true },
+    { "source": "/about", "destination": "/#about", "permanent": true },
+    { "source": "/contact", "destination": "/#contact", "permanent": true },
+    { "source": "/team", "destination": "/#team", "permanent": true },
+    { "source": "/open-account", "destination": "/#contact", "permanent": true },
+    { "source": "/solutions", "destination": "/#services", "permanent": true },
+    { "source": "/join", "destination": "/#careers", "permanent": true },
+    { "source": "/events", "destination": "/#home", "permanent": true },
+    { "source": "/terms", "destination": "/#compliance", "permanent": true },
+    { "source": "/legal", "destination": "/#compliance", "permanent": true },
+    { "source": "/privacy", "destination": "/#compliance", "permanent": true },
+    { "source": "/cookie", "destination": "/#compliance", "permanent": true },
+    { "source": "/customer-security", "destination": "/#compliance", "permanent": true },
+    { "source": "/faqs", "destination": "/#compliance", "permanent": true }
+  ]
+}

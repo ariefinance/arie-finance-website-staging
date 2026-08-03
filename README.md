@@ -1,137 +1,111 @@
-# ARIE Finance Website — Production Deployment
+# ARIE Finance — Website (Production)
 
-This folder is the deployable Vercel project root.
+Public marketing website for **ARIE Finance Ltd**, a Mauritius FSC-licensed Payment Intermediary Services provider (Licence No. GB25205028).
 
-## Files
+**Status: LIVE.** Served in production at **https://www.ariefinance.com** (apex `ariefinance.com` 308-redirects to `www`). Hosted on Vercel; deployed automatically from the `main` branch of this repository.
+
+This README describes the repository exactly as it is. There is no `production/` subfolder, no `tests/` folder, and no separate deployment-checklist file — the repository root **is** the deployable Vercel project.
+
+---
+
+## Repository contents
 
 ```text
-index.html
-package.json
-package-lock.json
-api/
-  website-form.js
+index.html            The entire public website (single bundled file, ~7.4 MB).
+                      Site markup is a JSON-encoded template inside a
+                      <script type="__bundler/template"> block; a loader parses
+                      it and renders the document at runtime.
+api/website-form.js   Vercel serverless function. Handles Contact and Careers
+                      form submissions and sends email over SMTP.
+vercel.json           URL redirects (14) + HTTP security headers (see below).
+robots.txt            Allows all crawlers; points to the sitemap.
+sitemap.xml           Single-URL sitemap for https://www.ariefinance.com/.
+favicon.png           Site favicon.
+og-image.png          Open Graph / social-share image.
+package.json          Declares the nodemailer dependency and Node 24.x engine.
+package-lock.json     Locked dependency tree.
+README.md             This file.
 ```
 
-The public website is a bundled single-file site. The approved page template, image manifest and bundler runtime have not been changed in this final backend-hardening pass.
+That is the complete file list.
 
-## Runtime
+## Build & deploy
 
-- Node.js: `24.x`
-- Vercel Function route: `POST /api/website-form`
-- Email delivery: Nodemailer over SMTP
+- **No build step / framework.** Vercel serves `index.html` and runs `api/website-form.js` on the same origin.
+- **Production branch:** `main`. Every push to `main` auto-deploys to production on Vercel (team: ARIE FINANCE).
+- **Deployment protection:** Standard — generated `*.vercel.app` preview URLs require login; the production custom domain is public.
 
-## Required environment variables
+## Routing (`vercel.json`)
 
-Set these in **Vercel → Project → Settings → Environment Variables**:
+**Redirects** — 14 legacy paths (from the previous Framer site) 308-redirect into single-page hash routes:
+
+```text
+/services /solutions                         -> /#services
+/about                                       -> /#about
+/contact /open-account                       -> /#contact
+/team                                        -> /#team
+/join                                        -> /#careers
+/events                                      -> /#home
+/terms /legal /privacy /cookie
+/customer-security /faqs                      -> /#compliance
+```
+
+**Security headers** — applied to all routes `/(.*)`:
+
+```text
+X-Content-Type-Options: nosniff
+Referrer-Policy: strict-origin-when-cross-origin
+X-Frame-Options: SAMEORIGIN
+Permissions-Policy: camera=(), microphone=(), geolocation=(), payment=(), usb=(), interest-cohort=()
+```
+
+HSTS is applied automatically by Vercel. No Content-Security-Policy is set (the bundled file uses inline scripts/styles; a CSP would need report-only testing first).
+
+## Serverless form handler (`api/website-form.js`)
+
+- **Runtime:** Node.js 24.x. **Route:** `POST /api/website-form`. **Email:** Nodemailer over SMTP.
+- Accepts only `contact` and `careers`. Enforces: POST-only; server-side origin allow-list; required fields, length limits, email validation, explicit consent; honeypot; HTML-escaping and email-header-injection protection; best-effort in-memory rate limiting and duplicate protection; success only after SMTP confirms send.
+- **CV upload (Careers):** 3 MB max; PDF/DOC/DOCX allow-list with magic-byte checks, strict base64 validation, and genuine DOCX OOXML structure validation (rejects DTD/entity/encrypted/traversal/symlink/zip-bomb). No file is written to disk or retained after the send attempt.
+- Cross-instance rate limiting is enforced at the edge by a Vercel Firewall rule: `POST /api/website-form` limited to 10 requests per IP per 10 minutes (429 + 10-min block when exceeded).
+
+### Required environment variables (Vercel -> Settings -> Environment Variables)
 
 ```text
 SMTP_HOST
 SMTP_PORT
 SMTP_SECURE
 SMTP_USER
-SMTP_PASS
+SMTP_PASS            (secret)
 FORM_FROM_EMAIL
-FORM_TO_EMAIL=customercare@ariefinance.com
-ALLOWED_ORIGIN=https://ariefinance.com,https://www.ariefinance.com
+FORM_TO_EMAIL        = customercare@ariefinance.com
+ALLOWED_ORIGIN       = https://ariefinance.com,https://www.ariefinance.com
 ```
 
-Optional for local development only:
+`ALLOW_LOCAL_ORIGINS` is NOT set in production (local-dev only). SMTP credentials must never appear in `index.html`, client-side JS, source control, or logs.
+
+## External links
+
+The header **Log in** button opens the online-banking portal in a new tab: `https://online.ariefinance.com/online-banking`. `online.ariefinance.com` is a separate DNS record (Azure Front Door), independent of the website, and must not be altered during any website DNS change.
+
+## DNS (reference)
+
+Managed at OVH. Only two records point to the website:
 
 ```text
-ALLOW_LOCAL_ORIGINS=true
+@   A     216.150.1.1
+www CNAME 67a414678b5934c7.vercel-dns-017.com.
 ```
 
-Never place SMTP credentials in `index.html`, client-side JavaScript, source control or public logs.
+All email (Microsoft 365 MX/SPF/DKIM/DMARC), Teams, Resend (`notifications.*`) and `online.*` records are independent of the website and unaffected by website deploys.
 
-## Deployment
+## Editing the site
 
-Deploy the contents of this `production/` folder as the Vercel project root.
+Content lives inside the JSON-encoded template string in `index.html`. To change copy/CSS: decode the template (JSON.parse the `__bundler/template` script contents), edit, re-encode (JSON.stringify, then escape `</` to `<\/` so the script does not close early), and commit `index.html` to `main`. Vercel redeploys automatically.
 
-### Vercel dashboard
+## Verification checklist (post-deploy)
 
-1. Create/import a Vercel project.
-2. Set the project Root Directory to `production` if uploading the parent package.
-3. Add all required environment variables.
-4. Deploy.
-5. Confirm the website and `/api/website-form` are served from the same origin.
-
-### Vercel CLI
-
-```bash
-cd production
-npm ci
-vercel
-```
-
-
-## External login destination
-
-The header **Log in** button opens the approved online-banking portal in a new tab:
-
-```text
-https://online.ariefinance.com/online-banking
-```
-
-The `online.ariefinance.com` DNS record is separate from the public website and must be preserved during the website DNS cutover.
-
-## Deployment checklist
-
-Follow the root-level `DEPLOYMENT-CHECKLIST.md` before changing the public domain.
-
-## Form controls
-
-The server accepts only `contact` and `careers` submissions and enforces:
-
-- POST-only and production-origin allow-list
-- required fields, length limits, email validation and explicit consent
-- honeypot protection
-- best-effort in-memory rate limiting and duplicate protection
-- HTML escaping and header-injection protection
-- success only after SMTP confirms `sendMail()`
-- pending → delivered deduplication lifecycle; failed sends remain retryable
-- 3 MB maximum raw CV size
-- PDF, DOC and DOCX allow-list with signature checks
-- strict canonical base64 validation and declared-size verification
-- genuine DOCX OOXML validation using the ZIP central directory and XML parsing
-
-For DOCX, the handler requires and validates:
-
-- `[Content_Types].xml` with the exact `/word/document.xml` WordprocessingML override
-- `_rels/.rels` with an internal office-document relationship targeting `word/document.xml`
-- a well-formed `word/document.xml` with the WordprocessingML document namespace and body
-- no DTD or entity declarations
-- no encrypted, corrupted, traversal, symlink or zip-bomb content
-
-No uploaded file is extracted to disk or retained after the email send attempt.
-
-## Rate limiting and deduplication
-
-The included stores are in-memory and therefore best-effort on serverless infrastructure. They reset on cold start and are not shared across instances.
-
-For cross-instance enforcement, replace the Maps with Vercel KV or Upstash Redis using atomic operations.
-
-## Verification
-
-From the package root:
-
-```bash
-cd production
-npm ci
-node ../tests/validate.test.cjs
-node ../tests/backend.test.cjs
-npm audit --omit=dev
-```
-
-The included tests use mocked SMTP; they do not send live email.
-
-## Mandatory live release test
-
-After deployment and SMTP configuration:
-
-1. Submit one Contact enquiry and confirm receipt at `customercare@ariefinance.com`.
-2. Submit one Careers application with a genuine PDF or DOCX and confirm the attachment arrives.
-3. Force an SMTP failure or temporarily use invalid credentials and confirm the website shows an error rather than success.
-4. Retry the same failed submission and confirm it remains retryable.
-5. Submit the same successful form again and confirm the duplicate response reflects an earlier confirmed delivery.
-
-Live SMTP delivery remains unverified until these steps are completed in the deployed environment.
+1. https://www.ariefinance.com loads over valid HTTPS; `ariefinance.com` redirects to `www`.
+2. Submit one Contact enquiry; confirm receipt at customercare@ariefinance.com.
+3. Submit one Careers application with a real PDF/DOCX; confirm the attachment arrives and opens.
+4. Confirm Microsoft 365 email and online.ariefinance.com still work.
+5. Check the site at desktop / tablet / mobile widths.

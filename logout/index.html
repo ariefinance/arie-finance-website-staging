@@ -1,0 +1,511 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="color-scheme" content="light" />
+  <meta name="robots" content="noindex, nofollow" />
+  <title>Session complete | ARIE Finance</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Hanken+Grotesk:wght@400;500;600;700;800&display=swap">
+  <style>
+    :root {
+      --arie-indigo: #0F0566;
+      --arie-indigo-light: #201485;
+      --arie-black: #131313;
+      --text: #24242a;
+      --muted: #666b76;
+      --border: #E1E4EC;
+      --border-strong: #CDD2DE;
+      --surface: #FFFFFF;
+      --page: #F8F9FC;
+      --soft-indigo: #F1F0FA;
+      --shadow: 0 1px 3px rgba(15,5,102,.06), 0 30px 64px -22px rgba(15,5,102,.16);
+    }
+
+    * { box-sizing: border-box; }
+
+    html, body {
+      margin: 0;
+      min-height: 100%;
+      background: var(--page);
+      color: var(--arie-black);
+    }
+
+    body {
+      min-height: 100vh;
+      font-family: "Hanken Grotesk", ui-sans-serif, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      -webkit-font-smoothing: antialiased;
+      text-rendering: optimizeLegibility;
+    }
+
+    a { color: inherit; }
+
+    .page {
+      min-height: 100vh;
+      display: grid;
+      grid-template-rows: auto 1fr auto;
+      background:
+        radial-gradient(58% 48% at 14% 0%, rgba(32,20,133,.055), transparent 62%),
+        radial-gradient(52% 44% at 92% 100%, rgba(201,155,63,.06), transparent 60%),
+        linear-gradient(180deg, #FFFFFF 0%, #FBFBFD 48%, #F7F8FB 100%);
+    }
+
+    .shell {
+      width: min(1120px, calc(100% - 48px));
+      margin: 0 auto;
+    }
+
+    header {
+      background: rgba(255,255,255,.96);
+      border-bottom: 1px solid var(--border);
+    }
+
+    .header-inner {
+      min-height: 92px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 28px;
+    }
+
+    .brand {
+      display: inline-flex;
+      align-items: center;
+      text-decoration: none;
+    }
+
+    .brand img {
+      width: 236px;
+      max-width: 56vw;
+      height: auto;
+      display: block;
+    }
+
+    .header-note {
+      color: var(--muted);
+      font-size: 12px;
+      font-weight: 500;
+      letter-spacing: .01em;
+      white-space: nowrap;
+    }
+
+    main {
+      display: grid;
+      place-items: center;
+      align-content: center;
+      padding: 44px 0;
+    }
+
+    .logout-card {
+      width: min(680px, 100%);
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      box-shadow: var(--shadow);
+      padding: 46px 48px 42px;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .logout-card::before {
+      content: "";
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 3px;
+      background: linear-gradient(90deg, var(--arie-indigo) 0%, var(--arie-indigo-light) 100%);
+    }
+
+    .status-row {
+      display: flex;
+      align-items: center;
+      gap: 13px;
+      margin-bottom: 27px;
+    }
+
+    .status-icon {
+      width: 42px;
+      height: 42px;
+      border-radius: 50%;
+      flex: 0 0 42px;
+      display: grid;
+      place-items: center;
+      color: #14894F;
+      background: #E7F5EE;
+      border: 1px solid rgba(20,137,79,.18);
+      animation: tickPop .5s cubic-bezier(.2,.8,.2,1) both;
+    }
+
+    .status-icon svg {
+      width: 21px;
+      height: 21px;
+    }
+
+    .status-copy {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+
+    .eyebrow {
+      color: #14894F;
+      font-size: 11px;
+      line-height: 1.2;
+      font-weight: 800;
+      letter-spacing: .16em;
+      text-transform: uppercase;
+    }
+
+    .status-mini {
+      color: var(--muted);
+      font-size: 12px;
+      line-height: 1.4;
+    }
+
+    h1 {
+      margin: 0;
+      max-width: 570px;
+      color: var(--arie-black);
+      font-size: clamp(38px, 4.5vw, 52px);
+      line-height: 1.05;
+      letter-spacing: -.035em;
+      font-weight: 700;
+    }
+
+    .lead {
+      margin: 21px 0 0;
+      max-width: 580px;
+      color: var(--text);
+      font-size: 16px;
+      line-height: 1.68;
+    }
+
+    .session-state {
+      margin-top: 28px;
+      padding: 15px 16px;
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      background: #FAFAFC;
+      display: flex;
+      align-items: center;
+      gap: 11px;
+      color: var(--muted);
+      font-size: 13px;
+      line-height: 1.5;
+    }
+
+    .session-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: #C99B3F;
+      box-shadow: 0 0 0 4px rgba(201,155,63,.16);
+      flex: 0 0 auto;
+      animation: sessionPulse 1.8s ease-in-out infinite;
+    }
+
+    .session-state strong {
+      color: var(--arie-black);
+      font-weight: 700;
+    }
+
+    .actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+      margin-top: 30px;
+    }
+
+    .btn {
+      min-height: 48px;
+      padding: 0 20px;
+      border-radius: 10px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 9px;
+      text-decoration: none;
+      font-size: 13px;
+      font-weight: 700;
+      border: 1px solid transparent;
+      transition: background .16s ease, border-color .16s ease, transform .16s ease, box-shadow .16s ease;
+    }
+
+    .btn:hover {
+      transform: translateY(-1px);
+    }
+
+    .btn:focus-visible {
+      outline: 3px solid rgba(15,5,102,.17);
+      outline-offset: 3px;
+    }
+
+    .btn-primary {
+      color: #FFFFFF;
+      background: linear-gradient(180deg, #201485 0%, #0F0566 100%);
+      box-shadow: 0 10px 24px rgba(15,5,102,.18);
+    }
+
+    .btn-primary:hover {
+      background: var(--arie-indigo-light);
+      box-shadow: 0 12px 26px rgba(15,5,102,.20);
+    }
+
+    .btn-secondary {
+      color: var(--arie-black);
+      background: #FFFFFF;
+      border-color: var(--border-strong);
+    }
+
+    .btn-secondary:hover {
+      background: #F8F8FA;
+      border-color: #BFC5D1;
+    }
+
+    .btn svg {
+      width: 16px;
+      height: 16px;
+    }
+
+    .security-note {
+      margin-top: 30px;
+      padding-top: 24px;
+      border-top: 1px solid var(--border);
+      display: grid;
+      grid-template-columns: 22px 1fr;
+      gap: 11px;
+      color: var(--muted);
+      font-size: 12px;
+      line-height: 1.6;
+    }
+
+    .security-note svg {
+      width: 18px;
+      height: 18px;
+      color: var(--arie-indigo);
+      margin-top: 1px;
+    }
+
+    .security-note strong {
+      color: var(--text);
+      font-weight: 700;
+    }
+
+    footer {
+      background: transparent;
+      color: #777C86;
+      font-size: 10.5px;
+    }
+
+    .footer-inner {
+      border-top: 1px solid var(--border);
+      padding: 20px 0 26px;
+      display: flex;
+      align-items: flex-end;
+      justify-content: space-between;
+      gap: 24px;
+    }
+
+    .regulatory {
+      max-width: 760px;
+      line-height: 1.6;
+    }
+
+    .copyright {
+      white-space: nowrap;
+    }
+
+    @media (max-width: 720px) {
+      .shell {
+        width: min(100% - 28px, 1120px);
+      }
+
+      .header-inner {
+        min-height: 78px;
+      }
+
+      .brand img {
+        width: 205px;
+        max-width: 68vw;
+      }
+
+      .header-note {
+        display: none;
+      }
+
+      main {
+        padding: 36px 0 48px;
+      }
+
+      .logout-card {
+        padding: 34px 24px 30px;
+        border-radius: 16px;
+      }
+
+      h1 {
+        font-size: clamp(34px, 10vw, 44px);
+      }
+
+      .lead {
+        font-size: 15px;
+      }
+
+      .actions {
+        display: grid;
+      }
+
+      .btn {
+        width: 100%;
+      }
+
+      .footer-inner {
+        display: block;
+      }
+
+      .copyright {
+        margin-top: 9px;
+        white-space: normal;
+      }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after {
+        transition-duration: .001ms !important;
+        animation-duration: .001ms !important;
+        scroll-behavior: auto !important;
+      }
+    }
+
+    /* subtle, reduced-motion-safe card entrance */
+    @keyframes cardIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: none; } }
+    .logout-card { animation: cardIn .5s cubic-bezier(.2,.7,.2,1) both; }
+    @keyframes tickPop { 0% { transform: scale(.6); opacity: 0; } 60% { transform: scale(1.08); } 100% { transform: scale(1); opacity: 1; } }
+    @keyframes sessionPulse { 0%, 100% { box-shadow: 0 0 0 4px rgba(201,155,63,.16); } 50% { box-shadow: 0 0 0 7px rgba(201,155,63,.04); } }
+
+    /* online-banking experience feedback (anonymous, aggregate) */
+    .exp { margin-top: 28px; padding-top: 24px; border-top: 1px solid var(--border); }
+    .exp-q { margin: 0 0 13px; color: var(--text); font-size: 13px; font-weight: 600; }
+    .exp-opts { display: flex; gap: 9px; }
+    .exp-btn {
+      flex: 1 1 0; min-height: 44px; padding: 0 14px; border-radius: 10px;
+      border: 1px solid var(--border-strong); background: #FFFFFF; color: var(--text);
+      font-family: inherit; font-size: 13px; font-weight: 600; cursor: pointer;
+      display: inline-flex; align-items: center; justify-content: center; gap: 8px;
+      transition: border-color .15s ease, background .15s ease, transform .15s ease;
+    }
+    .exp-btn:hover { border-color: #C99B3F; background: #FCFAF4; transform: translateY(-1px); }
+    .exp-btn:focus-visible { outline: 3px solid rgba(201,155,63,.28); outline-offset: 2px; }
+    .exp-btn .e { font-size: 17px; line-height: 1; }
+    .exp-thanks { display: none; align-items: center; gap: 9px; color: var(--muted); font-size: 13px; }
+    .exp-thanks svg { width: 16px; height: 16px; color: #C99B3F; flex: 0 0 auto; }
+    .exp.done .exp-opts { display: none; }
+    .exp.done .exp-thanks { display: flex; }
+  </style>
+</head>
+<body>
+  <div class="page">
+    <header>
+      <div class="shell header-inner">
+        <a class="brand" href="https://www.ariefinance.com/#home" aria-label="ARIE Finance home">
+          <img src="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMzk2IiBoZWlnaHQ9Ijk0IiB2aWV3Qm94PSIwIDAgMzk2IDk0IiBmaWxsPSJub25lIiB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciPgo8cGF0aCBkPSJNMTEuMDYxNCA4MC40NDQxTDEyNy43NzggMTEuMjY3MkMxMzEuNTM5IDkuMDM4MDQgMTM2LjQwMiAxMC43MzUzIDEzNy45NTkgMTQuODIwOUwxNjEuODIxIDc3LjQ0MThDMTYzLjU3OSA4Mi4wNTUzIDE2MC4xNzEgODcuMDAwMSAxNTUuMjM0IDg3LjAwMDFMMTI3LjE0OSA4Ny4wMDAxQzEyNS4xMzggODcuMDAwMSAxMjMuMjIyIDg2LjE0MDYgMTIxLjg4NSA4NC42MzgxTDEwNS42NDggNjYuMzk4N0MxMDMuNTE1IDY0LjAwMjUgMTAwLjAzMyA2My4zNDkgOTcuMTc2NCA2NC44MDg2TDU1LjI1NTMgODYuMjI4MkM1NC4yNjI0IDg2LjczNTUgNTMuMTYzMyA4Ny4wMDAxIDUyLjA0ODIgODcuMDAwMUwxMi44NTgzIDg3LjAwMDFDOS4yNzM5NCA4Ny4wMDAxIDcuOTc3OTcgODIuMjcxNiAxMS4wNjE0IDgwLjQ0NDFaIiBmaWxsPSJ1cmwoI3BhaW50MF9saW5lYXJfMV8xOTMyMCkiLz4KPHBhdGggZD0iTTg4LjEwMzcgODYuNTA4Qzg2LjUyMTMgODYuNTA4IDg1LjIwMTIgODUuMjAzMSA4NS42MTgzIDgzLjY3NjZDODYuMTA2NCA4MS44ODk5IDg3LjA1MjggODAuMjQzMiA4OC4zODU1IDc4LjkxMDZDOTAuNDAwNCA3Ni44OTU3IDkzLjEzMzMgNzUuNzYzNyA5NS45ODI5IDc1Ljc2MzdDOTguODMyNCA3NS43NjM3IDEwMS41NjUgNzYuODk1NyAxMDMuNTggNzguOTEwNkMxMDQuOTEzIDgwLjI0MzIgMTA1Ljg1OSA4MS44ODk5IDEwNi4zNDcgODMuNjc2NkMxMDYuNzY0IDg1LjIwMzEgMTA1LjQ0NCA4Ni41MDggMTAzLjg2MiA4Ni41MDhMODguMTAzNyA4Ni41MDhaIiBmaWxsPSIjMTMxMzEzIi8+CjxwYXRoIGQ9Ik0yMzguNjgyIDQyLjg3NUgyMTQuNzQ0TDIxMC43MTMgNTFIMTk3Ljc3NUwyMjAuMjQ0IDguMDYyNUgyMzMuMTgyTDI1NS42NSA1MUgyNDIuNzEzTDIzOC42ODIgNDIuODc1Wk0yMTguOSAzNC41SDIzNC41ODhMMjI2Ljc3NSAxOC42ODc1TDIxOC45IDM0LjVaTTI3NC4yNzUgNTFIMjYyLjY4MlY4LjA2MjVIMjkxLjc0NEMyOTQuODY5IDguMDYyNSAyOTcuNTE1IDguMzg1NDIgMjk5LjY4MiA5LjAzMTI1QzMwMS44NjkgOS42NzcwOCAzMDMuNjQgMTAuNTkzOCAzMDQuOTk0IDExLjc4MTJDMzA2LjM2OSAxMi45Njg4IDMwNy4zNTkgMTQuNDA2MiAzMDcuOTYzIDE2LjA5MzhDMzA4LjU4OCAxNy43NjA0IDMwOC45IDE5LjYyNSAzMDguOSAyMS42ODc1QzMwOC45IDIzLjUgMzA4LjY0IDI1LjA4MzMgMzA4LjExOSAyNi40Mzc1QzMwNy42MTkgMjcuNzkxNyAzMDYuOTMyIDI4Ljk1ODMgMzA2LjA1NyAyOS45Mzc1QzMwNS4yMDMgMzAuODk1OCAzMDQuMjAzIDMxLjcwODMgMzAzLjA1NyAzMi4zNzVDMzAxLjkxMSAzMy4wNDE3IDMwMC43MDMgMzMuNTkzOCAyOTkuNDMyIDM0LjAzMTJMMzEzLjQ5NCA1MUgyOTkuOTMyTDI4Ni45MzIgMzUuMTg3NUgyNzQuMjc1VjUxWk0yOTcuMTgyIDIxLjYyNUMyOTcuMTgyIDIwLjc5MTcgMjk3LjA2NyAyMC4wODMzIDI5Ni44MzggMTkuNUMyOTYuNjMgMTguOTE2NyAyOTYuMjU1IDE4LjQ0NzkgMjk1LjcxMyAxOC4wOTM4QzI5NS4xNzEgMTcuNzE4OCAyOTQuNDQyIDE3LjQ0NzkgMjkzLjUyNSAxNy4yODEyQzI5Mi42MyAxNy4xMTQ2IDI5MS41MDUgMTcuMDMxMiAyOTAuMTUgMTcuMDMxMkgyNzQuMjc1VjI2LjIxODhIMjkwLjE1QzI5MS41MDUgMjYuMjE4OCAyOTIuNjMgMjYuMTM1NCAyOTMuNTI1IDI1Ljk2ODhDMjk0LjQ0MiAyNS44MDIxIDI5NS4xNzEgMjUuNTQxNyAyOTUuNzEzIDI1LjE4NzVDMjk2LjI1NSAyNC44MTI1IDI5Ni42MyAyNC4zMzMzIDI5Ni44MzggMjMuNzVDMjk3LjA2NyAyMy4xNjY3IDI5Ny4xODIgMjIuNDU4MyAyOTcuMTgyIDIxLjYyNVpNMzIxLjgwNyA1MVY4LjA2MjVIMzMzLjRWNTFIMzIxLjgwN1pNMzQ2Ljg2OSA1MVY4LjA2MjVIMzkwLjMzOFYxNy4yMTg4SDM1OC43NzVWMjQuMzEyNUgzODguNzEzVjMzLjQ2ODhIMzU4Ljc3NVY0MS44NDM4SDM5MC43NzVWNTFIMzQ2Ljg2OVpNMjA2LjkwNSA2Ny41ODE1VjcxLjQzMjZIMjIxLjI5NFY3Ni4xNTM4SDIwNi45MDVWODVIMjAwLjkyN1Y2Mi44NjA0SDIyMi4wODRWNjcuNTgxNUgyMDYuOTA1Wk0yMjcuMTkyIDg1VjYyLjg2MDRIMjMzLjE3Vjg1SDIyNy4xOTJaTTI2MS4wMyA4NUwyNDYuMDkzIDY5Ljc4OTFWODVIMjQwLjExNVY2Mi44NjA0SDI0Ni42MDhMMjYxLjU2MiA3OC4xMzU3VjYyLjg2MDRIMjY3LjUwN1Y4NUgyNjEuMDNaTTI5Mi4yMjUgODAuODEwNUgyNzkuODgyTDI3Ny44MDQgODVIMjcxLjEzM0wyODIuNzE4IDYyLjg2MDRIMjg5LjM4OUwzMDAuOTc1IDg1SDI5NC4zMDRMMjkyLjIyNSA4MC44MTA1Wk0yODIuMDI1IDc2LjQ5MjJIMjkwLjExNEwyODYuMDg2IDY4LjMzODlMMjgyLjAyNSA3Ni40OTIyWk0zMjUuNTE1IDg1TDMxMC41NzggNjkuNzg5MVY4NUgzMDQuNlY2Mi44NjA0SDMxMS4wOTRMMzI2LjA0NyA3OC4xMzU3VjYyLjg2MDRIMzMxLjk5M1Y4NUgzMjUuNTE1Wk0zNjMuMzE3IDgzLjQ4NTRDMzYyLjU0NCA4My44MDc2IDM2MS43NjUgODQuMDk3NyAzNjAuOTgxIDg0LjM1NTVDMzYwLjE5NiA4NC42MTMzIDM1OS4zODUgODQuODMzNSAzNTguNTQ3IDg1LjAxNjFDMzU3LjcxIDg1LjIwOTUgMzU2LjgyMyA4NS4zNTQ1IDM1NS44ODkgODUuNDUxMkMzNTQuOTY1IDg1LjU0NzkgMzUzLjk3MSA4NS41OTYyIDM1Mi45MDggODUuNTk2MkMzNTAuNjUyIDg1LjU5NjIgMzQ4LjU3MyA4NS4zNTQ1IDM0Ni42NzIgODQuODcxMUMzNDQuNzgxIDg0LjM4NzcgMzQzLjE0OCA4My42NjI2IDM0MS43NzMgODIuNjk1OEMzNDAuNDA5IDgxLjcxODMgMzM5LjM0NiA4MC41MDQ0IDMzOC41ODMgNzkuMDU0MkMzMzcuODIgNzcuNTkzMyAzMzcuNDM5IDc1Ljg5MDYgMzM3LjQzOSA3My45NDYzQzMzNy40MzkgNzIuMDAyIDMzNy44MiA3MC4zMDQ3IDMzOC41ODMgNjguODU0NUMzMzkuMzQ2IDY3LjM5MzYgMzQwLjQwOSA2Ni4xNzk3IDM0MS43NzMgNjUuMjEyOUMzNDMuMTQ4IDY0LjIzNTQgMzQ0Ljc4MSA2My41MDQ5IDM0Ni42NzIgNjMuMDIxNUMzNDguNTczIDYyLjUzODEgMzUwLjY1MiA2Mi4yOTY0IDM1Mi45MDggNjIuMjk2NEMzNTMuOTcxIDYyLjI5NjQgMzU0Ljk2NSA2Mi4zNDQ3IDM1NS44ODkgNjIuNDQxNEMzNTYuODIzIDYyLjUzODEgMzU3LjcxIDYyLjY4MzEgMzU4LjU0NyA2Mi44NzY1QzM1OS4zODUgNjMuMDU5MSAzNjAuMTk2IDYzLjI3OTMgMzYwLjk4MSA2My41MzcxQzM2MS43NjUgNjMuNzk0OSAzNjIuNTQ0IDY0LjA4NSAzNjMuMzE3IDY0LjQwNzJWNjkuNzg5MUMzNjIuNzA1IDY5LjQ1NjEgMzYyLjA2IDY5LjEyODQgMzYxLjM4MyA2OC44MDYyQzM2MC43MDcgNjguNDczMSAzNTkuOTYgNjguMTc3NyAzNTkuMTQ0IDY3LjkxOTlDMzU4LjMyNyA2Ny42NTE0IDM1Ny40MyA2Ny40MzY1IDM1Ni40NTMgNjcuMjc1NEMzNTUuNDc1IDY3LjEwMzUgMzU0LjM3NCA2Ny4wMTc2IDM1My4xNDkgNjcuMDE3NkMzNTEuMjcgNjcuMDE3NiAzNDkuNzA3IDY3LjIxMDkgMzQ4LjQ2MSA2Ny41OTc3QzM0Ny4yMjUgNjcuOTg0NCAzNDYuMjM3IDY4LjUgMzQ1LjQ5NiA2OS4xNDQ1QzM0NC43NTQgNjkuNzg5MSAzNDQuMjMzIDcwLjUzMDMgMzQzLjkzMyA3MS4zNjgyQzM0My42MzIgNzIuMTk1MyAzNDMuNDgyIDczLjA1NDcgMzQzLjQ4MiA3My45NDYzQzM0My40ODIgNzQuNTM3MSAzNDMuNTQ2IDc1LjEyMjYgMzQzLjY3NSA3NS43MDI2QzM0My44MDQgNzYuMjcyIDM0NC4wMTkgNzYuODE0NSAzNDQuMzE5IDc3LjMzMDFDMzQ0LjYyIDc3LjgzNSAzNDUuMDEyIDc4LjMwMjIgMzQ1LjQ5NiA3OC43MzE5QzM0NS45NzkgNzkuMTYxNiAzNDYuNTgxIDc5LjUzMjIgMzQ3LjMgNzkuODQzOEMzNDguMDIgODAuMTU1MyAzNDguODU4IDgwLjQwMjMgMzQ5LjgxNCA4MC41ODVDMzUwLjc4MSA4MC43NTY4IDM1MS44OTMgODAuODQyOCAzNTMuMTQ5IDgwLjg0MjhDMzU0LjM3NCA4MC44NDI4IDM1NS40NzUgODAuNzY3NiAzNTYuNDUzIDgwLjYxNzJDMzU3LjQzIDgwLjQ1NjEgMzU4LjMyNyA4MC4yNDY2IDM1OS4xNDQgNzkuOTg4OEMzNTkuOTYgNzkuNzMxIDM2MC43MDcgNzkuNDQwOSAzNjEuMzgzIDc5LjExODdDMzYyLjA2IDc4Ljc4NTYgMzYyLjcwNSA3OC40NDczIDM2My4zMTcgNzguMTAzNVY4My40ODU0Wk0zNjguODkyIDg1VjYyLjg2MDRIMzkxLjMwNlY2Ny41ODE1SDM3NS4wMzFWNzEuMjM5M0gzOTAuNDY4Vjc1Ljk2MDRIMzc1LjAzMVY4MC4yNzg4SDM5MS41MzFWODVIMzY4Ljg5MloiIGZpbGw9IiMxMzEzMTMiLz4KPGRlZnM+CjxsaW5lYXJHcmFkaWVudCBpZD0icGFpbnQwX2xpbmVhcl8xXzE5MzIwIiB4MT0iODIuNzMxNSIgeTE9Ijg3LjAwMDEiIHgyPSI4Mi43MzE1IiB5Mj0iNi45OTk4NyIgZ3JhZGllbnRVbml0cz0idXNlclNwYWNlT25Vc2UiPgo8c3RvcCBzdG9wLWNvbG9yPSIjMjAxNDg1Ii8+CjxzdG9wIG9mZnNldD0iMSIgc3RvcC1jb2xvcj0iIzBGMDU2NiIvPgo8L2xpbmVhckdyYWRpZW50Pgo8L2RlZnM+Cjwvc3ZnPgo=" alt="ARIE Finance" />
+        </a>
+        <div class="header-note">Secure client access</div>
+      </div>
+    </header>
+
+    <main>
+      <div class="shell">
+        <section class="logout-card" aria-labelledby="logout-title">
+          <div class="status-row">
+            <div class="status-icon" aria-hidden="true">
+              <svg viewBox="0 0 24 24" fill="none">
+                <path d="M5 12.5 9.2 16.5 19 7" stroke="currentColor" stroke-width="2.05" stroke-linecap="round" stroke-linejoin="round"/>
+              </svg>
+            </div>
+            <div class="status-copy">
+              <div class="eyebrow">Session complete</div>
+              <div class="status-mini">Secure session closed</div>
+            </div>
+          </div>
+
+          <h1 id="logout-title">You have successfully logged out.</h1>
+
+          <p class="lead">
+            Your ARIE Finance client portal session has ended securely.
+            No further action is required.
+          </p>
+
+          <div class="session-state" role="status" aria-live="polite">
+            <span class="session-dot" aria-hidden="true"></span>
+            <span><strong>Session ended.</strong> Your portal session is no longer active.</span>
+          </div>
+
+          <div class="actions">
+            <a class="btn btn-primary" href="https://online.ariefinance.com/online-banking">
+              Log in again
+              <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                <path d="M5 12h13M14 7l5 5-5 5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+              </svg>
+            </a>
+
+            <a class="btn btn-secondary" href="https://www.ariefinance.com/#home">
+              Return to ARIE Finance
+            </a>
+          </div>
+
+          <div class="security-note">
+            <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+              <path d="M7 10V8a5 5 0 0 1 10 0v2M6 10h12a2 2 0 0 1 2 2v7H4v-7a2 2 0 0 1 2-2Z"
+                    stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+            <div>
+              <strong>Using a shared or public device?</strong>
+              For additional protection, close this browser window before leaving the device.
+            </div>
+          </div>
+
+          <div class="exp" id="exp">
+            <p class="exp-q">How was your online banking experience today?</p>
+            <div class="exp-opts" role="group" aria-label="Rate your online banking experience">
+              <button class="exp-btn" type="button" data-v="poor"><span class="e" aria-hidden="true">🙁</span>Poor</button>
+              <button class="exp-btn" type="button" data-v="okay"><span class="e" aria-hidden="true">😐</span>Okay</button>
+              <button class="exp-btn" type="button" data-v="excellent"><span class="e" aria-hidden="true">😄</span>Excellent</button>
+            </div>
+            <div class="exp-thanks" role="status" aria-live="polite">
+              <svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M5 12.5 9.2 16.5 19 7" stroke="currentColor" stroke-width="2.05" stroke-linecap="round" stroke-linejoin="round"/></svg>
+              Thank you — your feedback helps us improve.
+            </div>
+          </div>
+        </section>
+      </div>
+    </main>
+
+    <footer>
+      <div class="shell footer-inner">
+        <div class="regulatory">
+          Regulated by the Financial Services Commission (Mauritius) ·
+          Payment Intermediary Services Licence · GB25205028
+        </div>
+        <div class="copyright">© 2026 ARIE Finance Ltd.</div>
+      </div>
+    </footer>
+  </div>
+  <script defer src="/_vercel/insights/script.js"></script>
+  <script>
+    (function () {
+      var exp = document.getElementById('exp');
+      if (!exp) return;
+      exp.querySelectorAll('.exp-btn').forEach(function (b) {
+        b.addEventListener('click', function () {
+          var v = b.getAttribute('data-v');
+          try { if (window.va) window.va('event', { name: 'portal_experience', rating: v }); } catch (e) {}
+          exp.classList.add('done');
+        });
+      });
+    })();
+  </script>
+</body>
+</html>

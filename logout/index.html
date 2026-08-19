@@ -1,4 +1,4 @@
-Page_Down<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="utf-8" />
@@ -500,10 +500,11 @@ Page_Down<!DOCTYPE html>
     (function () {
       var exp = document.getElementById('exp');
       if (!exp) return;
+      var expLabel = { poor: 'Poor', okay: 'Okay', excellent: 'Excellent' };
       exp.querySelectorAll('.exp-btn').forEach(function (b) {
         b.addEventListener('click', function () {
           var v = b.getAttribute('data-v');
-          try { if (window.va) window.va('event', { name: 'portal_experience', rating: v }); } catch (e) {}
+          try { if (window.va) window.va('event', { name: 'portal_experience: ' + (expLabel[v] || v) }); } catch (e) {}
           exp.classList.add('done');
         });
       });

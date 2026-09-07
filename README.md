@@ -25,6 +25,9 @@ og-image.png          Open Graph / social-share image.
 package.json          Declares the nodemailer dependency and Node 24.x engine.
 package-lock.json     Locked dependency tree.
 README.md             This file.
+.github/workflows/deploy.yml
+                      GitHub Actions workflow that deploys to Vercel on every push.
+.gitignore            Ignores .vercel/ and node_modules/.
 ```
 
 That is the complete file list.
@@ -32,7 +35,8 @@ That is the complete file list.
 ## Build & deploy
 
 - **No build step / framework.** Vercel serves `index.html` and runs `api/website-form.js` on the same origin.
-- **Production branch:** `main`. Every push to `main` auto-deploys to production on Vercel (team: ARIE FINANCE).
+- **Production branch:** `main`. Deployment is driven by GitHub Actions (`.github/workflows/deploy.yml`), not by Vercel's Git integration: every push to `main` runs `vercel deploy --prod`; pushes to any other branch and pull requests produce a preview deployment (URL shown on the workflow run).
+- **One-time setup:** add the repository secret `VERCEL_TOKEN` (Settings -> Secrets and variables -> Actions) with a token from https://vercel.com/account/tokens. The target Vercel org/project IDs are set as plain `env` values at the top of the workflow.
 - **Deployment protection:** Standard — generated `*.vercel.app` preview URLs require login; the production custom domain is public.
 
 ## Routing (`vercel.json`)

@@ -1,0 +1,64 @@
+# Deploys this repository to Vercel on every push.
+#
+#   push to main        -> production deployment
+#   push to other branch / PR -> preview deployment
+#
+# Required GitHub secret (Settings -> Secrets and variables -> Actions):
+#   VERCEL_TOKEN   Vercel account token (https://vercel.com/account/tokens)
+#
+# VERCEL_ORG_ID / VERCEL_PROJECT_ID identify the target Vercel project and are
+# not secret. Change them here to point at a different project.
+
+name: Deploy to Vercel
+
+on:
+  push:
+    branches: ['**']
+  pull_request:
+  workflow_dispatch:
+
+concurrency:
+  group: deploy-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  VERCEL_ORG_ID: team_LUgbx4qzGleJbDFrfMKYLjDm
+  VERCEL_PROJECT_ID: prj_GhCEolKvs7ukEN8k6ulDlcY4uonN
+
+jobs:
+  deploy:
+    # Skip the duplicate run a PR from this repo would otherwise get (push + pull_request).
+    if: github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name != github.repository
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    permissions:
+      contents: read
+    environment:
+      name: ${{ github.ref == 'refs/heads/main' && 'production' || 'preview' }}
+      url: ${{ steps.deploy.outputs.url }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+
+      - name: Deploy
+        id: deploy
+        env:
+          VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
+        run: |
+          if [ -z "$VERCEL_TOKEN" ]; then
+            echo "::error::VERCEL_TOKEN secret is not set. Add it under Settings -> Secrets and variables -> Actions."
+            exit 1
+          fi
+          if [ "$GITHUB_REF" = "refs/heads/main" ]; then
+            TARGET="--prod"
+          else
+            TARGET=""
+          fi
+          URL=$(npx --yes vercel@59 deploy --yes --token="$VERCEL_TOKEN" $TARGET \
+            --meta githubCommitSha="$GITHUB_SHA" \
+            --meta githubCommitRef="${GITHUB_HEAD_REF:-$GITHUB_REF_NAME}")
+          echo "url=$URL" >> "$GITHUB_OUTPUT"
+          echo "Deployed: $URL" >> "$GITHUB_STEP_SUMMARY"

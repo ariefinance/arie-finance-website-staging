@@ -29,10 +29,10 @@
 </div>
   <div id="__bundler_loading">Unpacking...</div>
 
-  <script>
+  <style>#__bundler_thumbnail{display:none!important}</style>
+<script>
 /* ARIE logout: persistent post-unpack fixer (survives bundler replaceWith).
-   Adds noindex, title, Vercel Web Analytics (window.va + insights script),
-   and wires the three rating buttons via delegated capture listener. */
+   noindex, title, Vercel Web Analytics, rating buttons, and fit-to-one-screen. */
 (function(){
   // Vercel Web Analytics stub + queue so early clicks are not lost.
   window.va = window.va || function(){ (window.vaq = window.vaq || []).push(arguments); };
@@ -51,6 +51,27 @@
     }
   }, true);
 
+  function wrapEl(){
+    var ds = document.getElementsByTagName('div');
+    for (var i = 0; i < ds.length; i++){ if (ds[i].style && ds[i].style.minHeight === '100vh') return ds[i]; }
+    return null;
+  }
+
+  // Fit the whole page onto one screen: scale down only, never up; letterbox in the page colour.
+  function fit(){
+    var wrap = wrapEl();
+    if (!wrap) return;
+    wrap.style.transformOrigin = 'top center';
+    wrap.style.transform = 'none';
+    var natural = wrap.offsetHeight;
+    var vh = window.innerHeight;
+    var scale = (natural > vh && natural > 0) ? (vh / natural) : 1;
+    wrap.style.transform = scale < 1 ? ('scale(' + scale + ')') : 'none';
+    var de = document.documentElement;
+    de.style.overflow = 'hidden'; de.style.background = '#F0F5FC';
+    document.body.style.overflow = 'hidden'; document.body.style.height = vh + 'px'; document.body.style.background = '#F0F5FC';
+  }
+
   function apply(){
     if (!document.head) return;
     if (!document.querySelector('meta[name="robots"]')) {
@@ -59,18 +80,25 @@
       document.head.appendChild(m);
     }
     if (!document.title || document.title === 'Bundled Page') {
-      document.title = 'Signed out \u00b7 ARIE Finance';
+      document.title = 'Signed out · ARIE Finance';
     }
     if (!document.getElementById('__va_insights')) {
       var sc = document.createElement('script');
       sc.id = '__va_insights'; sc.defer = true; sc.src = '/_vercel/insights/script.js';
       (document.head || document.documentElement).appendChild(sc);
     }
+    fit();
   }
   apply();
   var iv = setInterval(apply, 400);
   document.addEventListener('DOMContentLoaded', apply);
-  setTimeout(function(){ clearInterval(iv); }, 30000);
+  window.addEventListener('resize', fit);
+  window.addEventListener('orientationchange', fit);
+  var ro, roIv = setInterval(function(){
+    var w = wrapEl();
+    if (w && !ro && 'ResizeObserver' in window) { ro = new ResizeObserver(fit); ro.observe(w); clearInterval(roIv); }
+  }, 400);
+  setTimeout(function(){ clearInterval(iv); clearInterval(roIv); }, 30000);
 })();
 </script>
 <script>

@@ -1004,6 +1004,23 @@ input[type='file']{ padding:10px 13px; }
 .eligibility-panel{ border:1px solid rgba(184,147,85,.3); border-left:3px solid var(--gold); background:var(--surface); border-radius:18px; padding:24px 26px; max-width:920px; box-shadow:var(--shadow-sm); }
 .eligibility-title{ font-family:var(--display); font-size:17px; margin:0 0 10px; color:var(--text); font-weight:600; }
 .eligibility-lead{ font-size:14px; line-height:1.65; color:var(--muted); margin:0; }
+/* contact: intent chips + conditional note */
+.intent-fieldset{ border:0; padding:0; margin:0; min-width:0; }
+.intent-fieldset legend{ display:block; padding:0; color:var(--muted); font-size:11px; letter-spacing:.13em; text-transform:uppercase; font-weight:600; margin-bottom:10px; }
+.intent-grid{ display:flex; flex-wrap:wrap; gap:10px; }
+.intent-chip{ margin:0; }
+.intent-chip input{ position:absolute; opacity:0; width:1px; height:1px; }
+.intent-chip span{ display:inline-flex; align-items:center; gap:9px; cursor:pointer; font-size:14px; font-weight:500; text-transform:none; letter-spacing:0; color:var(--text); background:var(--surface); border:1px solid var(--border); padding:10px 15px; border-radius:999px; min-height:44px; transition:border-color .2s, background .2s, box-shadow .2s; }
+.intent-chip span::before{ content:''; width:9px; height:9px; border-radius:50%; border:1.5px solid var(--border); flex:0 0 auto; transition:border-color .2s, background .2s; }
+.intent-chip span:hover{ border-color:var(--indigo); }
+.intent-chip input:focus-visible + span{ border-color:var(--indigo); box-shadow:0 0 0 3px rgba(36,78,155,.18); }
+.intent-chip input:checked + span{ border-color:var(--indigo); background:var(--indigo-soft); box-shadow:inset 0 0 0 1px var(--indigo); }
+.intent-chip input:checked + span::before{ background:var(--gold); border-color:var(--gold); }
+.account-note{ border:1px solid rgba(184,147,85,.3); border-left:3px solid var(--gold); background:var(--surface-tint); border-radius:14px; padding:16px 18px; }
+.account-note strong{ display:block; font-family:var(--display); font-size:15px; color:var(--text); margin-bottom:6px; }
+.account-note p{ margin:0; font-size:13.5px; line-height:1.6; color:var(--muted); }
+.contact-intro{ font-family:var(--display); font-size:16px; font-weight:600; color:var(--text); margin-bottom:2px; }
+.contact-intro + .contact-block{ border-top:2px solid var(--gold); }
 
 /* ============================================================
    Compliance page
@@ -1454,7 +1471,80 @@ input,textarea{ border-radius:var(--r-sm)!important; }
 .checkbox-row > label{grid-column:2;grid-row:1;}
 .checkbox-row > .arie-field-error{grid-column:2;grid-row:2;margin-top:2px;}
 </style>
-</head>
+<style>
+/* ===== Contact page — premium visual refinement (scoped to [data-page=contact]) ===== */
+/* reserved space so the fixed cookie banner never traps content underneath it */
+body{ padding-bottom:var(--cookie-space, 0px); }
+[data-page="contact"] .page-hero{ padding-bottom:46px; }
+[data-page="contact"] .contact-section{ background:#ECF1F8; border-top:1px solid var(--border-soft); padding:58px 0 66px; }
+[data-page="contact"] .form-layout{ gap:40px; align-items:start; }
+
+/* main form card */
+[data-page="contact"] .form-card{ border:1px solid var(--border-soft); border-radius:20px; padding:34px 36px; box-shadow:0 1px 2px rgba(6,17,58,.04), 0 16px 40px -28px rgba(6,17,58,.18); }
+[data-page="contact"] .form-card form{ gap:20px; }
+
+/* intent selector -> compact institutional choice-card grid */
+[data-page="contact"] .intent-fieldset legend{ margin-bottom:13px; }
+[data-page="contact"] .intent-grid{ display:grid; grid-template-columns:1fr 1fr; gap:12px; }
+[data-page="contact"] .intent-chip span{ display:flex; align-items:center; gap:12px; width:100%; justify-content:flex-start; text-align:left; min-height:58px; padding:15px 17px; border-radius:12px; border:1px solid var(--border); background:var(--surface); font-size:14.5px; font-weight:500; color:var(--text); letter-spacing:0; text-transform:none; box-shadow:0 1px 1px rgba(6,17,58,.03); transition:border-color .18s ease, background .18s ease, box-shadow .18s ease, transform .18s ease; }
+[data-page="contact"] .intent-chip span::before{ width:16px; height:16px; border-radius:50%; border:1.5px solid var(--border); background:#fff; box-shadow:none; flex:0 0 auto; }
+[data-page="contact"] .intent-chip span:hover{ border-color:var(--indigo); background:#fff; box-shadow:0 1px 3px -1px rgba(6,17,58,.12); }
+[data-page="contact"] .intent-chip input:checked + span{ border-color:var(--indigo); background:var(--indigo-soft); box-shadow:inset 0 0 0 1px var(--indigo); }
+[data-page="contact"] .intent-chip input:checked + span::before{ border-color:var(--gold); background:var(--gold); box-shadow:inset 0 0 0 3px #fff; }
+[data-page="contact"] .intent-chip input:focus-visible + span{ border-color:var(--indigo); box-shadow:0 0 0 3px rgba(46,42,140,.20); }
+
+/* section divider — "Your details" */
+[data-page="contact"] .form-section-head{ display:flex; align-items:center; gap:12px; margin-top:4px; padding-top:22px; border-top:1px solid var(--border-soft); }
+[data-page="contact"] .form-section-head::before{ content:''; height:2px; width:26px; border-radius:2px; background:var(--grad-gold); flex:0 0 auto; }
+[data-page="contact"] .form-section-head span{ color:var(--muted); font-size:11px; letter-spacing:.15em; text-transform:uppercase; font-weight:700; }
+
+/* fields */
+[data-page="contact"] .form-card label{ margin-bottom:8px; }
+[data-page="contact"] .form-card input, [data-page="contact"] .form-card textarea{ min-height:48px; border:1px solid var(--border); background:#fff; border-radius:10px; padding:13px 14px; font-size:15px; }
+[data-page="contact"] .form-card input::placeholder, [data-page="contact"] .form-card textarea::placeholder{ color:#9aa4b6; }
+[data-page="contact"] .form-card input:focus, [data-page="contact"] .form-card textarea:focus{ border-color:var(--indigo); box-shadow:0 0 0 3px rgba(46,42,140,.13); }
+[data-page="contact"] .form-card .form-grid{ gap:18px; }
+
+/* account notice refine */
+[data-page="contact"] .account-note{ padding:18px 20px; background:linear-gradient(180deg,#FBF6EC,#FCFAF5); border:1px solid rgba(184,147,85,.32); border-left:3px solid var(--gold); border-radius:14px; }
+[data-page="contact"] .account-note strong{ font-size:15px; margin-bottom:7px; color:var(--navy); }
+[data-page="contact"] .account-note p{ color:#5c5640; }
+
+/* CTA (scoped to contact form only) */
+[data-page="contact"] form[data-form="contact"] .btn-primary{ width:100%; min-height:54px; font-size:15px; letter-spacing:.01em; box-shadow:0 2px 4px rgba(6,17,58,.18), 0 14px 30px -12px rgba(6,17,58,.5); transition:transform .18s ease, box-shadow .22s ease, background .2s ease; }
+[data-page="contact"] form[data-form="contact"] .btn-primary:hover{ transform:translateY(-1px); box-shadow:0 3px 6px rgba(6,17,58,.22), 0 22px 42px -14px rgba(6,17,58,.6); }
+
+/* direct-contact panel with tinted header band */
+[data-page="contact"] aside.contact-stack.info-card{ padding:0; overflow:hidden; border:1px solid var(--border-soft); border-radius:20px; box-shadow:0 1px 2px rgba(6,17,58,.05), 0 22px 52px -32px rgba(6,17,58,.28); align-self:start; }
+[data-page="contact"] .contact-head{ background:linear-gradient(180deg,#0B1748,#06113A); border-bottom:2px solid var(--gold); padding:18px 24px; }
+[data-page="contact"] .contact-head span{ color:#fff; font-family:var(--display); font-weight:600; font-size:15.5px; letter-spacing:.01em; }
+[data-page="contact"] .contact-body{ padding:6px 24px 20px; }
+[data-page="contact"] .contact-body .contact-block{ border-top:1px solid var(--border); padding:16px 0; }
+[data-page="contact"] .contact-body .contact-block:first-child{ border-top:0; }
+
+/* mobile */
+@media (max-width:760px){
+  [data-page="contact"] .intent-grid{ grid-template-columns:1fr; gap:8px; }
+  [data-page="contact"] .intent-chip span{ min-height:50px; padding:11px 15px; }
+  [data-page="contact"] .account-note{ padding:14px 16px; }
+  [data-page="contact"] .account-note strong{ margin-bottom:5px; }
+  [data-page="contact"] .account-note p{ line-height:1.5; }
+  [data-page="contact"] .form-card{ padding:22px 18px; }
+  [data-page="contact"] .contact-section{ background:var(--canvas); padding:40px 0 48px; }
+}
+@media (max-width:400px){
+  [data-page="contact"] .intent-chip span{ font-size:13.5px; padding:11px 14px; gap:10px; }
+}
+
+/* cookie banner — compact on mobile so it never buries enquiry controls */
+@media (max-width:760px){
+  .cookie-banner{ padding:8px 12px!important; }
+  .cookie-inner{ gap:6px 10px!important; align-items:center!important; flex-wrap:wrap!important; }
+  .cookie-text{ font-size:11px!important; line-height:1.3!important; min-width:0!important; flex:1 1 100%!important; }
+  .cookie-actions{ width:100%!important; gap:8px!important; justify-content:flex-end!important; }
+  .cookie-actions .btn{ padding:6px 13px!important; min-height:34px!important; font-size:12px!important; }
+}
+</style></head>
 <body>
 <noscript><div role="status" style="position:relative;z-index:3;background:#fff4d6;color:#06113A;padding:10px 18px;text-align:center;font:600 14px/1.4 -apple-system,BlinkMacSystemFont,Segoe UI,sans-serif;border-bottom:1px solid #C99B3F;">The website content remains available, but interactive navigation, forms and policy dialogs require JavaScript.</div></noscript>
 
@@ -1798,9 +1888,9 @@ input,textarea{ border-radius:var(--r-sm)!important; }
 
     <!-- ============================= CONTACT ============================= -->
     <section class="page" data-page="contact" hidden="">
-      <div class="page-hero"><div class="container"><p class="eyebrow">Get in touch</p><h1>Customer care and inquiries</h1><p class="lead" style="margin-top:16px;max-width:680px;">For inquiries, applications, onboarding support, client service matters, or complaints, please contact ARIE Finance at <a href="mailto:customercare@ariefinance.com" style="color:var(--indigo);font-weight:600;">customercare@ariefinance.com</a>.</p></div></div>
-      <section class="section section--canvas" style="padding-bottom:0;"><div class="container"><div class="eligibility-panel"><h3 class="eligibility-title">Before you apply</h3><p class="eligibility-lead">ARIE Finance services are subject to compliance review, documentation checks, internal risk assessment, jurisdictional considerations, and banking partner requirements. Submitting this form does not guarantee onboarding or service approval.</p><ul class="plain-checks" style="margin-top:14px;"><li>Suitable for internationally active businesses and approved professional intermediaries</li><li>Ownership, activity, jurisdiction, and transaction profile will be reviewed</li><li>Enhanced due diligence may be required</li><li>The ARIE Finance team may request additional information before confirming next steps</li></ul></div></div></section>
-      <section class="section section--canvas"><div class="container form-layout"><div><div class="form-card"><form data-form="contact" novalidate=""><div aria-hidden="true" style="position:absolute;width:1px;height:1px;overflow:hidden;left:-9999px;top:-9999px;"><label>Leave this field blank<input type="text" name="hp_url" tabindex="-1" autocomplete="off"></label></div><div><label for="contact-name">Full name</label><input id="contact-name" name="fullname" required="" placeholder="Your full name"></div><div class="form-grid"><div><label for="contact-email">Email address</label><input id="contact-email" name="email" type="email" required="" placeholder="you@company.com"></div><div><label for="contact-phone">Phone <span style="letter-spacing:0;text-transform:none;font-weight:400;">(optional)</span></label><input id="contact-phone" name="phone" type="tel" placeholder="+230 5XXX XXXX"></div></div><div><label for="contact-requirement">How can we help?</label><textarea id="contact-requirement" name="requirement" required="" placeholder="Briefly describe what you're looking for"></textarea></div><div class="checkbox-row"><input id="contact-tcs" name="tcs" type="checkbox" required=""><label for="contact-tcs">I have read and accepted the <a href="#" data-policy-open="terms-and-conditions" style="color:inherit;text-decoration:underline;">Terms &amp; Conditions</a> and <a href="#" data-policy-open="privacy-policy" style="color:inherit;text-decoration:underline;">Privacy Policy</a>.</label></div><button class="btn btn-primary" type="submit">Submit <span aria-hidden="true">→</span></button><p class="note" style="margin-top:4px;">We only need a few details to start. Company, ownership, and compliance information are collected later as part of structured onboarding.</p></form><div class="success" data-success="contact"><strong>Thank you — we'll be in touch within 24 business hours.</strong><span>A member of our team will review your application and contact you shortly.</span></div></div></div><aside class="contact-stack info-card" style="padding:6px 24px 20px;"><div class="contact-block"><span>Customer care and inquiries</span><a href="mailto:customercare@ariefinance.com">customercare@ariefinance.com</a></div><div class="contact-block"><span>Phone</span><a href="tel:+23054686497">+230 5468 6497</a></div><div class="contact-block"><span>LinkedIn</span><a class="linkedin-link" href="https://www.linkedin.com/company/arie-finance/" target="_blank" rel="noopener noreferrer"><svg viewBox="0 0 24 24" aria-hidden="true" xmlns="http://www.w3.org/2000/svg"><path d="M20.45 20.45h-3.56v-5.57c0-1.33-.02-3.04-1.85-3.04-1.85 0-2.14 1.45-2.14 2.94v5.67H9.35V9h3.42v1.56h.05c.48-.9 1.64-1.85 3.37-1.85 3.6 0 4.27 2.37 4.27 5.46v6.28zM5.34 7.43a2.06 2.06 0 1 1 0-4.13 2.06 2.06 0 0 1 0 4.13zM7.12 20.45H3.56V9h3.56v11.45zM22.22 0H1.77C.8 0 0 .78 0 1.74v20.51C0 23.22.8 24 1.77 24h20.45c.98 0 1.78-.78 1.78-1.75V1.74C24 .78 23.2 0 22.22 0z"/></svg>LinkedIn</a></div><div class="contact-block"><span>Head office</span><p>3rd Floor, KPMG Centre<br>Ebene, Mauritius</p></div></aside></div></section>
+      <div class="page-hero"><div class="container"><p class="eyebrow">Get in touch</p><h1>How can we help?</h1><p class="lead" style="margin-top:16px;max-width:720px;">Whether you're exploring ARIE Finance, looking to discuss international payments, interested in working with us, or need support with an existing relationship, tell us what you need and we'll direct your enquiry to the right person.</p></div></div>
+      
+      <section class="section section--canvas contact-section"><div class="container form-layout"><div><div class="form-card"><form data-form="contact" novalidate=""><div aria-hidden="true" style="position:absolute;width:1px;height:1px;overflow:hidden;left:-9999px;top:-9999px;"><label>Leave this field blank<input type="text" name="hp_url" tabindex="-1" autocomplete="off"></label></div><fieldset class="intent-fieldset"><legend>What are you contacting us about?</legend><div class="intent-grid"><label class="intent-chip"><input type="radio" name="topic" value="Open an account" data-topic="account" required=""><span>Open an account</span></label><label class="intent-chip"><input type="radio" name="topic" value="International payments" data-topic="payments"><span>International payments</span></label><label class="intent-chip"><input type="radio" name="topic" value="Introducer / partnership" data-topic="introducer"><span>Introducer / partnership</span></label><label class="intent-chip"><input type="radio" name="topic" value="Client referral" data-topic="referral"><span>Client referral</span></label><label class="intent-chip"><input type="radio" name="topic" value="Existing client / onboarding support" data-topic="support"><span>Existing client / onboarding support</span></label><label class="intent-chip"><input type="radio" name="topic" value="Complaint / other enquiry" data-topic="other"><span>Complaint / other enquiry</span></label></div></fieldset><div class="account-note" data-account-note hidden><strong>Planning to open an account?</strong><p>ARIE Finance services are subject to compliance review, documentation checks, internal risk assessment, jurisdictional considerations and banking partner requirements. Submission of an enquiry or application does not guarantee onboarding or service approval.</p></div><div class="form-section-head"><span>Your details</span></div><div><label for="contact-name">Full name</label><input id="contact-name" name="fullname" required="" placeholder="Your full name"></div><div><label for="contact-company">Company</label><input id="contact-company" name="company" placeholder="Your company"></div><div class="form-grid"><div><label for="contact-email">Business email</label><input id="contact-email" name="email" type="email" required="" placeholder="you@company.com"></div><div><label for="contact-phone">Phone <span style="letter-spacing:0;text-transform:none;font-weight:400;">(optional)</span></label><input id="contact-phone" name="phone" type="tel" placeholder="+230 5XXX XXXX"></div></div><div><label for="contact-requirement">Tell us briefly what you would like to discuss</label><textarea id="contact-requirement" name="requirement" required="" placeholder="A sentence or two about what you need"></textarea></div><div class="checkbox-row"><input id="contact-tcs" name="tcs" type="checkbox" required=""><label for="contact-tcs">I have read and accepted the <a href="#" data-policy-open="terms-and-conditions" style="color:inherit;text-decoration:underline;">Terms &amp; Conditions</a> and <a href="#" data-policy-open="privacy-policy" style="color:inherit;text-decoration:underline;">Privacy Policy</a>.</label></div><button class="btn btn-primary" type="submit">Send enquiry <span aria-hidden="true">&#8594;</span></button><p class="note" style="margin-top:4px;">Provide a few details and we'll direct your enquiry to the appropriate member of the ARIE Finance team.</p></form><div class="success" data-success="contact"><strong>Thank you &#8212; your enquiry has been received.</strong><span>A member of our team will review it and contact you shortly.</span></div></div></div><aside class="contact-stack info-card"><div class="contact-head"><span>Prefer to contact us directly?</span></div><div class="contact-body"><div class="contact-block"><span>Existing client support</span><a href="mailto:customercare@ariefinance.com">customercare@ariefinance.com</a></div><div class="contact-block"><span>Phone</span><a href="tel:+23054686497">+230 5468 6497</a></div><div class="contact-block"><span>LinkedIn</span><a class="linkedin-link" href="https://www.linkedin.com/company/arie-finance/" target="_blank" rel="noopener noreferrer"><svg viewBox="0 0 24 24" aria-hidden="true" xmlns="http://www.w3.org/2000/svg"><path d="M20.45 20.45h-3.56v-5.57c0-1.33-.02-3.04-1.85-3.04-1.85 0-2.14 1.45-2.14 2.94v5.67H9.35V9h3.42v1.56h.05c.48-.9 1.64-1.85 3.37-1.85 3.6 0 4.27 2.37 4.27 5.46v6.28zM5.34 7.43a2.06 2.06 0 1 1 0-4.13 2.06 2.06 0 0 1 0 4.13zM7.12 20.45H3.56V9h3.56v11.45zM22.22 0H1.77C.8 0 0 .78 0 1.74v20.51C0 23.22.8 24 1.77 24h20.45c.98 0 1.78-.78 1.78-1.75V1.74C24 .78 23.2 0 22.22 0z"/></svg>LinkedIn</a></div><div class="contact-block"><span>Head Office</span><p>3rd Floor, KPMG Centre<br>Ebene, Mauritius</p></div></div></aside></div></section>
     </section>
 
     <!-- ============================= COMPLIANCE ============================= -->
@@ -2454,4 +2544,4 @@ input,textarea{ border-radius:var(--r-sm)!important; }
 
 (function(){var last=null;function f(){try{if(window.va){var s=((location.hash||'#home').replace('#','')||'home').split('?')[0];if(s&&s!==last){last=s;window.va('event',{name:'section_view',section:s});}}}catch(e){}}setInterval(f,700);})();
 </script>
-<script defer src="/_vercel/insights/script.js"></script></body></html>
+<script defer src="/_vercel/insights/script.js"></script><script>(function(){var radios=[].slice.call(document.querySelectorAll('input[name="topic"]'));if(!radios.length)return;var note=document.querySelector('[data-account-note]');function upd(){var sel=null;for(var i=0;i<radios.length;i++){if(radios[i].checked){sel=radios[i];break;}}if(note){note.hidden=!(sel&&sel.getAttribute('data-topic')==='account');}}radios.forEach(function(r){r.addEventListener('change',upd);});var m=/[?&]topic=([^&#]+)/.exec(location.search)||/[?&]topic=([^&#]+)/.exec(location.hash);if(m){var slug=decodeURIComponent(m[1]).trim().toLowerCase();for(var j=0;j<radios.length;j++){if(radios[j].getAttribute('data-topic')===slug){radios[j].checked=true;break;}}}upd();})();</script><script>(function(){var banner=document.getElementById('cookie-banner');if(!banner)return;var root=document.documentElement;function visible(){return !banner.classList.contains('is-hidden')&&!banner.hidden&&getComputedStyle(banner).display!=='none'&&banner.offsetHeight>0;}function update(){root.style.setProperty('--cookie-space',visible()?(banner.offsetHeight+16)+'px':'0px');}try{var mo=new MutationObserver(update);mo.observe(banner,{attributes:true,attributeFilter:['class','hidden','style']});}catch(e){}if('ResizeObserver' in window){try{new ResizeObserver(update).observe(banner);}catch(e){}}window.addEventListener('resize',update);setTimeout(update,0);setTimeout(update,400);})();</script></body></html>

@@ -49,6 +49,15 @@ const LIMITS = {
   contactnum: [5, 50],
 };
 
+const CONTACT_TOPICS = new Set([
+  'Open an account',
+  'International payments',
+  'Introducer / partnership',
+  'Client referral',
+  'Existing client / onboarding support',
+  'Complaint / other enquiry',
+]);
+
 const ALLOWED_EXT  = ['.pdf', '.doc', '.docx'];
 const ALLOWED_MIME = [
   'application/pdf',
@@ -468,20 +477,26 @@ module.exports = async function handler(req, res) {
     const email = validEmail(fields.email);
     const phone = clean(fields.phone);
     const message = cleanMultiline(fields.requirement);
+    const company = clean(fields.company);
+    const topic = clean(fields.topic);
     const consent = fields.tcs === true || fields.tcs === 'true' || fields.tcs === 'on';
 
     if (!lenOk(fullname, 'fullname')) return res.status(400).json({ ok: false, error: 'invalid_name' });
     if (!email) return res.status(400).json({ ok: false, error: 'invalid_email' });
     if (phone.length > LIMITS.phone[1]) return res.status(400).json({ ok: false, error: 'invalid_phone' });
     if (!lenOk(message, 'message')) return res.status(400).json({ ok: false, error: 'invalid_message' });
+    if (company.length > 150) return res.status(400).json({ ok: false, error: 'invalid_company' });
+    if (topic && !CONTACT_TOPICS.has(topic)) return res.status(400).json({ ok: false, error: 'invalid_topic' });
     if (!consent) return res.status(400).json({ ok: false, error: 'consent_required' });
 
     replyTo = email;
-    subject = 'ARIE Finance Website Enquiry — ' + headerSafe(fullname);
+    subject = 'ARIE Finance Enquiry' + (topic ? ' (' + headerSafe(topic) + ')' : '') + ' — ' + headerSafe(fullname);
     dedupeSeed = ip + '|contact|' + email + '|' + cheapHash(message);
     const pairs = [
       ['Form type', 'Contact enquiry'],
+      ['Enquiry type', topic || '—'],
       ['Full name', fullname],
+      ['Company', company || '—'],
       ['Email', email],
       ['Phone', phone || '—'],
       ['Message', message],

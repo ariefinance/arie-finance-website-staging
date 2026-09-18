@@ -1,43 +1,37 @@
 // ============================================================================
-//  ARIE Finance — Sales Tracker API   (Vercel serverless function)
+//  ARIE Finance — Sales Pipeline & Revenue Board API  (Vercel serverless)
 //  Route:  /api/salestracker
-//  Shared, authenticated datastore for the internal Sales & Client
-//  Acquisition Tracker served at /salestracker.
+//  Shared, authenticated store for the board served at /salestracker.
 // ----------------------------------------------------------------------------
-//  DATA MODEL (Upstash Redis — field/record-level, no whole-DB overwrite):
-//    st:rec:<id>      HASH   one lead record; each field is a Redis hash field
-//    st:tab:<tab>     LIST   ordered lead ids for a tab (newest first)
-//    st:seeded        STR    "1" once the initial dataset has been imported
-//    st:signkey       STR    server-generated HMAC key for session tokens
-//    st:loginfail:<ip> STR   failed-login counter (TTL), brute-force throttle
+//  The board keeps a single state object { v, savedAt, settings, data }. This
+//  API stores it in Upstash Redis behind a passcode login (HttpOnly cookie).
+//  Writes use a server-side compare-and-set on a version counter, so two
+//  people saving at once cannot silently clobber: a stale save is rejected and
+//  the client merges its own changes onto the latest and retries.
 //
-//  Concurrency: every edit is an HSET touching only the changed field(s) of a
-//  single record, so simultaneous edits by different users never clobber each
-//  other's other fields. There is no read-modify-write of a whole database.
+//  Redis keys:
+//    st:board          STR  current state blob (JSON)
+//    st:board:ver       STR  monotonic version counter
+//    st:board:savedAt   STR  ISO timestamp of last save
+//    st:board:seed      STR  original seed (leads by segment) for Reset/merge
+//    st:signkey         STR  server HMAC key for session tokens
+//    st:loginfail:<ip>  STR  failed-login throttle counter (TTL)
 // ----------------------------------------------------------------------------
-//  REQUIRED ENVIRONMENT VARIABLES (set in Vercel → Project → Settings → Env):
-//    SALESTRACKER_PASSCODE   staff access passcode (secret; NEVER in source)
-//    + Upstash Redis REST credentials, injected automatically by the Vercel
-//      Marketplace Upstash integration. This function accepts either the
-//      KV_REST_API_* names or the UPSTASH_REDIS_REST_* names:
-//        KV_REST_API_URL   / UPSTASH_REDIS_REST_URL
-//        KV_REST_API_TOKEN / UPSTASH_REDIS_REST_TOKEN
-//  No database credentials or passcodes are ever exposed to the browser.
+//  ENV (production Vercel project):
+//    SALESTRACKER_PASSCODE           staff passcode (secret; never in source)
+//    KV_REST_API_URL / KV_REST_API_TOKEN   (or UPSTASH_REDIS_REST_URL/TOKEN)
 // ----------------------------------------------------------------------------
-//  ACTIONS (JSON body; all except "login" require Authorization: Bearer <token>)
-//    POST { action:"login", passcode }                 -> { token, exp }
-//    GET  ?action=data                                 -> { tabs:{...}, order }
-//    POST { action:"update", id, fields:{k:v,...} }    -> { ok, id }
-//    POST { action:"create", tab, record:{...} }       -> { ok, record }
-//    POST { action:"seed",  data:{tab:[records]} }     -> { ok, seeded|already }
+//  Actions (JSON body or ?action=; all except login/logout need the cookie):
+//    POST {action:"login", passcode}                 -> sets cookie
+//    POST {action:"logout"}                          -> clears cookie
+//    GET  ?action=board                              -> { state, version, savedAt }
+//    POST {action:"board", state, baseVersion}       -> { version } | 409 conflict
+//    GET  ?action=seed                               -> { seed }
+//    POST {action:"board-seed", state, seed}         -> { seeded } (once only)
 // ============================================================================
 
 const crypto = require('crypto');
 
-// ---- config ---------------------------------------------------------------
-// Resolve the Upstash/KV REST credentials from the KNOWN pairs the Vercel
-// Upstash integration injects — explicitly, never by wildcard, so the tracker
-// can never bind to an unrelated datastore added to the project later.
 function resolveRedisCreds() {
   const env = process.env;
   const known = [
@@ -48,26 +42,39 @@ function resolveRedisCreds() {
   return { url: '', token: '' };
 }
 const _creds = resolveRedisCreds();
-const REST_URL   = _creds.url;
+const REST_URL = _creds.url;
 const REST_TOKEN = _creds.token;
-const PASSCODE   = process.env.SALESTRACKER_PASSCODE || '';
+const PASSCODE = process.env.SALESTRACKER_PASSCODE || '';
 
-const TOKEN_TTL_MS   = 12 * 60 * 60 * 1000;      // 12h session
-const MAX_BODY_BYTES = 2 * 1024 * 1024;          // 2MB (seed is the big one)
-const LOGIN_WINDOW_S = 900;                      // 15 min
-const LOGIN_MAX_FAIL = 12;                       // per IP per window
+const TOKEN_TTL_MS = 12 * 60 * 60 * 1000;
+const MAX_BODY_BYTES = 8 * 1024 * 1024;   // board blob can be a few hundred KB
+const LOGIN_WINDOW_S = 900;
+const LOGIN_MAX_FAIL = 12;
 
-const TABS = ['luca', 'uae', 'mauritius', 'uk', 'africa', 'existing', 'onboarding', 'filmproduction'];
-// fields a client is allowed to write. id is immutable; score is preserved.
-const EDITABLE = new Set([
-  'company', 'contact', 'email', 'phone', 'country', 'industry',
-  'priority', 'owner', 'status', 'lastContact', 'followUp',
-  'nextAction', 'comments',
-]);
-// full set persisted per record (editable + server-managed)
-const REC_FIELDS = [...EDITABLE, 'id', 'score'];
+// Strict structural validation of the canonical 1,186-record dataset.
+// Returns null when valid, or a short reason string when not.
+const SEED_SEGMENTS = ['uae', 'mauritius', 'uk', 'existing', 'africa', 'luca', 'onboarding', 'film'];
+const SEED_TOTAL = 1186;
+function validateCanonical(seed) {
+  if (!seed || typeof seed !== 'object' || Array.isArray(seed)) return 'not_object';
+  for (const k of SEED_SEGMENTS) if (!Array.isArray(seed[k])) return 'segment:' + k;
+  for (const k of Object.keys(seed)) if (!SEED_SEGMENTS.includes(k)) return 'unexpected:' + k;
+  const ids = new Set(); let total = 0;
+  for (const k of SEED_SEGMENTS) {
+    for (const r of seed[k]) {
+      if (!r || typeof r !== 'object' || Array.isArray(r)) return 'record:' + k;
+      const id = String(r.id == null ? '' : r.id).trim();
+      const co = String(r.company == null ? '' : r.company).trim();
+      if (!id) return 'noid:' + k;
+      if (!co) return 'nocompany:' + k;
+      if (ids.has(id)) return 'dupe:' + id;
+      ids.add(id); total++;
+    }
+  }
+  if (total !== SEED_TOTAL) return 'count:' + total;
+  return null;
+}
 
-// ---- Upstash REST helpers -------------------------------------------------
 async function redis(cmd) {
   const r = await fetch(REST_URL, {
     method: 'POST',
@@ -78,277 +85,151 @@ async function redis(cmd) {
   if (!r.ok || j.error) throw new Error('redis: ' + (j.error || r.status));
   return j.result;
 }
-async function pipeline(cmds) {
-  if (!cmds.length) return [];
-  const r = await fetch(REST_URL.replace(/\/$/, '') + '/pipeline', {
-    method: 'POST',
-    headers: { Authorization: `Bearer ${REST_TOKEN}`, 'Content-Type': 'application/json' },
-    body: JSON.stringify(cmds),
-  });
-  const j = await r.json().catch(() => null);
-  if (!r.ok || !Array.isArray(j)) throw new Error('redis pipeline: ' + r.status);
-  return j.map((x) => {
-    if (x && x.error) throw new Error('redis: ' + x.error);
-    return x ? x.result : null;
-  });
-}
-// HGETALL may come back as a flat [f,v,f,v] array or an object; normalise.
-function toObj(res) {
-  if (!res) return null;
-  if (Array.isArray(res)) {
-    if (!res.length) return null;
-    const o = {};
-    for (let i = 0; i < res.length; i += 2) o[res[i]] = res[i + 1];
-    return o;
-  }
-  if (typeof res === 'object') return Object.keys(res).length ? res : null;
-  return null;
-}
 
-// ---- session tokens (HMAC, server-side key — decoupled from passcode) -----
+// ---- session tokens (HMAC, server-side key) -------------------------------
 let _signKey = null;
 async function signKey() {
   if (_signKey) return _signKey;
   let k = await redis(['GET', 'st:signkey']);
-  if (!k) {
-    const fresh = crypto.randomBytes(32).toString('hex');
-    // SET NX: only the first caller wins; then read the authoritative value.
-    await redis(['SET', 'st:signkey', fresh, 'NX']);
-    k = await redis(['GET', 'st:signkey']);
-  }
-  _signKey = k;
-  return k;
+  if (!k) { const fresh = crypto.randomBytes(32).toString('hex'); await redis(['SET', 'st:signkey', fresh, 'NX']); k = await redis(['GET', 'st:signkey']); }
+  _signKey = k; return k;
 }
 function b64url(s) { return Buffer.from(s).toString('base64url'); }
 function mintToken(key) {
   const payload = b64url(JSON.stringify({ exp: Date.now() + TOKEN_TTL_MS }));
-  const sig = crypto.createHmac('sha256', key).update(payload).digest('base64url');
-  return payload + '.' + sig;
+  return payload + '.' + crypto.createHmac('sha256', key).update(payload).digest('base64url');
 }
 function verifyToken(token, key) {
   if (!token || typeof token !== 'string' || token.indexOf('.') < 0) return false;
-  const [payload, sig] = token.split('.');
-  const expected = crypto.createHmac('sha256', key).update(payload).digest('base64url');
-  const a = Buffer.from(sig || ''); const b = Buffer.from(expected);
+  const [p, sig] = token.split('.');
+  const exp = crypto.createHmac('sha256', key).update(p).digest('base64url');
+  const a = Buffer.from(sig || ''), b = Buffer.from(exp);
   if (a.length !== b.length || !crypto.timingSafeEqual(a, b)) return false;
-  let data; try { data = JSON.parse(Buffer.from(payload, 'base64url').toString()); } catch { return false; }
+  let data; try { data = JSON.parse(Buffer.from(p, 'base64url').toString()); } catch { return false; }
   return data && typeof data.exp === 'number' && Date.now() < data.exp;
 }
 function constEq(a, b) {
-  const x = Buffer.from(String(a)); const y = Buffer.from(String(b));
-  if (x.length !== y.length) { // still compare to avoid trivial length timing leak
-    crypto.timingSafeEqual(x, x);
-    return false;
-  }
+  const x = Buffer.from(String(a)), y = Buffer.from(String(b));
+  if (x.length !== y.length) { crypto.timingSafeEqual(x, x); return false; }
   return crypto.timingSafeEqual(x, y);
 }
 
-// ---- request parsing ------------------------------------------------------
-function readBody(req) {
-  if (req.body && typeof req.body === 'object') {
-    if (Buffer.byteLength(JSON.stringify(req.body)) > MAX_BODY_BYTES) return { tooLarge: true };
-    return { body: req.body };
-  }
-  if (typeof req.body === 'string') {
-    if (Buffer.byteLength(req.body) > MAX_BODY_BYTES) return { tooLarge: true };
-    try { return { body: JSON.parse(req.body) }; } catch { return { body: null }; }
-  }
-  return { body: {} };
-}
-function clientIp(req) {
-  const xff = req.headers['x-forwarded-for'];
-  if (xff) return String(xff).split(',')[0].trim();
-  return req.socket && req.socket.remoteAddress ? req.socket.remoteAddress : 'unknown';
-}
-// ---- session cookie (Secure, HttpOnly, SameSite=Strict) -------------------
+// ---- cookies --------------------------------------------------------------
 const COOKIE = 'arie_st';
-function cookieSecure(req) {
-  const p = (req.headers['x-forwarded-proto'] || '').split(',')[0].trim();
-  return p ? p === 'https' : true;   // default Secure unless proto explicitly says http
-}
+function cookieSecure(req) { const p = (req.headers['x-forwarded-proto'] || '').split(',')[0].trim(); return p ? p === 'https' : true; }
 function setCookie(res, req, token, maxAgeS) {
-  const parts = [
-    COOKIE + '=' + token,
-    'Path=/api/salestracker',
-    'Max-Age=' + maxAgeS,
-    'HttpOnly',
-    'SameSite=Strict',
-  ];
+  const parts = [COOKIE + '=' + token, 'Path=/api/salestracker', 'Max-Age=' + maxAgeS, 'HttpOnly', 'SameSite=Strict'];
   if (cookieSecure(req)) parts.push('Secure');
   res.setHeader('Set-Cookie', parts.join('; '));
 }
-function sessionToken(req) {
-  const c = req.headers.cookie || '';
-  const m = c.match(/(?:^|;\s*)arie_st=([^;]+)/);
-  return m ? decodeURIComponent(m[1]) : '';
-}
+function sessionToken(req) { const c = req.headers.cookie || ''; const m = c.match(/(?:^|;\s*)arie_st=([^;]+)/); return m ? decodeURIComponent(m[1]) : ''; }
 
-// sanitise a record coming from the client into the known fields (strings).
-function cleanRecord(rec) {
-  const out = {};
-  for (const k of EDITABLE) {
-    if (rec[k] === undefined || rec[k] === null) continue;
-    out[k] = String(rec[k]).slice(0, 4000);
-  }
-  return out;
+function readBody(req) {
+  if (req.body && typeof req.body === 'object') { if (Buffer.byteLength(JSON.stringify(req.body)) > MAX_BODY_BYTES) return { tooLarge: true }; return { body: req.body }; }
+  if (typeof req.body === 'string') { if (Buffer.byteLength(req.body) > MAX_BODY_BYTES) return { tooLarge: true }; try { return { body: JSON.parse(req.body) }; } catch { return { body: null }; } }
+  return { body: {} };
 }
+function clientIp(req) { const x = req.headers['x-forwarded-for']; if (x) return String(x).split(',')[0].trim(); return (req.socket && req.socket.remoteAddress) || 'unknown'; }
 
-// ---- handler --------------------------------------------------------------
+// Lua: compare-and-set the board blob against a version. Returns {1,newVer} on
+// success or {0,currentVer} when the caller's baseVersion is stale.
+const CAS_LUA =
+  "local v=redis.call('GET',KEYS[2]); v=(v and tonumber(v)) or 0;" +
+  "if v~=tonumber(ARGV[2]) then return {0,v} end;" +
+  "redis.call('SET',KEYS[1],ARGV[1]); local nv=v+1;" +
+  "redis.call('SET',KEYS[2],tostring(nv)); redis.call('SET',KEYS[3],ARGV[3]);" +
+  "return {1,nv}";
+// Lua: seed once — only if the board does not exist yet.
+const SEED_LUA =
+  "if redis.call('EXISTS',KEYS[1])==1 then return 0 end;" +
+  "redis.call('SET',KEYS[1],ARGV[1]); redis.call('SET',KEYS[2],ARGV[2]);" +
+  "redis.call('SET',KEYS[3],'1'); redis.call('SET',KEYS[4],ARGV[3]); return 1";
+
 module.exports = async function handler(req, res) {
   res.setHeader('Cache-Control', 'private, no-store, max-age=0');
   res.setHeader('X-Content-Type-Options', 'nosniff');
   res.setHeader('Referrer-Policy', 'no-referrer');
 
-  if (!REST_URL || !REST_TOKEN) {
-    return res.status(503).json({ ok: false, error: 'storage_unconfigured' });
-  }
-  if (!PASSCODE) {
-    return res.status(503).json({ ok: false, error: 'passcode_unconfigured' });
-  }
+  if (!REST_URL || !REST_TOKEN) return res.status(503).json({ ok: false, error: 'storage_unconfigured' });
+  if (!PASSCODE) return res.status(503).json({ ok: false, error: 'passcode_unconfigured' });
 
   const method = req.method;
-  const action = (req.query && req.query.action) ||
-                 (method !== 'GET' ? (readBody(req).body || {}).action : '') || '';
+  const action = (req.query && req.query.action) || (method !== 'GET' ? (readBody(req).body || {}).action : '') || '';
 
   try {
-    // ---- login: exchange passcode for a session token --------------------
     if (action === 'login') {
       if (method !== 'POST') { res.setHeader('Allow', 'POST'); return res.status(405).json({ ok: false, error: 'method' }); }
       const ip = clientIp(req);
       const failKey = 'st:loginfail:' + crypto.createHash('sha256').update(ip).digest('hex').slice(0, 24);
       const fails = parseInt(await redis(['GET', failKey]) || '0', 10);
       if (fails >= LOGIN_MAX_FAIL) return res.status(429).json({ ok: false, error: 'too_many_attempts' });
-
       const { body, tooLarge } = readBody(req);
       if (tooLarge) return res.status(413).json({ ok: false, error: 'too_large' });
       const supplied = body && typeof body.passcode === 'string' ? body.passcode : '';
-
       if (!supplied || !constEq(supplied, PASSCODE)) {
-        const n = await redis(['INCR', failKey]);
-        if (n === 1) await redis(['EXPIRE', failKey, LOGIN_WINDOW_S]);
+        const n = await redis(['INCR', failKey]); if (n === 1) await redis(['EXPIRE', failKey, LOGIN_WINDOW_S]);
         return res.status(401).json({ ok: false, error: 'invalid_passcode' });
       }
       await redis(['DEL', failKey]);
-      const token = mintToken(await signKey());
-      setCookie(res, req, token, Math.floor(TOKEN_TTL_MS / 1000));  // HttpOnly session cookie
+      setCookie(res, req, mintToken(await signKey()), Math.floor(TOKEN_TTL_MS / 1000));
       return res.status(200).json({ ok: true, exp: Date.now() + TOKEN_TTL_MS });
     }
 
-    // ---- logout: clear the session cookie (idempotent) -------------------
-    if (action === 'logout') {
-      setCookie(res, req, '', 0);
-      return res.status(200).json({ ok: true });
+    if (action === 'logout') { setCookie(res, req, '', 0); return res.status(200).json({ ok: true }); }
+
+    if (!verifyToken(sessionToken(req), await signKey())) return res.status(401).json({ ok: false, error: 'unauthenticated' });
+
+    // ---- read the shared board state ------------------------------------
+    if (action === 'board' && method === 'GET') {
+      const [state, ver, savedAt] = await Promise.all([
+        redis(['GET', 'st:board']), redis(['GET', 'st:board:ver']), redis(['GET', 'st:board:savedAt']),
+      ]);
+      return res.status(200).json({ ok: true, state: state ? JSON.parse(state) : null, version: ver ? parseInt(ver, 10) : 0, savedAt: savedAt || null });
     }
 
-    // ---- everything else requires a valid session cookie -----------------
-    if (!verifyToken(sessionToken(req), await signKey())) {
-      return res.status(401).json({ ok: false, error: 'unauthenticated' });
+    // ---- read the original seed (for Reset / merge) ---------------------
+    if (action === 'seed' && method === 'GET') {
+      const seed = await redis(['GET', 'st:board:seed']);
+      return res.status(200).json({ ok: true, seed: seed ? JSON.parse(seed) : null });
     }
 
-    // ---- read the whole dataset -----------------------------------------
-    if (action === 'data') {
-      // 1) ordered ids per tab
-      const idLists = await pipeline(TABS.map((t) => ['LRANGE', 'st:tab:' + t, 0, -1]));
-      const flatIds = [];
-      idLists.forEach((ids) => (ids || []).forEach((id) => flatIds.push(id)));
-      // 2) each record in one pipeline
-      const recs = flatIds.length
-        ? await pipeline(flatIds.map((id) => ['HGETALL', 'st:rec:' + id]))
-        : [];
-      const byId = {};
-      flatIds.forEach((id, i) => { const o = toObj(recs[i]); if (o) byId[id] = o; });
-      const tabs = {};
-      TABS.forEach((t, ti) => {
-        tabs[t] = (idLists[ti] || []).map((id) => byId[id]).filter(Boolean);
-      });
-      return res.status(200).json({ ok: true, tabs, order: TABS });
+    // ---- lightweight version poll (avoids fetching the whole board) -----
+    if (action === 'ver' && method === 'GET') {
+      const ver = await redis(['GET', 'st:board:ver']);
+      return res.status(200).json({ ok: true, version: ver ? parseInt(ver, 10) : 0 });
     }
 
-    // ---- update one or more fields of a single record -------------------
-    if (action === 'update') {
-      if (method !== 'POST') { res.setHeader('Allow', 'POST'); return res.status(405).json({ ok: false, error: 'method' }); }
+    // ---- save the shared board state (compare-and-set) ------------------
+    if (action === 'board' && method === 'POST') {
       const { body, tooLarge } = readBody(req);
       if (tooLarge) return res.status(413).json({ ok: false, error: 'too_large' });
-      const id = body && body.id != null ? String(body.id) : '';
-      const fields = body && body.fields && typeof body.fields === 'object' ? body.fields : null;
-      if (!id || !fields) return res.status(400).json({ ok: false, error: 'bad_request' });
-
-      const exists = await redis(['EXISTS', 'st:rec:' + id]);
-      if (!exists) return res.status(404).json({ ok: false, error: 'not_found' });
-
-      const pairs = [];
-      for (const k of Object.keys(fields)) {
-        if (!EDITABLE.has(k)) continue;
-        pairs.push(k, String(fields[k] ?? '').slice(0, 4000));
-      }
-      if (!pairs.length) return res.status(400).json({ ok: false, error: 'no_valid_fields' });
-      await redis(['HSET', 'st:rec:' + id, ...pairs]);  // atomic, only these fields
-      return res.status(200).json({ ok: true, id, saved: pairs.length / 2 });
+      if (!body || typeof body.state !== 'object' || body.state === null) return res.status(400).json({ ok: false, error: 'bad_state' });
+      const baseVersion = Number.isFinite(body.baseVersion) ? body.baseVersion : parseInt(body.baseVersion, 10);
+      if (!Number.isFinite(baseVersion)) return res.status(400).json({ ok: false, error: 'bad_base_version' });
+      const savedAt = new Date().toISOString();
+      const out = await redis(['EVAL', CAS_LUA, '3', 'st:board', 'st:board:ver', 'st:board:savedAt',
+        JSON.stringify(body.state), String(baseVersion), savedAt]);
+      // out = [ok, ver]
+      if (Array.isArray(out) && Number(out[0]) === 1) return res.status(200).json({ ok: true, version: Number(out[1]), savedAt });
+      // conflict: hand back the current state so the client can merge + retry
+      const cur = await redis(['GET', 'st:board']);
+      return res.status(409).json({ ok: false, error: 'conflict', state: cur ? JSON.parse(cur) : null, version: Array.isArray(out) ? Number(out[1]) : 0 });
     }
 
-    // ---- create a new lead in a tab -------------------------------------
-    if (action === 'create') {
-      if (method !== 'POST') { res.setHeader('Allow', 'POST'); return res.status(405).json({ ok: false, error: 'method' }); }
+    // ---- one-time seed of the initial board -----------------------------
+    if (action === 'board-seed' && method === 'POST') {
       const { body, tooLarge } = readBody(req);
       if (tooLarge) return res.status(413).json({ ok: false, error: 'too_large' });
-      const tab = body && body.tab ? String(body.tab) : '';
-      if (!TABS.includes(tab)) return res.status(400).json({ ok: false, error: 'bad_tab' });
-      const rec = cleanRecord((body && body.record) || {});
-      const id = 'L-' + crypto.randomUUID();      // collision-free id (was Date.now())
-      rec.id = id;
-      if (rec.score === undefined) rec.score = '';
-      const pairs = [];
-      Object.keys(rec).forEach((k) => pairs.push(k, String(rec[k] ?? '')));
-      // record first, then index — a half-written index entry would just skip a
-      // missing record on read, never corrupt one.
-      await redis(['HSET', 'st:rec:' + id, ...pairs]);
-      await redis(['LPUSH', 'st:tab:' + tab, id]);
-      return res.status(200).json({ ok: true, record: rec });
-    }
-
-    // ---- one-time seed of the initial dataset ---------------------------
-    if (action === 'seed') {
-      if (method !== 'POST') { res.setHeader('Allow', 'POST'); return res.status(405).json({ ok: false, error: 'method' }); }
-      const already = await redis(['GET', 'st:seeded']);
-      if (already) return res.status(200).json({ ok: true, seeded: false, already: true });
-
-      const { body, tooLarge } = readBody(req);
-      if (tooLarge) return res.status(413).json({ ok: false, error: 'too_large' });
-      const data = body && body.data && typeof body.data === 'object' && !Array.isArray(body.data) ? body.data : null;
-      if (!data) return res.status(400).json({ ok: false, error: 'no_data' });
-
-      // VALIDATE the entire payload before writing a single key. Any unknown tab
-      // or malformed record aborts with nothing changed — no half-seeded state.
-      for (const key of Object.keys(data)) {
-        if (!TABS.includes(key)) return res.status(400).json({ ok: false, error: 'unknown_tab:' + key });
-        if (!Array.isArray(data[key])) return res.status(400).json({ ok: false, error: 'bad_tab_shape:' + key });
-        for (const r of data[key]) {
-          if (!r || typeof r !== 'object' || Array.isArray(r)) return res.status(400).json({ ok: false, error: 'bad_record_in:' + key });
-        }
-      }
-
-      // Build every write up front (DEL clears any partial prior attempt so a
-      // retry can never double-append). The seeded flag is NOT in this batch.
-      const cmds = [];
-      let count = 0;
-      TABS.forEach((t) => cmds.push(['DEL', 'st:tab:' + t]));
-      for (const tab of TABS) {
-        const list = Array.isArray(data[tab]) ? data[tab] : [];
-        for (const raw of list) {              // preserve source order via RPUSH
-          const rec = cleanRecord(raw);
-          rec.id = raw.id != null ? String(raw.id) : 'L-' + crypto.randomUUID();
-          rec.score = raw.score != null ? String(raw.score) : '';
-          const pairs = [];
-          Object.keys(rec).forEach((k) => pairs.push(k, String(rec[k] ?? '')));
-          cmds.push(['HSET', 'st:rec:' + rec.id, ...pairs]);
-          cmds.push(['RPUSH', 'st:tab:' + tab, rec.id]);
-          count++;
-        }
-      }
-      // Write all data first; only if every chunk succeeds do we mark it seeded.
-      for (let i = 0; i < cmds.length; i += 200) await pipeline(cmds.slice(i, i + 200));
-      await redis(['SET', 'st:seeded', '1', 'NX']);
-      return res.status(200).json({ ok: true, seeded: true, count });
+      if (!body || typeof body.state !== 'object' || !body.state || typeof body.seed !== 'object' || !body.seed) return res.status(400).json({ ok: false, error: 'bad_seed' });
+      // Mirror the client's strict validation of the canonical dataset, so a
+      // malformed or wrong-size import can never initialise the shared store.
+      const vErr = validateCanonical(body.seed) || validateCanonical((body.state && body.state.data) || null);
+      if (vErr) return res.status(400).json({ ok: false, error: 'invalid_seed', detail: vErr });
+      const savedAt = new Date().toISOString();
+      const out = await redis(['EVAL', SEED_LUA, '4', 'st:board', 'st:board:seed', 'st:board:ver', 'st:board:savedAt',
+        JSON.stringify(body.state), JSON.stringify(body.seed), savedAt]);
+      if (Number(out) === 1) return res.status(200).json({ ok: true, seeded: true, version: 1 });
+      return res.status(200).json({ ok: true, seeded: false, already: true });
     }
 
     return res.status(400).json({ ok: false, error: 'unknown_action' });
@@ -357,4 +238,4 @@ module.exports = async function handler(req, res) {
   }
 };
 
-module.exports.__test = { verifyToken, mintToken, toObj, cleanRecord, constEq, resolveRedisCreds, TABS, cookieSecure, sessionToken };
+module.exports.__test = { verifyToken, mintToken, constEq, resolveRedisCreds, cookieSecure, sessionToken, validateCanonical };

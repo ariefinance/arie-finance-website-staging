@@ -1384,8 +1384,13 @@ function syncPush(){
   syncing=true; syncStatus("saving");
   var netTry=0, confTry=0;
   function attempt(){
-    return api({method:"POST", body:{action:"board", state:boardState(), baseVersion:baseVer}}).then(function(j){
-      baseVer=j.version; snap(); syncStatus("saved");
+    var payload  = boardState();
+    var baseline = JSON.parse(JSON.stringify(payload));   // exactly what we transmit (captured before any await)
+    return api({method:"POST", body:{action:"board", state:payload, baseVersion:baseVer}}).then(function(j){
+      baseVer=j.version;
+      baseData=baseline.data; baseSet=baseline.settings;  // baseline = transmitted snapshot, NOT live DATA
+      if(hasLocalDiff()){ syncStatus("saving"); scheduleSync(); }  // a mid-flight edit is still pending -> keep going, don't claim "Saved"
+      else { syncStatus("saved"); }
     }).catch(function(err){
       if(err.message==="conflict" && err.conflict && confTry<8){
         confTry++;
@@ -1504,9 +1509,9 @@ function boot(){
   return api({query:"?action=board"}).then(function(j){
     if(!j.state){ importShow(true); return; }
     importShow(false);
-    return api({query:"?action=seed"}).then(function(s){ SEED=(s&&s.seed)||{}; }).then(function(){
-      DATA=normData(j.state.data); SET=mergedSettings(j.state.settings); baseVer=j.version; snap(); startApp();
-    });
+    // SEED is only read by the one-time import (which sets it from the uploaded file),
+    // so there is no need to fetch the stored seed on every boot.
+    DATA=normData(j.state.data); SET=mergedSettings(j.state.settings); baseVer=j.version; snap(); startApp();
   });
 }
 boot().then(gateHide).catch(function(){ gateShow(""); });

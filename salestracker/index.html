@@ -1,0 +1,290 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="robots" content="noindex,nofollow"><title>ARIE Finance Sales Tracker</title><style>
+:root{--n:#0b1b50;--g:#b7832b;--bg:#f5f2ec;--ink:#18213d;--mut:#737987;--line:#e3dccf}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--ink);font:14px Arial,sans-serif}
+header{position:sticky;top:0;z-index:10;background:#fff}.top{display:flex;align-items:center;gap:20px;padding:12px 24px;border-bottom:1px solid var(--line)}
+.logo{width:145px}.ttl{border-left:1px solid #ddd;padding-left:20px}.ttl b{font:700 21px Georgia;color:var(--n)}.ttl small{display:block;color:var(--g);letter-spacing:.1em;margin-top:4px}
+.actions{margin-left:auto;display:flex;align-items:center;gap:10px}.btn{padding:9px 12px;border:1px solid #d5cec1;border-radius:7px;background:#fff;color:var(--n);font-weight:700;cursor:pointer}.gold{background:var(--g);color:#fff;border-color:var(--g)}.btn:disabled{opacity:.5;cursor:default}
+nav{display:flex;background:var(--n);padding:0 20px;overflow:auto}.tab{padding:13px 16px;color:#dce2f7;border-bottom:3px solid transparent;font-weight:700;cursor:pointer;white-space:nowrap}.tab.active{color:#fff;border-color:var(--g);background:#ffffff0d}
+main{max-width:1750px;margin:auto;padding:20px 24px 50px}h2{font:700 28px Georgia;color:var(--n);margin:0}.sub{color:var(--mut);margin:5px 0 15px}
+.kpis{display:grid;grid-template-columns:repeat(5,1fr);gap:10px;margin-bottom:15px}.kpi{background:#fff;border:1px solid var(--line);padding:13px;border-radius:10px}.kpi b{font:700 22px Georgia;color:var(--n)}.kpi span{display:block;color:var(--mut);font-size:10px;text-transform:uppercase;margin-top:3px}
+.tools{display:flex;gap:8px;flex-wrap:wrap;background:#fff;border:1px solid var(--line);padding:10px;border-radius:10px 10px 0 0}input,select,textarea{border:1px solid #d7d0c5;border-radius:6px;padding:8px;font:inherit}.tools input{flex:1;min-width:250px}
+.wrap{background:#fff;border:1px solid var(--line);border-top:0;overflow:auto;max-height:65vh}table{border-collapse:collapse;width:100%;min-width:1550px}th{position:sticky;top:0;background:#f0e9dc;color:var(--n);padding:9px;font-size:10px;text-transform:uppercase;text-align:left}td{padding:8px 9px;border-bottom:1px solid #eee8dd;font-size:12px;vertical-align:top;max-width:250px}.co{font-weight:800;color:var(--n)}.badge{display:inline-block;padding:4px 7px;border-radius:99px;background:#e9edf7;color:var(--n);font-size:10px;font-weight:800}.over{background:#f9dddd;color:#a42d2d}.won{background:#dff2e8;color:#176647}
+.inline-select,.inline-date,.inline-text{width:100%;min-width:105px;padding:6px;border:1px solid #d7d0c5;border-radius:5px;background:#fff;font-size:11px}
+.inline-text{min-width:180px}.comments-box{min-width:220px}td.inline-cell{padding:5px}
+.modal{position:fixed;inset:0;background:#07113c99;display:none;align-items:center;justify-content:center;z-index:30}.modal.open{display:flex}.panel{background:#fff;width:min(850px,95vw);max-height:92vh;overflow:auto;border-radius:12px}.panel h3{margin:0;padding:16px 20px;background:var(--n);color:#fff;font:700 20px Georgia}.form{padding:18px 20px;display:grid;grid-template-columns:1fr 1fr;gap:11px}.field label{display:block;font-size:10px;font-weight:800;color:#777;text-transform:uppercase;margin-bottom:4px}.field input,.field select,.field textarea{width:100%}.full{grid-column:1/-1}textarea{min-height:90px}.foot{text-align:right;padding:0 20px 18px}
+/* --- save-state indicator (light polish, non-intrusive) --- */
+.saver{display:inline-flex;align-items:center;gap:7px;font-size:12px;font-weight:700;padding:7px 12px;border-radius:99px;border:1px solid transparent;min-height:34px;white-space:nowrap;transition:opacity .25s}
+.saver .dot{width:8px;height:8px;border-radius:50%;background:currentColor;flex:0 0 auto}
+.saver.idle{opacity:0;pointer-events:none}
+.saver.saving{color:#6b5a2a;background:#fbf3df;border-color:#e9d9ab}
+.saver.saved{color:#176647;background:#dff2e8;border-color:#b7e0c9}
+.saver.failed{color:#a42d2d;background:#f9dddd;border-color:#eab6b6}
+/* --- login overlay: the only thing shown before authentication --- */
+.gate{position:fixed;inset:0;z-index:100;background:linear-gradient(160deg,#0b1b50,#07113c);display:flex;align-items:center;justify-content:center;padding:20px}
+.gate.hidden{display:none}
+.gate-card{background:#fff;width:min(420px,100%);border-radius:16px;padding:34px 32px;box-shadow:0 30px 80px -30px rgba(0,0,0,.6);text-align:center}
+.gate-card img{width:160px;margin-bottom:18px}
+.gate-card h1{font:700 22px Georgia;color:var(--n);margin:0 0 6px}
+.gate-card p{color:var(--mut);font-size:13px;margin:0 0 22px}
+.gate-card label{display:block;text-align:left;font-size:10px;font-weight:800;color:#777;text-transform:uppercase;letter-spacing:.08em;margin-bottom:6px}
+.gate-card input{width:100%;padding:12px 13px;font-size:15px;border:1px solid #d7d0c5;border-radius:9px}
+.gate-card input:focus{outline:none;border-color:var(--n);box-shadow:0 0 0 3px rgba(11,27,80,.14)}
+.gate-card button{width:100%;margin-top:16px;padding:13px;border:0;border-radius:9px;background:var(--g);color:#fff;font-weight:800;font-size:15px;cursor:pointer}
+.gate-card button:disabled{opacity:.6;cursor:default}
+.gate-err{color:#a42d2d;font-size:12.5px;font-weight:700;margin-top:14px;min-height:16px}
+.gate-foot{margin-top:20px;font-size:11px;color:#9aa0ad}
+.import-bar{display:flex;align-items:center;justify-content:space-between;gap:14px;flex-wrap:wrap;background:#eef2fb;border:1px solid #cdd8f0;border-radius:10px;padding:12px 15px;margin-top:10px;font-size:12.5px;color:#2b3560}
+.import-actions{display:flex;align-items:center;gap:12px}
+.import-status{font-size:12px;color:var(--mut);font-weight:700}
+@media(max-width:900px){.ttl{display:none}.kpis{grid-template-columns:1fr 1fr}.form{grid-template-columns:1fr}.full{grid-column:auto}main{padding:15px 10px}.top{flex-wrap:wrap;gap:10px 12px;padding:10px 14px}.actions{margin-left:auto;flex-wrap:wrap;justify-content:flex-end;gap:8px}.btn{padding:8px 10px}}
+@media(max-width:560px){.actions{width:100%;margin-left:0}.saver{order:-1;margin-right:auto}.gate-card{padding:26px 20px}}
+</style></head>
+<body>
+<!-- ============ LOGIN GATE (no lead data present until authenticated) ============ -->
+<div class="gate" id="gate">
+  <div class="gate-card">
+    <img src="data:image/png;base64,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" alt="ARIE Finance">
+    <h1>Sales Tracker</h1>
+    <p>Restricted — ARIE Finance staff access only.</p>
+    <form id="gateForm" autocomplete="off">
+      <label for="gatePass">Access passcode</label>
+      <input id="gatePass" type="password" inputmode="text" autocomplete="off" autocapitalize="off" spellcheck="false" placeholder="Enter passcode">
+      <button type="submit" id="gateBtn">Sign in</button>
+      <div class="gate-err" id="gateErr"></div>
+    </form>
+    <div class="gate-foot">Sessions expire automatically. Do not share this passcode.</div>
+  </div>
+</div>
+
+<!-- ============ APP (populated only after authentication) ============ -->
+<header><div class="top"><img class="logo" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAQ4AAABfCAIAAACWdr4UAAARlklEQVR4nO3dd1gURxsA8DmOQ6ki2EVAiWJiTb6YxB57IWJsIEECEVQUEUFFowa7iKIUQcGCBUERRCCKDQVpgsSCigiCUqVKuaNcv++Py3M59w4Y7hYEfH/P/QHvzs4MPr7szu7MQKmvLUEAgJYofO4OANA5QKoAgAVSBQAskCoAYIFUAQALpAoAWCBVAMACqQIAFkgVALBAqgCABVIFACyQKgBggVQBAAukCgBYIFUAwAKpAgAWSBUAsECqAIAFUgUALJAqAGCBVAEAC6QKAFggVQDAAqkCABZIFQCwQKoAgAVSBQAskCoAYIFUAQALpAoAWCBVAMACqQIAFkgVALAofu4OfCnq6xsiom4SgtOmThowoD/O6UnJqXn5BZhtqSgra2lpjh07uoeGRjPFiotL4uITxSM/T5k0cOAn/SmvqLwXE4vZriR9Pd2JE36U+fQO5UtJlVeZeQVFlaNH6OsM6PVZOnD2XOCRo96E4AKjuSd8juKcfjkkLDIqulUtUiiUUaNGWFqYLV1srKAg5fbhTVb2tu27xSPnz54gpEpeXgGhTKssNJ7fZVKl69+AvXydt3DFvum/7rBa7zFupqOXf1T796GmptbvVIBk/O+bt19lZLZRowKB4MWLV5u27PjNwqaxsbGNWvlydOVUqa6p27r73JylLilpWRREoSAKnyc4eOzqnftP27knJ/3PMhh1Ug9JXmpIl5ScunPXgbZupcvrmjdgfD4/8GrcIc+wqpo6hBCifPIb4cS5W3NmfNdunSkrrwg4H9TU0Qex8Y/Tnv4wrnX9oVKpA5sY5JSWlbHZHELwWnjUZsf1/fv3a1UrUnXr1q17t26YhVWUVeRvsYPogqnyz7OcrXsvvMoUDoIpkgVS/snOKyjT1+3bPv057uvPZDLFIyoqyg0N/90RHXb3Cgu50Ko6+/btnRR/p6mjxcUljpu3P0p5LIrweLzYhwm/LV/WqlakcnRYZ7fWRv56Op0udQNWVlGzfuupX37bn/GmkNKs4GsJ7dOlgsKi4Muh4pEJ439wdFgnHkl9/E/cw0REnoED+x86sIsQLCkpI7GJL1AXSRU2m3vy3J3xc/8Mi0pBSKHFT2jkIz6f3w4dO+bhy+FwxSObHO0tzJf37KkpHnQ74ikQCEhsl6ZEI0TYbDaJ9X+BusINWGziKxfXyznvSxFCFIqUOy5JpeU1cYkZ06eMatOOZb/NvR55QzwyZfJE4bBktY2V2xFPUfxVRmb0rXtG82eT0q5AIDh/MZgQHDRIh5TKr0feePkqA6fkgAH9XXY4k9JoR9C5U6WgqGK329Vb958hhKQOS5px5XpSW6fKkaPehGvXJkc74ReWFmZ+pwJqa+nihefOmUGlUnFq/lhZZbbCWuohLpeXk/uusvKjeJBCoUz46YfW9b4JWVlvs7Le4pQ0NBxKSosdRGdNlUYm2/t0tN+5u0wWB+FdSQhuP3heVVOnpalGet+E0l+8un0nRjzy89RJ3307Rvi1urraKuvf3Y/5iI7mvnt/7frfJkt/xamcxWYnJqXgd8bcbNmQIfr45YGkTjlWiY55OvkXFy//Wyw2j0JRkO3D5Qkibj5uuTFZid9fCW12shf/1srSXENdXTxyzNOHxSJ/RDFv7iyXnV3nRuhz6WRXlezckp0HrySmZiGEWnvHJSn4WtJK8+ny90pSSmpaQuIj8cjMGT+PGT1SPNJDQ8PK0tzbx08UKS4uuXwlzMryN7K6oac3aIuT/UJjI7IqFNY5SGcgTslBOuSMjjqITpMqtfQGD7/ogOBYHo+POXZvUebbD68yC0d+PYiU2sS5unkQ23qTNX8B8bWG+NsVIS8fP5Nlv6qotPDmTk1N1cJ8OSEYEhpeVVUtHlltY0VuniCEzEyXfpnvVTpBqggEgquRKa6ekRUfGQghcm8ag8OTD+4wJbFChFDM/binz9IJweLikuLikhbPraz8GHA+aP26Vc0X09BQ377NiRCcPWuaiZmV+LPpXXtcDYYM7jITFj+vjj5WSc/IN15x1MklqKKqDlEopH8ibz1hSUwDkQefzz/sLte0Lj//gJraWhlO/P5/37ru/+TNI5fLXbveKS8Pd/Y+aEbHvapUVdcd9IwMiUgVCAQUuYclTamlN96+/2LhvP+RVeHfN25lvsmSr0t0P/+Abc6OMpxrarL4dWZWwPlLokh1dY3NGvvw0EsaGurNnIjvfV4+YRjWDFVVFdFDv86uI6YKl8sLDE064htNZzQiRJHtWTC+q5GPyUoVLpfr7uFDCLq77Wt+/Rabzba1cxKfJxZwPsj6D4vevWVZWuOy0zn7bY74o+Ss7BwHp21n/L0xX9o0L+RqeMjVcMzChoZDY25HyN9oR9DhUuVRWs5fh65l5ZQghNruYiIuISW7uKR6YP+e8lcVEnqdcLczccKPpiaLWzzxd4vlp06fF33b2Njo5eO3f89OGfpApVL9TngYGZvk5xeKgjH34w4d9tzx5yYZKgRCHWisUlxSbbf1oskq36zc0rYYljT1ESB07Uaa/P1nslhex/0IQQd7W5xz165eqaysLB65fCWsqOiDbD3poaFx7oyvuvonb1f9TgWEX/9btgoB6iCpwuZwvc/ETF98OOpOOs5kR9I/V66nyT9b8WLglZKSUvHIuO+/HY83naRXL21LC7NP/k3YnGOexHs5fEO/MjjueZiwTth5m8uz5y9krvMLR6mvbfkJZpuKiX+9xz0yv/Bjy0XbUsjpteO/N5CnhrLyCsK6lB49NDR79MA8nclklpVXiEeoClQdnQHCrysrP9Y3NIgOKVIVCYvgpSotLWN9OqFYRVlZNARqbGwsr6gUP9qndy/CxY3JYpWVlWP+CJKUaDRS1pN1BJ8zVfIKK13cIuKS5XpeRJZF87/12k/aa3LQ9XyeYX19A8vn7IPTgQkcLo/SMW4Cbz94zahjqqt1/9wdAR1Ue6eKQCCIupN+wDO6rIKOEGrrB8H4mCxu1J108yXwYhtI166pkpH1YY/7jdSn7xFC8k92JF1o1BNIFdCUdkoVOqPxsO/dy9fTSJzsSLrnGUXZuWXDDGTfnoJOZzSzB2T37t2HDTVACOXlFdAZDITQsKEG3bt3RwiVV1SWlpYhhNRUVSUXljCZzOy3uQghTc0euhKLGblc7uvMf8d7BkMGq6oSp1qWlpYJh+8aGur6erqEo/X1Dbnv3iOEtLW0JB8V0OmMl69e5+UX1NbWKisr9+vb55tvhuvp/jfBtKCwqKamuWk4ww2HKUmsXu6M2jxV+Hz+lYgnR3zvVdcKH+CQMzLp2UNlkdHYr/R7v8wsDo9+zmJxWz4HQ+jfT3dsnCfz6Wn/PLWyXtfUUdGr6117XR/ExiOE7t26Pnz4MIRQaFjEocMeCCEFBQUf7yMLjOaKn5iXV2BkbIIQWmg838frCKHa8Igbm7bsEH69yvp3l51bCQXOXQg64XcWIUSjKZ7xPz592hTxoxmv3ywxsUAIWZibHtzvIopnZed4ePnevnOfx+MRKhw8WG+j/drFixYghA67ezW/7WVKYgzOw7qOr22H1M9eFv5i4bfdNaqa3kjWG0MNdWUn25kJUZtcnOb/tnic645fwwNWa/VUJaXy8Oh0Dpf4P6M98fl8ewfn6Ft3Mcuz2RwPT1/RtxcDrwivTlJxONxVthsexre8O8y9mFijBctuRt8V5kmf3r1GfDPccNhXNJoiQuj9+/wHcfGYPewy2uqqUl7JcPO5F37zOSJvfoqaarc/lv9kYz5BQ/2TZ/8jDAcEeFiY2Z5jsuSdI1xV3RCXlD1r6tdy1mP9h8VGh7WEIFUBawoWj8db77DlpKLinFktLzsLvhxaVPwBIWQwZHDuu/csNtvD64Sb656myrPZHJs1DgGnfSZPGt9UmaKiD3YbtghfyJibLVtray264+JwOK8zs66GRbBYLMJZvsfdp0yeIFkbYaVn50X+VYXN4Z0OSp6xzCc8+gWiKJDyUVHpbms5JT7S0cl2BiFPhMaO1Dl+0ESBSpW/rZDIZ6T/mwhJbjgkyfiXeTSaIofDXWvnGBvXwmZljY2Nx339EUI0muKlC6eGDNZHCF0Ni2hqvCSsnMlkrly1PjX1n6aqvRQcItzj2NRk8aGDu8VHJjQabczokQf27jy4z4VwVkVFZUFBEeFTU10rdWfxzojkq0pCSu4+j9s57ysRSReTbt0UVywZZ2s5UbunavMlZ04x3LNlvotb67aLl/TwUU7lx7pe2nJtT3H2XODZc4GE4DZnxxbXD86aOe0Xoznr7DdzONxVazacPeMzdfLEpgqfvxgsHK+bLF2kozPAwd7WwWkbl8s95unr7eHWTOVMJvP3lbaXLpwa972UDWBfvPx37yIz0yVNNS05Ut+995BksenTplwIONlUJZ0LaRlfXFJj6xxi6RCUk/eRlGGDUjdFS9Mf4yMcdmyc3WKeCK1YMs7WapKc7fL46Fo0cQ1je5o3d5aP1xEqlcpis21Wb0hKTpVajE5n+J48gxBSVFS0W7cKIWS8YJ6+vi5CKCLy5psm9h8SVd7Q0Gi5cq3kak2EkGgujJKSEik/UddAwlWFyeT4BSb7X3rEYnEJG2nLhqaosGzBWLs/JvXvQ/xLOnl5Bcd9/e/GxNLpDH09XVOTRSutVgiftwo5r5vBqGMFhcu1133YzRdrLJr8XY5j2ZKFVpbmhGC/friPoY3mz+YLDq/fsIXJZFpZr9spbfL8qTPnhduIqampHnB1FwYVKAoIIYFA4H7s+Bl/6YsxRZUzGHUrLFc7bbQjFBhqMOTx4ycIoYTE5FEjv8Hss9SxCk2xKzwmFpI3Ve7GZe31uFtSRkdk3HFRqZTF80evXzlJp7+m5NGY+3F2GzaLtm549z7P1c0jPOJGSFCAtraWqNjuTXPLyuvuJ2Jt6ybVu7yqj1X12lpYlzKpevfuNXrUCJlPRwgtMJrL5/E2OG5jMpkue1wJR6uqqs8EXBR+XVNTezOa+MTszt376ekvx4yRviegqHIGo27fAeLT58WLjIMuhyKEPLxOGhgMITxd4PP58QnJb3NyV1lbisdVVVTw54Z2RrKnCp8vWOMc+iApByES5qcoKFAWzhlhv3Kyno70JVYFhUX2G50ltzjJynprv9E5OPCMKEKlKnjtX2RuF5T+Wsb1HgghMvcPltVCYyMej++4ebvk9so+J0/X1zcghGbPnDZ9+lTxQxkZmYFBIQihw+7eQYGnZaj8h3HfWZibBgaFMJlMm9X2erqDxowZpaaqghCi0xmP056UV1QuNJ5POGvL1r8Is5KFLp73MxgyGPdn7sBkT5UXmSWxSe/kn+xIoSCjmV9vsJ40RE+7mWJBwVfr6uqlHkpIfJTx+s2Ib4aLIsrdaafdTZatulhQXCNDl8aOHNBLjksKiRYvWsDl8bZs/Uv8P3RpadnFwCsIISUl2v69Owmz3Nlszv3Yhx8+lMYnJqekpv3047hWVS50YN9f+vp6Xt4n6QxGfkFhfkEhoYC2lhYhUlEpfRkFh9RdPj4j2VNl0ABNNbVudfVy7YY492fDDdYThxn0brGk1N9YQjSaouRVTbunygXv5TabwnLzW7cSxkBP++iuBa06RWS44bBDB3cjhEZ8PbyZYn9Yms+eNR2JjV5+njpJU7MHQmisxC2TydJf+/XtU1hUjBASTkupqands+tPhFC/vn0kV4MoKdFOHD8qPqyfN2eWru6gFisf+tV/y3UoFMpqG8vfV5g+TEh+9iy9oKCIL+AjhLR69hwx4uspkyeIds0zM13a/PI1/BFaByfXepX8ouqMbNn/asdIw366AzXxy3/4UMLhSpnA0swKKjaHl/a8sJbBlHpUkqqy0oRxejRFErZrAF3M518FCUCn0EXepALQ1iBVAMACqQIAFkgVALBAqgCABVIFACyQKgBggVQBAAukCgBYIFUAwAKpAgAWSBUAsECqAIAFUgUALJAqAGCBVAEAC6QKAFggVQDAAqkCABZIFQCwQKoAgOX/WpidMwGhPkIAAAAASUVORK5CYII=" alt="ARIE Finance"><div class="ttl"><b>Sales &amp; Client Acquisition Tracker</b><small>INTERNATIONAL PAYMENTS THAT KEEP BUSINESS MOVING</small></div><div class="actions"><div class="saver idle" id="saver"><span class="dot"></span><span id="saverTxt"></span></div><button class="btn" onclick="exportCSV()">Export CSV</button> <button class="btn gold" onclick="openModal()">+ Add Lead</button> <button class="btn" onclick="signOut()">Sign out</button></div></div><nav id="tabs"></nav></header>
+<main><h2 id="heading"></h2><div class="sub" id="sub"></div><div class="kpis"><div class="kpi"><b id="kt"></b><span>Total Leads</span></div><div class="kpi"><b id="ka"></b><span>Active / Contacted</span></div><div class="kpi"><b id="kd"></b><span>Follow-ups Due</span></div><div class="kpi"><b id="kw"></b><span>Won / Onboarded</span></div><div class="kpi"><b id="ko"></b><span>Open Pipeline</span></div></div>
+<div class="tools"><input id="q" placeholder="Search company, contact, email, country..." oninput="render()"><select id="fs" onchange="render()"><option value="">All statuses</option></select><select id="fo" onchange="render()"><option value="">All owners</option><option>Rajesh</option><option>Aisha</option><option>Tasneem</option></select><select id="fp" onchange="render()"><option value="">All priorities</option><option>High</option><option>Medium</option><option>Low</option></select></div>
+<div style="background:#fff8e8;border-left:4px solid var(--g);padding:9px 12px;font-size:12px;color:#5f5238">
+Update <b>Priority, Responsible, Status, Last Contact, Follow-up Due, Next Action and Comments directly in the table</b>. Changes save automatically to the shared database. Use <b>Edit Contact</b> only for core contact details.
+</div>
+<div class="import-bar" id="importBar" style="display:none">
+  <div><b>This shared tracker is empty.</b> Import the starting data file once to load existing leads. This is a one-time step.</div>
+  <div class="import-actions"><label class="btn gold" for="importFile">Import initial data</label><input id="importFile" type="file" accept="application/json,.json" onchange="doImport(this)" style="display:none"><span class="import-status" id="importStatus"></span></div>
+</div>
+<div class="wrap" id="wrap"><table><thead><tr><th>Company</th><th>Contact</th><th>Email / Phone</th><th>Country</th><th>Industry</th><th>Priority</th><th>Responsible</th><th>Status</th><th>Last Contact</th><th>Follow-up Due</th><th>Next Action</th><th>Comments</th><th></th></tr></thead><tbody id="body"></tbody></table></div></main>
+<div class="modal" id="modal"><div class="panel"><h3 id="mh">Add Lead</h3><div class="form" id="form"></div><div class="foot"><button class="btn" onclick="closeModal()">Cancel</button> <button class="btn gold" id="saveBtn" onclick="saveLead()">Save</button></div></div></div>
+<script>/* ARIE Finance Sales Tracker — client. Source of truth is /api/salestracker
+   (shared Upstash Redis). The session lives in a Secure/HttpOnly/SameSite=Strict
+   cookie the server sets on login — it is never readable from JavaScript, and no
+   token or lead data is ever kept in localStorage/sessionStorage. */
+"use strict";
+var API = "/api/salestracker";
+function emptyDb() { return { luca: [], uae: [], mauritius: [], uk: [], africa: [], existing: [], onboarding: [], filmproduction: [] }; }
+var db = emptyDb();
+var tab = "luca", editId = null;
+var meta = {
+  luca: ["Luca's Leads", "Leads sourced or managed by Luca"],
+  uae: ["UAE Introducers", "UAE introducer and CSP prospect list"],
+  mauritius: ["Mauritius Management Companies", "Mauritius management company and CSP list"],
+  uk: ["UK Contacts", "UK and international contact list"],
+  africa: ["Africa Leads", "Africa ICP prospect database"],
+  existing: ["Existing Clients", "Existing ARIE clients — relationship management, cross-sell and referrals"],
+  onboarding: ["Onboarding in Progress", "Clients currently progressing through onboarding"],
+  filmproduction: ["Film Production", "Film production companies and production-sector leads"]
+};
+var statuses = ["Not Contacted", "Contacted", "Follow-up Due", "Followed Up", "Meeting Booked", "Qualified", "Proposal / Terms Sent", "Onboarding", "Won", "Lost", "On Hold"];
+var fields = [["company", "Company", "text"], ["contact", "Contact", "text"], ["email", "Email", "email"], ["phone", "Phone", "text"], ["country", "Country", "text"], ["industry", "Industry / Segment", "text"], ["priority", "Priority", "priority"], ["owner", "Person Responsible", "owner"], ["status", "Status", "status"], ["lastContact", "Last Contact", "date"], ["followUp", "Follow-up Due", "date"], ["nextAction", "Next Action", "text"], ["comments", "Comments / Follow-up Notes", "textarea"]];
+
+function $(id) { return document.getElementById(id); }
+function e(x) { return String(x == null ? "" : x).replace(/[&<>"']/g, function (m) { return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[m]; }); }
+
+/* ---- save-state indicator ---- */
+var saverT = null;
+function saver(state, msg) {
+  var el = $("saver"); if (!el) return;
+  el.className = "saver " + state; $("saverTxt").textContent = msg || "";
+  if (saverT) { clearTimeout(saverT); saverT = null; }
+  if (state === "saved") saverT = setTimeout(function () { el.className = "saver idle"; }, 1800);
+}
+
+/* ---- API ---- */
+function api(opts) {
+  // credentials:same-origin sends the HttpOnly session cookie; no token in JS.
+  var init = { method: opts.method || "GET", headers: { "Content-Type": "application/json" }, credentials: "same-origin" };
+  if (opts.body) init.body = JSON.stringify(opts.body);
+  var url = API + (opts.query || "");
+  return fetch(url, init).then(function (r) {
+    // A 401 on a normal call means the session lapsed -> back to the gate.
+    // A 401 on login itself just means a bad passcode; let it parse normally.
+    if (r.status === 401 && !opts.isLogin) { showGate("Session expired — please sign in again."); throw new Error("unauth"); }
+    return r.json().catch(function () { return { ok: false, error: "bad_response" }; }).then(function (j) {
+      if (!r.ok || !j.ok) { var err = new Error((j && j.error) || ("http_" + r.status)); err.code = j && j.error; throw err; }
+      return j;
+    });
+  });
+}
+
+/* ---- auth gate ---- */
+function showGate(msg) { $("gate").classList.remove("hidden"); if (msg) $("gateErr").textContent = msg; var p = $("gatePass"); if (p) { p.value = ""; p.focus(); } }
+function hideGate() { $("gate").classList.add("hidden"); }
+function signOut() {
+  api({ method: "POST", body: { action: "logout" } }).catch(function () {}).then(function () { db = emptyDb(); showGate(""); });
+}
+
+function doLogin(ev) {
+  ev.preventDefault();
+  var btn = $("gateBtn"), pass = $("gatePass").value;
+  if (!pass) { $("gateErr").textContent = "Enter the passcode."; return; }
+  btn.disabled = true; btn.textContent = "Signing in…"; $("gateErr").textContent = "";
+  api({ method: "POST", isLogin: true, body: { action: "login", passcode: pass } }).then(function () {
+    return loadData();  // session cookie is now set by the server
+  }).then(function () {
+    hideGate();
+  }).catch(function (err) {
+    if (err.code === "too_many_attempts") $("gateErr").textContent = "Too many attempts — wait a few minutes and try again.";
+    else if (err.code === "invalid_passcode") $("gateErr").textContent = "Incorrect passcode.";
+    else if (err.code === "storage_unconfigured" || err.code === "passcode_unconfigured") $("gateErr").textContent = "Tracker not yet configured — contact the administrator.";
+    else $("gateErr").textContent = "Sign-in failed. Please try again.";
+  }).then(function () { btn.disabled = false; btn.textContent = "Sign in"; });
+}
+
+/* ---- data ---- */
+function normalize(data) {
+  Object.keys(meta).forEach(function (k) { if (!Array.isArray(data[k])) data[k] = []; });
+  Object.keys(data).forEach(function (k) {
+    (data[k] || []).forEach(function (x) {
+      if (x.priority === "A") x.priority = "High";
+      else if (x.priority === "B") x.priority = "Medium";
+      else if (x.priority === "C") x.priority = "Low";
+      else if (["High", "Medium", "Low"].indexOf(x.priority) < 0) x.priority = "Medium";
+    });
+  });
+  return data;
+}
+function loadData() {
+  return api({ query: "?action=data" }).then(function (j) { db = normalize(j.tabs || {}); render(); maybeShowImport(); });
+}
+function totalCount() { var n = 0; Object.keys(meta).forEach(function (k) { n += (db[k] || []).length; }); return n; }
+/* one-time initial-data import: shown only while the shared database is empty.
+   The seed file is chosen by an authenticated staff member — no lead data ships
+   in this page, and the server ignores a second import (seed-once guard). */
+function maybeShowImport() {
+  var el = $("importBar"); if (!el) return;
+  el.style.display = totalCount() === 0 ? "flex" : "none";
+}
+function doImport(input) {
+  var file = input.files && input.files[0]; if (!file) return;
+  var status = $("importStatus"); status.textContent = "Reading file…";
+  var reader = new FileReader();
+  reader.onload = function () {
+    var data; try { data = JSON.parse(reader.result); } catch (e) { status.textContent = "That file isn't valid JSON."; return; }
+    if (data && data.tabs && typeof data.tabs === "object") data = data.tabs; // accept {tabs:{...}} or {...}
+    status.textContent = "Importing…"; saver("saving", "Importing…");
+    api({ method: "POST", body: { action: "seed", data: data } }).then(function (j) {
+      if (j.already) { status.textContent = "Data already imported."; }
+      else { status.textContent = "Imported " + (j.count || 0) + " records."; }
+      saver("saved", "Imported");
+      return loadData();
+    }).catch(function (err) {
+      if (err.message !== "unauth") { status.textContent = "Import failed — nothing was changed."; saver("failed", "Import failed"); }
+    });
+    input.value = "";
+  };
+  reader.readAsText(file);
+}
+
+/* ---- render ---- */
+function opts(arr, val) { return arr.map(function (o) { return '<option value="' + e(o) + '" ' + (o == val ? "selected" : "") + ">" + e(o) + "</option>"; }).join(""); }
+function setTab(k) { tab = k; $("q").value = ""; $("fs").value = $("fo").value = $("fp").value = ""; render(); }
+function due(x) { if (!x.followUp) return ""; var t = new Date(); t.setHours(0, 0, 0, 0); return new Date(x.followUp + "T00:00:00") <= t && ["Won", "Lost"].indexOf(x.status) < 0 ? "over" : ""; }
+function render() {
+  var wrap = $("wrap"), sc = wrap ? wrap.scrollTop : 0;
+  $("tabs").innerHTML = Object.keys(meta).map(function (k) { return '<div class="tab ' + (k == tab ? "active" : "") + '" onclick="setTab(\'' + k + '\')">' + meta[k][0] + " (" + db[k].length + ")</div>"; }).join("");
+  $("heading").textContent = meta[tab][0]; $("sub").textContent = meta[tab][1];
+  var all = db[tab], z = $("q").value.toLowerCase(), fs = $("fs").value, fo = $("fo").value, fp = $("fp").value;
+  var rows = all.filter(function (x) { return (!z || JSON.stringify(x).toLowerCase().indexOf(z) >= 0) && (!fs || x.status == fs) && (!fo || x.owner == fo) && (!fp || x.priority == fp); });
+  var t = new Date(); t.setHours(0, 0, 0, 0);
+  $("kt").textContent = all.length;
+  $("ka").textContent = all.filter(function (x) { return ["Not Contacted", "Lost"].indexOf(x.status) < 0; }).length;
+  $("kd").textContent = all.filter(function (x) { return x.followUp && new Date(x.followUp + "T00:00:00") <= t && ["Won", "Lost"].indexOf(x.status) < 0; }).length;
+  $("kw").textContent = all.filter(function (x) { return x.status == "Won"; }).length;
+  $("ko").textContent = all.filter(function (x) { return ["Won", "Lost"].indexOf(x.status) < 0; }).length;
+  $("body").innerHTML = rows.length ? rows.map(function (x) {
+    return '<tr>' +
+      '<td><div class="co">' + e(x.company) + "</div>" + (x.score ? '<span class="badge">ICP ' + e(x.score) + "</span>" : "") + "</td>" +
+      "<td>" + e(x.contact) + "</td>" +
+      "<td>" + (x.email ? '<a href="mailto:' + e(x.email) + '">' + e(x.email) + "</a><br>" : "") + e(x.phone) + "</td>" +
+      "<td>" + e(x.country) + "</td><td>" + e(x.industry) + "</td>" +
+      '<td class="inline-cell"><select class="inline-select" onchange="updateField(\'' + e(x.id) + "','priority',this.value)\">" + opts(["High", "Medium", "Low"], x.priority) + "</select></td>" +
+      '<td class="inline-cell"><select class="inline-select" onchange="updateField(\'' + e(x.id) + "','owner',this.value)\">" + opts(["", "Aisha", "Tasneem", "Rajesh"], x.owner) + "</select></td>" +
+      '<td class="inline-cell"><select class="inline-select" onchange="updateField(\'' + e(x.id) + "','status',this.value)\">" + opts(statuses, x.status) + "</select></td>" +
+      '<td class="inline-cell"><input class="inline-date" type="date" value="' + e(x.lastContact) + '" onchange="updateField(\'' + e(x.id) + "','lastContact',this.value)\"></td>" +
+      '<td class="inline-cell"><input class="inline-date ' + due(x) + '" type="date" value="' + e(x.followUp) + '" onchange="updateField(\'' + e(x.id) + "','followUp',this.value)\"></td>" +
+      '<td class="inline-cell"><input class="inline-text" value="' + e(x.nextAction || "") + '" placeholder="Next action..." onchange="updateField(\'' + e(x.id) + "','nextAction',this.value)\"></td>" +
+      '<td class="inline-cell"><input class="inline-text comments-box" value="' + e(x.comments || "") + '" placeholder="Comments..." onchange="updateField(\'' + e(x.id) + "','comments',this.value)\"></td>" +
+      '<td><button class="btn" onclick="openModal(\'' + e(x.id) + '\')">Edit Contact</button></td></tr>';
+  }).join("") : '<tr><td colspan="13" style="text-align:center;padding:40px;color:#777">No records yet. Click + Add Lead.</td></tr>';
+  if (wrap) wrap.scrollTop = sc;
+}
+
+/* ---- inline field save (optimistic, atomic per-field on the server) ---- */
+function updateField(id, field, value) {
+  var x = null, i; for (i = 0; i < db[tab].length; i++) if (db[tab][i].id == id) { x = db[tab][i]; break; }
+  if (!x) return;
+  var old = x[field]; if (old === value) return;
+  x[field] = value; saver("saving", "Saving…"); render();
+  var body = { action: "update", id: id, fields: {} }; body.fields[field] = value;
+  api({ method: "POST", body: body }).then(function () {
+    saver("saved", "Saved");
+  }).catch(function (err) {
+    if (err.message === "unauth") return;
+    x[field] = old; render(); saver("failed", "Save failed — not saved");
+  });
+}
+
+/* ---- modal ---- */
+function openModal(id) {
+  editId = id || null;
+  var x = id ? db[tab].filter(function (z) { return z.id == id; })[0] : { status: "Not Contacted", priority: "Medium", owner: "" };
+  if (!x) return;
+  $("mh").textContent = id ? "Edit Lead / Contact Details" : "Add Lead";
+  $("form").innerHTML = fields.map(function (f) {
+    var k = f[0], l = f[1], t = f[2], v = e(x[k] || "");
+    if (t == "textarea") return '<div class="field full"><label>' + l + '</label><textarea id="f_' + k + '">' + v + "</textarea></div>";
+    if (t == "owner") return '<div class="field"><label>' + l + '</label><select id="f_' + k + '">' + ["", "Rajesh", "Aisha", "Tasneem"].map(function (o) { return "<option " + (o == v ? "selected" : "") + ">" + o + "</option>"; }).join("") + "</select></div>";
+    if (t == "status") return '<div class="field"><label>' + l + '</label><select id="f_' + k + '">' + statuses.map(function (o) { return "<option " + (o == v ? "selected" : "") + ">" + o + "</option>"; }).join("") + "</select></div>";
+    if (t == "priority") return '<div class="field"><label>' + l + '</label><select id="f_' + k + '">' + ["High", "Medium", "Low"].map(function (o) { return "<option " + (o == v ? "selected" : "") + ">" + o + "</option>"; }).join("") + "</select></div>";
+    return '<div class="field"><label>' + l + '</label><input id="f_' + k + '" type="' + t + '" value="' + v + '"></div>';
+  }).join("");
+  $("modal").classList.add("open");
+}
+function closeModal() { $("modal").classList.remove("open"); editId = null; }
+function saveLead() {
+  var btn = $("saveBtn"); btn.disabled = true;
+  var payload = {}; fields.forEach(function (f) { payload[f[0]] = $("f_" + f[0]).value; });
+  saver("saving", "Saving…");
+  var req = editId
+    ? api({ method: "POST", body: { action: "update", id: editId, fields: payload } }).then(function () {
+        var x = db[tab].filter(function (z) { return z.id == editId; })[0]; if (x) Object.keys(payload).forEach(function (k) { x[k] = payload[k]; });
+      })
+    : api({ method: "POST", body: { action: "create", tab: tab, record: payload } }).then(function (j) { db[tab].unshift(j.record); });
+  req.then(function () { closeModal(); render(); saver("saved", "Saved"); })
+    .catch(function (err) { if (err.message !== "unauth") saver("failed", "Save failed — not saved"); })
+    .then(function () { btn.disabled = false; });
+}
+
+/* ---- CSV export (from in-memory shared data) ---- */
+function exportCSV() {
+  var cols = ["company", "contact", "email", "phone", "country", "industry", "priority", "owner", "status", "lastContact", "followUp", "nextAction", "comments"];
+  var a = [cols.join(",")];
+  db[tab].forEach(function (x) { a.push(cols.map(function (c) { return '"' + String(x[c] || "").split('"').join('""') + '"'; }).join(",")); });
+  var b = new Blob([a.join("\n")], { type: "text/csv" }), u = URL.createObjectURL(b), A = document.createElement("a");
+  A.href = u; A.download = "ARIE_" + meta[tab][0].split(" ").join("_") + ".csv"; A.click(); URL.revokeObjectURL(u);
+}
+
+/* ---- boot ---- */
+(function () {
+  $("fs").innerHTML += statuses.map(function (x) { return "<option>" + x + "</option>"; }).join("");
+  $("gateForm").addEventListener("submit", doLogin);
+  render();
+  // Try to resume via the HttpOnly cookie; if it isn't valid, show the gate.
+  loadData().then(hideGate).catch(function () { showGate(""); });
+})();
+</script>
+</body></html>

@@ -388,7 +388,7 @@ select.inp{min-width:104px}
     <div class="panel">
       <h2>By owner</h2>
       <table class="mini"><thead><tr>
-        <th>Owner</th><th class="num">Working</th><th class="num">Overdue</th><th class="num">Won</th><th class="num" title="Paying clients this person converted — counted by who won them, stays with them after reassignment">Won — cumulative</th><th class="num">Weighted</th>
+        <th>Owner</th><th class="num">Working</th><th class="num">Overdue</th><th class="num">Won — Count</th><th class="num" title="Annualised revenue from this owner's Won records — reconciles to the top Won — annualised total">Won — Revenue</th><th class="num">Weighted</th>
       </tr></thead><tbody id="owner-table"></tbody></table>
     </div>
   </div>
@@ -606,7 +606,7 @@ const KEY = "arie-board-v1", OLD_KEY = "arie-sales-v6";
 /* ---------------- data ---------------- */
 function blankLead(){return {id:"", company:"", contact:"", email:"", phone:"", country:"", industry:"",
   priority:"Medium", owner:"", status:"Not Contacted", lastContact:"", followUp:"", expClose:"",
-  nextAction:"", comments:"", score:"", vol:"", bps:"", feeM:"", value:"", prob:"", wonAt:"", wonBy:"", wonRecorded:false, logs:[]};}
+  nextAction:"", comments:"", score:"", vol:"", bps:"", feeM:"", value:"", prob:"", onboardingDate:"", logs:[]};}
 
 function normLead(raw, seg, i){
   const x = Object.assign(blankLead(), raw);
@@ -694,23 +694,11 @@ function sweepRoutes(){
   return n;
 }
 
-/* ---------------- win capture (commercial conversion) ----------------
-   "Won" = the prospect became a paying ARIE client. The first transition into
-   Won is recorded once and NEVER rewritten afterward, so the win survives later
-   reassignment, segment moves, holds or offboarding.
-     wonAt  first time it became a paying client (ISO)
-     wonBy  owner responsible for the conversion, frozen at that moment
-   Called from every status-change path (inline grid, modal save, bulk stage).
-   Do NOT call this from the one-time seed import — that is a baseline load,
-   not a live conversion (see migrateWonTrackingV1). */
-function recordWinTransition(lead, previousStatus){
-  if(!lead) return;
-  if(previousStatus !== "Won" && lead.status === "Won" && !lead.wonRecorded){
-    lead.wonRecorded = true;                    // permanent: a client is only ever "first won" once
-    lead.wonAt = new Date().toISOString();
-    lead.wonBy = lead.owner || "";
-  }
-}
+/* ---------------- monthly wins (real onboarding date) ----------------
+   Won = the prospect became a paying ARIE client. "Accounts won — current month"
+   counts leads that are currently Won and whose onboardingDate (the actual,
+   manually-entered conversion date) falls in the current Mauritius calendar
+   month. A blank onboardingDate never counts — no inferred history. */
 /* current Mauritius calendar month, as "YYYY-MM" (fixed ARIE timezone, never the viewer's) */
 function mauMonthKey(d){
   try{
@@ -724,27 +712,9 @@ function mauMonthKey(d){
 function wonThisMonthCount(){
   var cur = mauMonthKey(new Date());
   return allLeads().filter(function(o){
-    var l=o.lead; if(!l.wonAt) return false;
-    var d=new Date(l.wonAt); if(isNaN(d.getTime())) return false;
-    return mauMonthKey(d)===cur;
-  }).length;
-}
-/* one-time baseline: existing genuine paid clients (status Won) get wonBy from
-   their current owner so cumulative counts them; wonAt is left blank — we never
-   invent a historical win date. Guarded by a settings flag; never repeats. */
-function migrateWonTrackingV1(){
-  if(SET.wonTrackingV1) return;
-  allLeads().forEach(function(o){
     var l=o.lead;
-    if(l.status === "Won"){
-      l.wonRecorded = true;               // counts as a historical win (cumulative)...
-      if(!l.wonBy) l.wonBy = l.owner || "";
-      // ...but leave wonAt blank — never invent a historical win date, so it can
-      // never later be miscounted as a NEW win in any month.
-    }
-  });
-  SET.wonTrackingV1 = true;
-  save();   /* baseline captured pre-migration by snap(), so this schedules one push */
+    return l.status === "Won" && typeof l.onboardingDate === "string" && l.onboardingDate.slice(0,7) === cur;
+  }).length;
 }
 
 /* ---------------- revenue model ---------------- */
@@ -855,7 +825,7 @@ function renderDashboard(){
   set("k-won-note", won.length + " client" + (won.length === 1 ? "" : "s") + " won · " + rows.filter(r => r.lead.status === "Onboarding").length + " onboarding");
   const wonMonth = wonThisMonthCount();
   set("k-wonmonth", String(wonMonth));
-  set("k-wonmonth-note", "New paying client" + (wonMonth === 1 ? "" : "s") + " this month · Mauritius calendar (tracked from go-live)");
+  set("k-wonmonth-note", "New paying client" + (wonMonth === 1 ? "" : "s") + " this month · by onboarding date (Mauritius)");
   set("k-cover", Math.round(cover * 100) + "%");
   set("k-cover-note", "Won plus weighted against a " + usdK(target) + " target · gap " + usdK(Math.max(0, target - wonVal - weighted)));
 
@@ -932,27 +902,25 @@ function renderDashboard(){
   }).join("");
 
   /* owners */
-  const names = Array.from(new Set(SET.owners
-    .concat(rows.map(r => r.lead.owner).filter(Boolean))
-    .concat(rows.map(r => r.lead.wonBy).filter(Boolean))));   // include historical winners (e.g. a departed owner) so their cumulative row survives
-  /* "Won — cumulative": paying clients each person CONVERTED, counted by the permanent
-     wonRecorded flag and the immutable wonBy (not current owner), so credit is stable
-     through reassignment, segment moves, holds and offboarding. */
-  const cumBy = pred => rows.filter(r => r.lead.wonRecorded && pred(r.lead.wonBy || "")).length;
-  const tally = (rs, n, note, cum) => ({n, note, cum, work:rs.filter(r => isWorking(r.lead)).length,
-    late:rs.filter(r => overdue(r.lead)).length, won:rs.filter(r => r.lead.status === "Won").length,
-    w:rs.filter(r => isOpen(r.lead)).reduce((a,r) => a + r.weighted, 0)});
+  const names = Array.from(new Set(SET.owners.concat(rows.map(r => r.lead.owner).filter(Boolean))));
+  /* Won — Count and Won — Revenue come from ONE population: this owner's status==="Won"
+     records. Revenue reuses the same r.gross (= annual()) as the top "Won — annualised",
+     so summing every owner's Won — Revenue (incl. Unassigned) reconciles to that total. */
+  const tally = (rs, n, note) => { const wonRs = rs.filter(r => r.lead.status === "Won");
+    return {n, note, work:rs.filter(r => isWorking(r.lead)).length,
+      late:rs.filter(r => overdue(r.lead)).length, won:wonRs.length,
+      wonRev:wonRs.reduce((a,r) => a + r.gross, 0),
+      w:rs.filter(r => isOpen(r.lead)).reduce((a,r) => a + r.weighted, 0)}; };
   const team = names.filter(n => MU_TEAM.includes(n));
-  const shown = new Set(team.concat(names.filter(n => !MU_TEAM.includes(n))));   // wonBy values that get their own row
   const ownerRows = [];
-  if(team.length) ownerRows.push(tally(rows.filter(r => team.includes(r.lead.owner)), "Mauritius team", team.join(" · "), cumBy(wb => team.includes(wb))));
-  names.filter(n => !MU_TEAM.includes(n)).forEach(n => ownerRows.push(tally(rows.filter(r => r.lead.owner === n), n, undefined, cumBy(wb => wb === n))));
+  if(team.length) ownerRows.push(tally(rows.filter(r => team.includes(r.lead.owner)), "Mauritius team", team.join(" · ")));
+  names.filter(n => !MU_TEAM.includes(n)).forEach(n => ownerRows.push(tally(rows.filter(r => r.lead.owner === n), n)));
   ownerRows.sort((a,b) => b.w - a.w);
-  ownerRows.push(tally(rows.filter(r => !r.lead.owner), "Unassigned", undefined, cumBy(wb => !wb || !shown.has(wb))));
+  ownerRows.push(tally(rows.filter(r => !r.lead.owner), "Unassigned"));
   document.getElementById("owner-table").innerHTML = ownerRows.map(o =>
     `<tr><td class="co">${esc(o.n)}${o.note ? `<div class="sub">${esc(o.note)}</div>` : ""}</td><td class="num">${o.work}</td>
       <td class="num">${o.late ? `<span class="pill late">${o.late}</span>` : "—"}</td>
-      <td class="num">${o.won || "—"}</td><td class="num">${o.cum || "—"}</td><td class="num"><b>${usdK(o.w)}</b></td></tr>`).join("");
+      <td class="num">${o.won || "—"}</td><td class="num">${o.won ? usdK(o.wonRev) : "—"}</td><td class="num"><b>${usdK(o.w)}</b></td></tr>`).join("");
 
   /* top deals */
   const top = open.slice().sort((a,b) => b.weighted - a.weighted).slice(0,12);
@@ -981,10 +949,10 @@ const COLS = [
   {k:"priority", h:"Priority", s:true},
   {k:"owner", h:"Owner", s:true},
   {k:"status", h:"Stage", s:true},
+  {k:"onboardingDate", h:"Date of onboarding", s:true},
   {k:"p", h:"Close %", s:true, n:true},
   {k:"gross", h:"Annual value", s:true, n:true},
   {k:"weighted", h:"Weighted", s:true, n:true},
-  {k:"expClose", h:"Expected close", s:true},
   {k:"lastContact", h:"Last contact", s:true},
   {k:"followUp", h:"Follow-up", s:true},
   {k:"nextAction", h:"Next action"},
@@ -1053,10 +1021,12 @@ function renderPipeline(){
       <td class="cell"><select class="inp" data-f="priority" data-id="${l.id}">${opt(["High","Medium","Low"], l.priority)}</select></td>
       <td class="cell"><select class="inp" data-f="owner" data-id="${l.id}">${opt(ownerOpts(l), l.owner)}</select></td>
       <td class="cell"><select class="inp" data-f="status" data-id="${l.id}">${opt(STAGES, l.status)}</select></td>
+      <td class="cell"><input class="inp" type="date" data-f="onboardingDate" data-id="${l.id}" value="${esc(l.onboardingDate)}" title="Actual date this prospect became a paying client"></td>
       <td class="num">${Math.round(r.p * 100)}%${l.prob !== "" ? '<div class="sub">set</div>' : ""}</td>
-      <td class="num ${r.assumed ? "assumed" : ""}" ${r.assumed ? `title="Assumed annual revenue for ${esc(SEGMENTS[r.from].name)} — open the lead to price it"` : ""}>${usd(r.gross)}</td>
+      ${priceSeg(l, r.seg) === "luca"
+        ? `<td class="cell"><input class="inp" type="number" min="0" step="500" data-f="value" data-id="${l.id}" value="${esc(l.value)}" placeholder="${usd(r.gross)}" title="Luca lead — edit annual value directly" style="width:112px;text-align:right"></td>`
+        : `<td class="num ${r.assumed ? "assumed" : ""}" ${r.assumed ? `title="Assumed annual revenue for ${esc(SEGMENTS[r.from].name)} — open the lead to price it"` : ""}>${usd(r.gross)}</td>`}
       <td class="num wtd-cell">${usd(r.weighted)}</td>
-      <td class="cell"><input class="inp" type="date" data-f="expClose" data-id="${l.id}" value="${esc(l.expClose)}"></td>
       <td class="cell"><input class="inp" type="date" data-f="lastContact" data-id="${l.id}" value="${esc(l.lastContact)}"></td>
       <td class="cell"><input class="inp ${late ? "late" : ""}" type="date" data-f="followUp" data-id="${l.id}" value="${esc(l.followUp)}"></td>
       <td class="cell"><input class="inp" style="min-width:170px" data-f="nextAction" data-id="${l.id}" value="${esc(l.nextAction)}" placeholder="Next action"></td>
@@ -1231,7 +1201,7 @@ document.getElementById("segbar").onclick = e => {
 document.getElementById("grid-head").onclick = e => {
   const th = e.target.closest("[data-sort]"); if(!th) return;
   const k = th.dataset.sort;
-  if(view.sort === k) view.dir = -view.dir; else { view.sort = k; view.dir = ["company","country","segment","owner","expClose","lastContact","followUp"].includes(k) ? 1 : -1; }
+  if(view.sort === k) view.dir = -view.dir; else { view.sort = k; view.dir = ["company","country","segment","owner","onboardingDate","lastContact","followUp"].includes(k) ? 1 : -1; }
   renderPipeline();
 };
 $("prev").onclick = () => { view.page--; renderPipeline(); window.scrollTo({top:0}); };
@@ -1244,10 +1214,8 @@ body.addEventListener("change", e => {
   if(el.id === "selall"){ return; }
   const f = el.dataset.f, id = el.dataset.id; if(!f || !id) return;
   const hit = findLead(id); if(!hit) return;
-  const prevStatus = hit.lead.status;
   hit.lead[f] = el.value;
   if(f === "status"){
-    recordWinTransition(hit.lead, prevStatus);
     if(el.value !== "Not Contacted" && !hit.lead.lastContact) hit.lead.lastContact = stamp();
     const mv = routeLead(id);
     if(mv) toast((mv.lead.company || "Lead") + " moved to " + SEGMENTS[mv.to].name);
@@ -1275,7 +1243,7 @@ $("bulk-delete").onclick = () => {
   $(id).onchange = e => {
     if(e.target.selectedIndex === 0) return;
     const val = e.target.value, n = view.sel.size;
-    view.sel.forEach(id2 => { const h = findLead(id2); if(h){ const prev = h.lead.status; h.lead[f] = val; if(f === "status") recordWinTransition(h.lead, prev); } });
+    view.sel.forEach(id2 => { const h = findLead(id2); if(h) h.lead[f] = val; });
     let moved = 0;
     if(f === "status") view.sel.forEach(id2 => { if(routeLead(id2)) moved++; });
     save(); e.target.selectedIndex = 0; renderPipeline(); renderDashboard();
@@ -1316,11 +1284,9 @@ $("m-logadd").onclick = () => {
   $("m-logtext").value = ""; $("m-last").value = stamp(); renderLogs();
 };
 $("m-save").onclick = () => {
-  const prevStatus = editing.status;
   readSheet();
   if(!editing.company){ toast("Give the lead a company name first."); return; }
   if(creating){ DATA[editingSeg].unshift(editing); creating = false; }
-  recordWinTransition(editing, prevStatus);
   const mv = routeLead(editing.id);
   if(mv) editingSeg = mv.to;
   save(); document.getElementById("modal").classList.remove("open"); renderAll();
@@ -1433,7 +1399,6 @@ function mergeOnto(server){
     else {
       mergedLead = Object.assign({}, srv.lead);                        // start from server's current lead
       Object.keys(m.lead).forEach(function(f){                         // apply only fields I actually changed
-        if((f==="wonRecorded"||f==="wonAt"||f==="wonBy") && srv.lead[f]) return;   // write-once: never overwrite an already-recorded win
         if(JSON.stringify(m.lead[f])!==JSON.stringify(b.lead[f])) mergedLead[f]=m.lead[f];
       });
     }
@@ -1585,7 +1550,7 @@ function boot(){
     // SEED is only read by the one-time import (which sets it from the uploaded file),
     // so there is no need to fetch the stored seed on every boot.
     DATA=normData(j.state.data); SET=mergedSettings(j.state.settings); baseVer=j.version; snap();
-    migrateWonTrackingV1(); startApp();
+    startApp();
   });
 }
 boot().then(gateHide).catch(function(){ gateShow(""); });

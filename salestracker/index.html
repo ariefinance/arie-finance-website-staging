@@ -75,7 +75,7 @@ h1{font:600 27px/1.15 var(--serif);margin:0;color:var(--ink);letter-spacing:-.01
 .asof{margin-left:auto;font-size:12px;color:var(--mute);text-align:right}
 
 /* ---------- ledger strip (headline numbers) ---------- */
-.ledger{display:grid;grid-template-columns:repeat(5,1fr);background:var(--surface);border:1px solid var(--rule);border-radius:10px;overflow:hidden;box-shadow:var(--shadow)}
+.ledger{display:grid;grid-template-columns:repeat(6,1fr);background:var(--surface);border:1px solid var(--rule);border-radius:10px;overflow:hidden;box-shadow:var(--shadow)}
 .ledger>div{padding:16px 18px;border-left:1px solid var(--rule-soft)}
 .ledger>div:first-child{border-left:0;background:linear-gradient(180deg,var(--gold-wash),transparent)}
 .ledger .lab{font-size:11.5px;color:var(--mute);font-weight:600}
@@ -354,6 +354,11 @@ select.inp{min-width:104px}
       <div class="note" id="k-wonmonth-note"></div>
     </div>
     <div>
+      <div class="lab">Actual annualised revenue</div>
+      <div class="fig" id="k-actual">—</div>
+      <div class="note" id="k-actual-note"></div>
+    </div>
+    <div>
       <div class="lab">Against target</div>
       <div class="fig small" id="k-cover">—</div>
       <div class="note" id="k-cover-note"></div>
@@ -363,7 +368,7 @@ select.inp{min-width:104px}
 <p class="hint" style="margin:12px 2px 0">These are <b>weighted, assumption-based</b> figures: each open lead is valued from its stage close-probability and the segment revenue assumptions until a deal-specific value is entered on the lead. Read this as an indicative forecast — not quoted or committed revenue.</p>
 
   <div class="panel">
-    <h2>Pipeline ladder <small id="ladder-note"></small></h2>
+    <h2 style="display:flex;align-items:center;gap:10px;flex-wrap:wrap">Pipeline ladder <small id="ladder-note" style="font-weight:400"></small><select id="ladder-month" class="noprint" title="Filter the ladder by month" style="margin-left:auto;font-size:12px;padding:4px 9px;border:1px solid var(--rule);border-radius:6px;background:var(--surface);color:var(--ink)"></select></h2>
     <div class="pbody">
       <div class="rung head">
         <span>Stage</span><span class="ct">Leads</span><span>Value at stage</span>
@@ -480,6 +485,7 @@ select.inp{min-width:104px}
       <h2>Targets</h2>
       <div class="pbody grid2">
         <div class="field"><label for="s-target">Annual new revenue target (USD)</label><input id="s-target" type="number" min="0" step="1000"></div>
+        <div class="field"><label for="s-actual">Actual annualised revenue (USD)</label><input id="s-actual" type="number" min="0" step="1000"></div>
         <div class="field"><label for="s-fee">Default monthly account fee (USD)</label><input id="s-fee" type="number" min="0" step="5"></div>
         <div class="field full"><label for="s-owners">Team (one name per line)</label><textarea id="s-owners"></textarea></div>
       </div>
@@ -592,6 +598,7 @@ const CLOSED = ["Won","Lost"];
 const MU_TEAM = ["Aisha","Rajesh","Tasneem"];
 const DEFAULTS = {
   target: 750000,
+  actualAnnualisedRevenue: 0,
   defaultFee: 50,
   owners: ["Aisha","Rajesh","Tasneem","Luca","Stephen","Keith"],
   probs: {"Not Contacted":0,"Contacted":5,"Follow-up Due":8,"Followed Up":12,"Meeting Booked":25,"Qualified":40,"Proposal / Terms Sent":60,"Referral agreement signed":75,"Onboarding":85,"Won":100,"Lost":0,"On Hold":5},
@@ -802,6 +809,20 @@ function undoDelete(){
   lastBin = null; save(); renderAll(); toast("Restored");
 }
 
+/* ---------------- pipeline-ladder month filter ---------------- */
+function monthLabel(m){ const p = m.split("-"); return new Date(Number(p[0]), Number(p[1]) - 1, 1).toLocaleDateString("en-GB", {month:"long", year:"numeric"}); }
+function buildLadderMonths(){
+  const sel = document.getElementById("ladder-month"); if(!sel) return;
+  const keys = new Set();
+  allLeads().forEach(({lead}) => {
+    const d = lead.status === "Won" ? lead.onboardingDate : lead.lastContact;
+    if(typeof d === "string" && d.length >= 7) keys.add(d.slice(0,7));
+  });
+  const months = Array.from(keys).sort().reverse();
+  sel.innerHTML = '<option value="">Current position</option>' + months.map(m => `<option value="${m}">${monthLabel(m)}</option>`).join("");
+  sel.value = view.ladderMonth;   /* preserve selection; unknown month falls back to "" */
+}
+
 /* ---------------- dashboard ---------------- */
 function renderDashboard(){
   const rows = allLeads().map(({lead,seg}) => ({lead, seg, ...economics(lead, seg)}));
@@ -826,6 +847,9 @@ function renderDashboard(){
   const wonMonth = wonThisMonthCount();
   set("k-wonmonth", String(wonMonth));
   set("k-wonmonth-note", "New paying client" + (wonMonth === 1 ? "" : "s") + " this month · by onboarding date (Mauritius)");
+  const actualRev = num(SET.actualAnnualisedRevenue);
+  set("k-actual", actualRev > 0 ? usdK(actualRev) : "—");
+  set("k-actual-note", "Entered manually under Targets");
   set("k-cover", Math.round(cover * 100) + "%");
   set("k-cover-note", "Won plus weighted against a " + usdK(target) + " target · gap " + usdK(Math.max(0, target - wonVal - weighted)));
 
@@ -841,9 +865,18 @@ function renderDashboard(){
       <button class="btn" data-act="assump">Review the revenue assumptions</button></div></div>`;
   } else su.innerHTML = "";
 
-  /* ladder */
+  /* ladder — optional per-user month filter (default: current position / live).
+     Non-Won stages filter on lastContact; Won filters on onboardingDate. Blank
+     dates fall out naturally. All ladder figures below derive from ladderRows. */
+  const lm = view.ladderMonth;
+  const ladderRows = !lm ? rows : rows.filter(r => {
+    const l = r.lead;
+    return (l.status === "Won" ? l.onboardingDate : l.lastContact).slice(0,7) === lm;
+  });
   const byStage = {};
-  STAGES.forEach(s => byStage[s] = rows.filter(r => r.lead.status === s));
+  STAGES.forEach(s => byStage[s] = ladderRows.filter(r => r.lead.status === s));
+  const ladderWeighted = ladderRows.filter(r => isOpen(r.lead)).reduce((a,r) => a + r.weighted, 0);
+  const ladderWon = ladderRows.filter(r => r.lead.status === "Won").reduce((a,r) => a + r.gross, 0);
   const maxG = Math.max(1, ...LADDER.filter(s => s !== "Not Contacted").map(s => byStage[s].reduce((a,r) => a + r.gross, 0)));
   document.getElementById("ladder").innerHTML = LADDER.map(s => {
     const list = byStage[s], g = list.reduce((a,r) => a + r.gross, 0);
@@ -859,7 +892,10 @@ function renderDashboard(){
   }).join("");
   const lost = byStage["Lost"].length, hold = byStage["On Hold"].length;
   set("ladder-excluded", `Not shown: ${lost} lost, ${hold} on hold`);
-  set("ladder-note", usdK(weighted) + " weighted across open stages · " + usdK(wonVal) + " already won");
+  set("ladder-note", lm
+    ? monthLabel(lm) + " · non-Won by last contact · Won by onboarding date"
+    : usdK(ladderWeighted) + " weighted across open stages · " + usdK(ladderWon) + " already won");
+  buildLadderMonths();
 
   /* expected close by month */
   const now = today(), buckets = [];
@@ -939,7 +975,7 @@ function renderDashboard(){
 function set(id, html){ const el = document.getElementById(id); if(el) el.innerHTML = html; }
 
 /* ---------------- pipeline ---------------- */
-let view = {seg:"luca", q:"", stage:"", owner:"", prio:"", flags:{}, sort:"weighted", dir:-1, page:0, size:50, sel:new Set()};
+let view = {seg:"luca", q:"", stage:"", owner:"", prio:"", ladderMonth:"", flags:{}, sort:"weighted", dir:-1, page:0, size:50, sel:new Set()};
 const COLS = [
   {k:"sel", h:"", w:"34px"},
   {k:"company", h:"Company", s:true},
@@ -1054,6 +1090,7 @@ function renderSettings(){
       <td class="num"><input type="number" min="0" max="100" data-prob="${esc(s)}" value="${SET.probs[s] ?? 0}" style="width:76px;text-align:right;border:1px solid var(--rule);background:var(--surface);border-radius:6px;padding:5px 7px"> %</td>
       <td class="num">${rows.filter(r => r.lead.status === s).length}</td></tr>`).join("");
   document.getElementById("s-target").value = SET.target;
+  document.getElementById("s-actual").value = SET.actualAnnualisedRevenue;
   document.getElementById("s-fee").value = SET.defaultFee;
   document.getElementById("s-owners").value = SET.owners.join("\n");
   document.getElementById("seg-assump").innerHTML = SEG_KEYS.map(k => {
@@ -1309,6 +1346,8 @@ document.getElementById("seg-assump").addEventListener("change", e => {
   const k = e.target.dataset.seg, f = e.target.dataset.f; if(!k || !f) return;
   SET.seg[k] = {annual: Math.max(0, num(e.target.value))}; save(); renderAll(); });
 $("s-target").onchange = e => { SET.target = num(e.target.value); save(); renderDashboard(); };
+$("s-actual").onchange = e => { SET.actualAnnualisedRevenue = num(e.target.value); save(); renderDashboard(); };
+$("ladder-month").onchange = e => { view.ladderMonth = e.target.value; renderDashboard(); };
 $("s-fee").onchange = e => { SET.defaultFee = num(e.target.value); save(); renderAll(); };
 $("s-owners").onchange = e => {
   SET.owners = e.target.value.split("\n").map(s => s.trim()).filter(Boolean);

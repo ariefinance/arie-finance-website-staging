@@ -1,0 +1,1525 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>ARIE Finance — Management Report Builder</title>
+<meta name="robots" content="noindex, nofollow">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Hanken+Grotesk:wght@400;500;600;700&family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,500;0,6..72,600;1,6..72,400&display=swap" rel="stylesheet">
+<script src="vendor/xlsx.full.min.js"></script>
+<script src="vendor/html2canvas.min.js"></script>
+<script src="vendor/jspdf.umd.min.js"></script>
+<script src="vendor/pptxgen.bundle.js"></script>
+<style>
+:root{
+  --navy:#06113A; --navy-2:#0B1748; --indigo:#2E2A8C; --indigo-2:#4940D6;
+  --gold:#C99B3F; --gold-deep:#7E6120; --gold-2:#E6CB86;
+  --canvas:#F4F7FB; --surface:#FFFFFF; --border:#CAD7E6; --border-soft:#D8E2EE;
+  --text:#06113A; --muted:#454E66; --field:#FFFFFF; --warn:#8A5A00; --warn-bg:#FFF6E3;
+  --sans:"Hanken Grotesk",system-ui,-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+  --serif:"Newsreader",Georgia,"Times New Roman",serif;
+  box-sizing:border-box;
+  padding-top:env(safe-area-inset-top,0px); padding-bottom:env(safe-area-inset-bottom,0px);
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --canvas:#070B1F; --surface:#0E1433; --border:#28315A; --border-soft:#1E2649;
+    --text:#E8ECF7; --muted:#A3AECB; --field:#0A0F29; --warn:#F0C674; --warn-bg:#2A2410;
+  }
+}
+:root[data-theme="dark"]{
+  --canvas:#070B1F; --surface:#0E1433; --border:#28315A; --border-soft:#1E2649;
+  --text:#E8ECF7; --muted:#A3AECB; --field:#0A0F29; --warn:#F0C674; --warn-bg:#2A2410;
+}
+*,*::before,*::after{box-sizing:inherit}
+html{scroll-padding-top:env(safe-area-inset-top,0px);height:100%}
+body{margin:0;height:100%;background:var(--canvas);color:var(--text);font-family:var(--sans);font-size:14px;line-height:1.45}
+button,input,select,textarea{font:inherit;color:inherit}
+:focus-visible{outline:2px solid var(--indigo-2);outline-offset:2px}
+
+/* ---------- App shell ---------- */
+.app{display:grid;grid-template-rows:auto 1fr;height:100%}
+.bar{background:var(--navy);color:#fff;display:flex;align-items:center;gap:20px;padding:12px 20px;position:relative}
+.bar .logo{width:112px;color:#fff;flex:none}
+.bar .ttl{font-family:var(--serif);font-size:19px;letter-spacing:.2px;white-space:nowrap}
+.bar .ttl span{color:var(--gold-2)}
+.bar .spacer{flex:1}
+.bar .status{font-size:12.5px;color:#B9C3E0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:36ch}
+.btn{border:1px solid var(--border);background:var(--surface);border-radius:8px;padding:8px 14px;cursor:pointer;font-weight:600;font-size:13.5px}
+.btn:hover{border-color:var(--indigo-2)}
+.btn-gold{background:var(--gold);border-color:var(--gold);color:#06113A}
+.btn-gold:hover{background:#D6A949;border-color:#D6A949}
+.btn-ghost{background:transparent;border-color:rgba(255,255,255,.28);color:#fff}
+.btn[disabled]{opacity:.5;cursor:not-allowed}
+
+.main{display:grid;grid-template-columns:minmax(340px,430px) 1fr;min-height:0}
+.panel{background:var(--surface);border-right:1px solid var(--border);display:flex;flex-direction:column;min-height:0}
+.tabs{display:flex;gap:2px;padding:10px 12px 0;border-bottom:1px solid var(--border-soft);overflow-x:auto}
+.tab{background:none;border:0;border-bottom:2px solid transparent;padding:8px 10px 10px;cursor:pointer;color:var(--muted);font-weight:600;font-size:13px;white-space:nowrap}
+.tab[aria-selected="true"]{color:var(--text);border-bottom-color:var(--gold)}
+.pane{overflow-y:auto;padding:18px 20px 40px;flex:1;min-height:0}
+.pane[hidden]{display:none}
+.pane h3{font-family:var(--serif);font-weight:500;font-size:18px;margin:22px 0 4px}
+.pane h3:first-child{margin-top:0}
+.hint{color:var(--muted);font-size:12.5px;margin:0 0 10px}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:10px 12px}
+.fld{display:flex;flex-direction:column;gap:4px;margin-bottom:10px}
+.grid2 .fld{margin-bottom:0}
+.fld label{font-size:12.5px;color:var(--muted);font-weight:500}
+.fld input,.fld select,.fld textarea{background:var(--field);border:1px solid var(--border);border-radius:8px;padding:8px 10px;width:100%}
+.fld textarea{min-height:120px;resize:vertical;font-size:13px;line-height:1.5}
+.fld input::placeholder{color:var(--muted);opacity:.75}
+.fld .auto{font-size:11.5px;color:var(--muted)}
+.seg{display:flex;border:1px solid var(--border);border-radius:8px;overflow:hidden}
+.seg button{flex:1;border:0;background:transparent;padding:7px 8px;cursor:pointer;font-size:12.5px;font-weight:600;color:var(--muted)}
+.seg button[aria-pressed="true"]{background:var(--navy);color:#fff}
+.note{background:var(--warn-bg);color:var(--warn);border-radius:8px;padding:10px 12px;font-size:12.5px;margin:10px 0}
+.drop{border:1.5px dashed var(--border);border-radius:12px;padding:18px;text-align:center;cursor:pointer;transition:border-color .15s}
+.drop.over,.drop:hover{border-color:var(--gold)}
+.drop strong{display:block;font-size:14px;margin-bottom:2px}
+.files{margin:10px 0 0;padding:0;list-style:none;font-size:12.5px}
+.files li{display:flex;justify-content:space-between;gap:8px;padding:6px 0;border-bottom:1px solid var(--border-soft)}
+.files li span:last-child{color:var(--muted)}
+.ok{color:#2F7A4A}
+.maptbl{width:100%;border-collapse:collapse;font-size:12.5px}
+.maptbl td{padding:5px 4px;border-bottom:1px solid var(--border-soft);vertical-align:middle}
+.maptbl td:last-child{width:52%}
+.maptbl select{width:100%;padding:4px 6px;border:1px solid var(--border);border-radius:6px;background:var(--field)}
+.chk{display:flex;align-items:center;gap:8px;padding:5px 0;font-size:13px;border-bottom:1px solid var(--border-soft)}
+.chk span.v{margin-left:auto;color:var(--muted);font-variant-numeric:tabular-nums}
+.listed{width:100%;border-collapse:collapse;font-size:13px}
+.listed td{padding:3px 2px}
+.listed input{width:100%;background:var(--field);border:1px solid var(--border);border-radius:6px;padding:5px 7px}
+.listed td.n{width:72px}
+.listed td.x{width:28px;text-align:center}
+.listed button{border:0;background:none;cursor:pointer;color:var(--muted);font-size:16px}
+.linkbtn{border:0;background:none;color:var(--indigo-2);cursor:pointer;padding:4px 0;font-weight:600;font-size:12.5px}
+.switch{display:flex;align-items:center;gap:10px;font-size:13px;margin:8px 0}
+
+.stage{overflow:auto;padding:28px 28px 60px;min-height:0}
+.empty{max-width:520px;margin:12vh auto 0;text-align:center;color:var(--muted)}
+.empty h2{font-family:var(--serif);font-weight:500;color:var(--text);font-size:30px;margin:0 0 8px}
+.slides{display:flex;flex-direction:column;align-items:center;gap:22px}
+.sframe{position:relative;box-shadow:0 18px 40px -26px rgba(6,17,58,.45);border-radius:4px;overflow:hidden;flex:none}
+.sframe .slide{transform-origin:0 0;position:absolute;left:0;top:0}
+.toast{position:fixed;left:50%;bottom:calc(24px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);background:var(--navy);color:#fff;padding:10px 16px;border-radius:10px;font-size:13px;box-shadow:0 12px 30px -12px rgba(0,0,0,.5);z-index:50;max-width:90vw}
+.toast[hidden]{display:none}
+
+@media (max-width: 900px){
+  .main{grid-template-columns:1fr;grid-template-rows:auto auto}
+  .app{height:auto}
+  .panel{border-right:0;border-bottom:1px solid var(--border)}
+  .pane{max-height:none}
+  .bar{flex-wrap:wrap}
+  .bar .status{display:none}
+}
+
+/* ---------- Slides: ARIE investment-case style (always light: this is the printed document) ---------- */
+.slide{width:1280px;height:720px;background:#FAF9F5;color:#1A2444;font-family:var(--sans);position:relative;overflow:hidden;font-size:16px;line-height:1.5;-webkit-font-smoothing:antialiased}
+.slide *{box-sizing:border-box}
+.s-logo{position:absolute;top:34px;right:60px;width:92px;color:#0B1437}
+.s-head{position:absolute;left:64px;right:200px;top:66px}
+.eyb{display:flex;align-items:center;gap:14px;font-size:12px;font-weight:700;letter-spacing:.22em;text-transform:uppercase;color:#B0892E}
+.eyb::before{content:"";width:30px;height:1.5px;background:#B0892E}
+.s-head h2{font-family:var(--serif);font-weight:400;font-size:46px;line-height:1.05;margin:14px 0 6px;color:#0B1437;letter-spacing:-.4px}
+.s-head .sub{font-size:15.5px;color:#3E475F}
+.s-body{position:absolute;left:64px;right:64px;top:208px;bottom:82px}
+.s-foot{position:absolute;left:64px;right:64px;bottom:26px;border-top:1px solid #DDD6C6;padding-top:12px;display:flex;justify-content:space-between;font-size:11px;font-weight:700;letter-spacing:.16em;text-transform:uppercase;color:#7F7A66}
+.s-foot .pg{color:#B0892E}
+
+.card{background:#fff;border:1px solid #E6E1D3;border-radius:10px;padding:18px 22px;box-shadow:0 1px 2px rgba(11,20,55,.04)}
+.card.beige{background:#F1EADC;border-color:#E7DCC4}
+.card.blue{background:#EDF1F8;border-color:#DBE2EF}
+.card.navy{background:#0B1437;border-color:#0B1437;color:#fff;box-shadow:0 14px 30px -18px rgba(11,20,55,.6)}
+.lbl{display:flex;align-items:center;gap:9px;font-size:11.5px;font-weight:700;letter-spacing:.18em;text-transform:uppercase;color:#0B1437;margin:0 0 10px}
+.lbl::before{content:"";width:7px;height:7px;background:#B0892E;transform:rotate(45deg);flex:none}
+.card.navy .lbl{color:#C9A24E}
+.card.navy .lbl::before{background:#C9A24E}
+
+.prose{font-family:var(--serif);color:#1A2444;font-size:16px;line-height:1.5}
+.prose p{margin:0 0 .6em}
+.prose ul{margin:0 0 .6em;padding-left:1.1em}
+.prose li{margin:0 0 .45em;padding-left:.2em}
+.prose li::marker{color:#B0892E}
+.prose ul ul{margin:.3em 0 0}
+.prose b{color:#0B1437;font-weight:600}
+.prose h4{font-family:var(--sans);font-size:.72em;font-weight:700;letter-spacing:.18em;text-transform:uppercase;color:#B0892E;margin:.9em 0 .4em}
+.prose h4:first-child{margin-top:0}
+.cards{height:100%;overflow:hidden;columns:2;column-gap:20px;column-fill:balance}
+.cards.one{columns:1}
+.cards .card{break-inside:avoid;margin-bottom:16px;display:block}
+.cards .prose{font-size:1em}
+.fill{height:100%;overflow:hidden}
+.opgrid{display:grid;grid-template-columns:1.45fr 1fr;gap:20px;height:100%}
+.opgrid .card{display:flex;flex-direction:column;min-height:0}
+.opgrid .card .fill{flex:1;min-height:0}
+.rcol{display:flex;flex-direction:column;gap:16px;min-height:0}
+.rcol .beige{flex:1}
+.stat2{display:grid;grid-template-columns:1fr 1fr;gap:18px}
+.stat2 .v{font-family:var(--serif);font-size:32px;line-height:1.1}
+.stat2 .l{font-size:12px;color:#B8C0D9;margin-top:2px}
+
+/* cover */
+.cover .lg{position:absolute;left:64px;top:44px;width:150px;color:#0B1437}
+.cover .ctag{position:absolute;right:64px;top:54px;font-size:12px;font-weight:700;letter-spacing:.22em;text-transform:uppercase;color:#B0892E}
+.cover .art{position:absolute;right:30px;top:120px;width:620px}
+.cover .t{position:absolute;left:64px;top:170px;width:620px}
+.cover h1{font-family:var(--serif);font-weight:400;font-size:70px;line-height:1.02;margin:0;color:#0B1437;letter-spacing:-.8px}
+.cover h1 em{color:#B0892E;font-style:italic}
+.cover .e{font-size:15.5px;color:#3E475F;margin-top:18px}
+.cover .hls{position:absolute;left:64px;right:64px;bottom:88px;display:grid;grid-template-columns:repeat(3,1fr);gap:32px}
+.cover .hls div{border-top:1.5px solid #B0892E;padding-top:12px}
+.cover .hls .v{font-family:var(--serif);font-size:34px;color:#0B1437;line-height:1.1}
+.cover .hls .l{font-size:13.5px;color:#3E475F;margin-top:4px}
+
+/* tables */
+.fin{display:grid;grid-template-columns:1fr 320px;gap:26px;height:100%}
+table.num{width:100%;border-collapse:separate;border-spacing:0;font-variant-numeric:tabular-nums;font-size:14.5px;border-radius:10px;overflow:hidden;border:1px solid #E6E1D3;background:#fff}
+table.num th{background:#0B1437;color:#fff;font-weight:600;text-align:right;padding:11px 14px;font-size:12px;line-height:1.25;vertical-align:bottom;letter-spacing:.02em}
+table.num th:first-child{text-align:left}
+table.num td{padding:9px 14px;border-bottom:1px solid #EFEBE1;text-align:right;white-space:nowrap}
+table.num td:first-child{text-align:left;white-space:normal;color:#1A2444}
+table.num tr:last-child td{border-bottom:0}
+table.num td.neg{color:#9B2C2C}
+table.num tr.tot td{font-weight:700;color:#0B1437;background:#F1EADC;border-bottom-color:#E7DCC4}
+table.num tr.sub td{color:#3E475F}
+table.num tr.ebit td{font-weight:700;color:#fff;background:#0B1437;border-bottom:0}
+table.num tr.ebit td.neg{color:#F2B8B0}
+.fnote{font-size:11.5px;color:#7F7A66;margin-top:10px}
+.side{display:flex;flex-direction:column;gap:16px}
+.mix{display:flex;flex-direction:column;gap:10px}
+.mix .row{font-size:12.5px}
+.mix .row .lab{display:flex;justify-content:space-between;margin-bottom:4px;color:#1A2444}
+.mix .row .lab b{font-variant-numeric:tabular-nums}
+.mix .track{height:7px;background:#F1EADC;border-radius:4px;overflow:hidden}
+.mix .fillb{height:100%;background:#0B1437;border-radius:4px}
+.big{font-family:var(--serif);font-size:46px;line-height:1.05}
+.card.navy .l2{font-size:12.5px;color:#B8C0D9;margin-top:4px}
+
+/* KPIs */
+.kpis{display:grid;grid-template-columns:repeat(3,1fr);grid-template-rows:1fr 1fr;gap:16px;height:calc(100% - 26px)}
+.kpi{display:flex;flex-direction:column;justify-content:space-between}
+.kpi .v{font-family:var(--serif);font-size:62px;line-height:1;color:#0B1437;letter-spacing:-1px}
+.kpi.navy .v{color:#fff}
+.kpi .v sup{font-size:.4em;color:#B0892E;margin-left:4px;vertical-align:top;position:relative;top:.3em}
+
+/* volume */
+.tiles{display:grid;gap:12px}
+.tiles .card{padding:12px 14px}
+.tiles .lbl{font-size:10px;letter-spacing:.14em;margin-bottom:4px}
+.tiles .lbl::before{display:none}
+.tiles .v{font-family:var(--serif);font-size:25px;line-height:1.1;color:#0B1437}
+.tiles .navy .v{color:#fff}
+.charts2{display:grid;grid-template-columns:1fr 1fr;gap:20px;margin-top:14px}
+.chart h5{font-family:var(--serif);font-size:18px;font-weight:400;margin:0 0 2px;color:#0B1437}
+.legend{display:flex;gap:16px;font-size:11.5px;color:#3E475F;margin-bottom:4px}
+.legend i{display:inline-block;width:10px;height:10px;border-radius:2px;margin-right:6px;vertical-align:-1px}
+
+/* metrics */
+.mtbl{width:100%;border-collapse:collapse;font-size:13px;font-variant-numeric:tabular-nums;margin-top:6px}
+.mtbl th{font-weight:600;color:#3E475F;font-size:11.5px;text-align:center;padding:5px 4px;border-bottom:1px solid #0B1437}
+.mtbl th:first-child{text-align:left}
+.mtbl td{text-align:center;padding:7px 4px;border-bottom:1px solid #EFEBE1}
+.mtbl td:first-child{text-align:left;color:#1A2444}
+.mtbl td.cur{font-weight:700;color:#0B1437;background:#F1EADC}
+
+/* donut */
+.dist{display:grid;grid-template-columns:420px 1fr;gap:34px;height:100%;align-items:center}
+.dlist{columns:2;column-gap:30px;font-size:13px}
+.dlist div{display:flex;align-items:baseline;gap:8px;padding:5px 0;border-bottom:1px solid #EFEBE1;break-inside:avoid}
+.dlist i{width:10px;height:10px;border-radius:2px;flex:none;transform:translateY(1px)}
+.dlist span.n{flex:1;color:#1A2444}
+.dlist b{font-variant-numeric:tabular-nums;font-weight:600;width:40px;text-align:right}
+.dlist em{font-style:normal;color:#7F7A66;font-variant-numeric:tabular-nums;width:24px;text-align:right}
+.ready{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:14px 18px;margin:0 auto 22px;max-width:1280px}
+.ready h4{margin:0 0 4px;font-family:var(--serif);font-weight:500;font-size:17px}
+.ready .sum{font-size:12.5px;color:var(--muted);margin:0 0 10px}
+.ready ul{list-style:none;margin:0;padding:0;display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:2px 18px}
+.ready li{display:flex;gap:8px;align-items:flex-start;font-size:12.5px;padding:3px 0}
+.ready li i{font-style:normal;flex:none;width:14px;text-align:center;font-weight:700}
+.ready li.e i{color:#9B2C2C}.ready li.w i{color:#8A5A00}.ready li.o i{color:#2F7A4A}
+.ready li.e{color:#9B2C2C}.ready li.w{color:var(--warn)}
+.ready li span.d{color:var(--muted)}
+.ready .verdict{margin-top:12px;padding-top:10px;border-top:1px solid var(--border-soft);font-weight:700;font-size:13.5px}
+.ready .verdict.block{color:#9B2C2C}.ready .verdict.go{color:#2F7A4A}
+.ack{display:flex;gap:8px;align-items:flex-start;font-size:12.5px;background:var(--warn-bg);color:var(--warn);border-radius:8px;padding:9px 11px;margin:8px 0}
+.ack input{margin-top:2px;flex:none}
+.rev{display:flex;gap:8px;align-items:center;font-size:12.5px;margin:2px 0 12px}
+.stale{background:var(--warn-bg);color:var(--warn);border-radius:6px;padding:5px 9px;font-size:12px;margin:4px 0 8px}
+.htbl{width:100%;border-collapse:collapse;font-size:11.5px}
+.htbl th{font-weight:600;color:var(--muted);font-size:10.5px;padding:3px 2px;text-align:center}
+.htbl th:first-child{text-align:left}
+.htbl td{padding:2px 1px}
+.htbl td:first-child{font-size:12px;white-space:nowrap;padding-right:6px}
+.htbl input{width:100%;background:var(--field);border:1px solid var(--border);border-radius:5px;padding:4px 3px;font-size:11.5px;text-align:right}
+.tstat{font-size:12.5px;margin:6px 0}
+.tstat b{font-variant-numeric:tabular-nums}
+@media print{
+  *{-webkit-print-color-adjust:exact!important;print-color-adjust:exact!important}
+  @page{size:1280px 720px;margin:0}
+  body{background:#fff}
+  .bar,.panel,.toast,.ready{display:none!important}
+  .main{display:block}
+  .stage{padding:0;overflow:visible}
+  .slides{gap:0}
+  .sframe{box-shadow:none;border-radius:0;width:1280px!important;height:720px!important;break-after:page}
+  .sframe .slide{transform:none!important}
+}
+/* ---- access gate (mirrors the Sales Tracker pattern) ---- */
+.mrgate{position:fixed;inset:0;z-index:1000;background:linear-gradient(160deg,var(--navy),var(--navy-2));display:flex;align-items:center;justify-content:center;padding:20px}
+.mrgate.hidden{display:none}
+.mrgate-card{background:var(--surface);width:min(410px,100%);border-radius:14px;padding:30px;box-shadow:0 30px 80px -30px rgba(0,0,0,.6);text-align:center}
+.mrgate-card h1{font-family:var(--serif);font-size:21px;line-height:1.2;margin:0 0 5px;color:var(--text)}
+.mrgate-card p{margin:0 0 20px;color:var(--muted);font-size:13px}
+.mrgate-card label{display:block;text-align:left;font-size:11px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;margin-bottom:6px}
+.mrgate-card input{width:100%;padding:11px 12px;font-size:15px;border:1px solid var(--border);border-radius:8px;background:var(--field);color:var(--text)}
+.mrgate-card input:focus{outline:none;border-color:var(--gold)}
+.mrgate-card button{width:100%;margin-top:15px;padding:12px;border:0;border-radius:8px;background:var(--gold);color:#fff;font-weight:600;font-size:15px;cursor:pointer}
+.mrgate-card button:disabled{opacity:.6;cursor:default}
+.mrgate-err{color:#b3261e;font-size:12.5px;font-weight:600;margin-top:12px;min-height:15px}
+.mrgate-foot{margin-top:16px;font-size:11px;color:var(--muted)}
+body.locked{overflow:hidden}
+.mrnote{background:var(--warn-bg);color:var(--warn);font-size:12.5px;font-weight:600;padding:8px 22px;border-bottom:1px solid var(--border-soft);text-align:center}
+</style>
+</head>
+<body>
+<div class="mrgate" id="mrgate">
+  <div class="mrgate-card">
+    <h1>ARIE Management Report</h1>
+    <p>Enter the access passcode to continue.</p>
+    <form id="mrgateForm" autocomplete="off">
+      <label for="mrgatePass">Access passcode</label>
+      <input id="mrgatePass" type="password" autocomplete="off" autocapitalize="off" spellcheck="false" placeholder="Enter passcode">
+      <button type="submit" id="mrgateBtn">Sign in</button>
+      <div class="mrgate-err" id="mrgateErr"></div>
+    </form>
+    <div class="mrgate-foot">Sessions expire after 12 hours. Nothing you enter is stored by the website.</div>
+  </div>
+</div>
+<div class="app">
+  <div class="bar">
+    <svg class="logo" viewBox="0 0 396 94" aria-label="ARIE Finance" role="img"><defs><linearGradient id="lgA" x1="82.7" y1="87" x2="82.7" y2="7" gradientUnits="userSpaceOnUse"><stop stop-color="#6B63F0"/><stop offset="1" stop-color="#4940D6"/></linearGradient></defs><path d="M11.0614 80.4441L127.778 11.2672C131.539 9.03804 136.402 10.7353 137.959 14.8209L161.821 77.4418C163.579 82.0553 160.171 87.0001 155.234 87.0001L127.149 87.0001C125.138 87.0001 123.222 86.1406 121.885 84.6381L105.648 66.3987C103.515 64.0025 100.033 63.349 97.1764 64.8086L55.2553 86.2282C54.2624 86.7355 53.1633 87.0001 52.0482 87.0001L12.8583 87.0001C9.27394 87.0001 7.97797 82.2716 11.0614 80.4441Z" fill="url(#lgA)"/><path d="M88.1037 86.508C86.5213 86.508 85.2012 85.2031 85.6183 83.6766C86.1064 81.8899 87.0528 80.2432 88.3855 78.9106C90.4004 76.8957 93.1333 75.7637 95.9829 75.7637C98.8324 75.7637 101.565 76.8957 103.58 78.9106C104.913 80.2432 105.859 81.8899 106.347 83.6766C106.764 85.2031 105.444 86.508 103.862 86.508L88.1037 86.508Z" fill="currentColor"/><path d="M238.682 42.875H214.744L210.713 51H197.775L220.244 8.0625H233.182L255.65 51H242.713L238.682 42.875ZM218.9 34.5H234.588L226.775 18.6875L218.9 34.5ZM274.275 51H262.682V8.0625H291.744C294.869 8.0625 297.515 8.38542 299.682 9.03125C301.869 9.67708 303.64 10.5938 304.994 11.7812C306.369 12.9688 307.359 14.4062 307.963 16.0938C308.588 17.7604 308.9 19.625 308.9 21.6875C308.9 23.5 308.64 25.0833 308.119 26.4375C307.619 27.7917 306.932 28.9583 306.057 29.9375C305.203 30.8958 304.203 31.7083 303.057 32.375C301.911 33.0417 300.703 33.5938 299.432 34.0312L313.494 51H299.932L286.932 35.1875H274.275V51ZM297.182 21.625C297.182 20.7917 297.067 20.0833 296.838 19.5C296.63 18.9167 296.255 18.4479 295.713 18.0938C295.171 17.7188 294.442 17.4479 293.525 17.2812C292.63 17.1146 291.505 17.0312 290.15 17.0312H274.275V26.2188H290.15C291.505 26.2188 292.63 26.1354 293.525 25.9688C294.442 25.8021 295.171 25.5417 295.713 25.1875C296.255 24.8125 296.63 24.3333 296.838 23.75C297.067 23.1667 297.182 22.4583 297.182 21.625ZM321.807 51V8.0625H333.4V51H321.807ZM346.869 51V8.0625H390.338V17.2188H358.775V24.3125H388.713V33.4688H358.775V41.8438H390.775V51H346.869ZM206.905 67.5815V71.4326H221.294V76.1538H206.905V85H200.927V62.8604H222.084V67.5815H206.905ZM227.192 85V62.8604H233.17V85H227.192ZM261.03 85L246.093 69.7891V85H240.115V62.8604H246.608L261.562 78.1357V62.8604H267.507V85H261.03ZM292.225 80.8105H279.882L277.804 85H271.133L282.718 62.8604H289.389L300.975 85H294.304L292.225 80.8105ZM282.025 76.4922H290.114L286.086 68.3389L282.025 76.4922ZM325.515 85L310.578 69.7891V85H304.6V62.8604H311.094L326.047 78.1357V62.8604H331.993V85H325.515ZM363.317 83.4854C362.544 83.8076 361.765 84.0977 360.981 84.3555C360.196 84.6133 359.385 84.8335 358.547 85.0161C357.71 85.2095 356.823 85.3545 355.889 85.4512C354.965 85.5479 353.971 85.5962 352.908 85.5962C350.652 85.5962 348.573 85.3545 346.672 84.8711C344.781 84.3877 343.148 83.6626 341.773 82.6958C340.409 81.7183 339.346 80.5044 338.583 79.0542C337.82 77.5933 337.439 75.8906 337.439 73.9463C337.439 72.002 337.82 70.3047 338.583 68.8545C339.346 67.3936 340.409 66.1797 341.773 65.2129C343.148 64.2354 344.781 63.5049 346.672 63.0215C348.573 62.5381 350.652 62.2964 352.908 62.2964C353.971 62.2964 354.965 62.3447 355.889 62.4414C356.823 62.5381 357.71 62.6831 358.547 62.8765C359.385 63.0591 360.196 63.2793 360.981 63.5371C361.765 63.7949 362.544 64.085 363.317 64.4072V69.7891C362.705 69.4561 362.06 69.1284 361.383 68.8062C360.707 68.4731 359.96 68.1777 359.144 67.9199C358.327 67.6514 357.43 67.4365 356.453 67.2754C355.475 67.1035 354.374 67.0176 353.149 67.0176C351.27 67.0176 349.707 67.2109 348.461 67.5977C347.225 67.9844 346.237 68.5 345.496 69.1445C344.754 69.7891 344.233 70.5303 343.933 71.3682C343.632 72.1953 343.482 73.0547 343.482 73.9463C343.482 74.5371 343.546 75.1226 343.675 75.7026C343.804 76.272 344.019 76.8145 344.319 77.3301C344.62 77.835 345.012 78.3022 345.496 78.7319C345.979 79.1616 346.581 79.5322 347.3 79.8438C348.02 80.1553 348.858 80.4023 349.814 80.585C350.781 80.7568 351.893 80.8428 353.149 80.8428C354.374 80.8428 355.475 80.7676 356.453 80.6172C357.43 80.4561 358.327 80.2466 359.144 79.9888C359.96 79.731 360.707 79.4409 361.383 79.1187C362.06 78.7856 362.705 78.4473 363.317 78.1035V83.4854ZM368.892 85V62.8604H391.306V67.5815H375.031V71.2393H390.468V75.9604H375.031V80.2788H391.531V85H368.892Z" fill="currentColor"/></svg>
+    <div class="ttl">Management report <span>builder</span></div>
+    <div class="spacer"></div>
+    <div class="status" id="status">No figures loaded</div>
+    <button class="btn btn-ghost" id="btnUpload">Upload Excel</button>
+    <button class="btn btn-ghost" id="btnPrint" disabled title="Preview only. Uses the browser print dialogue: vector text, no rasterisation. Does not finalise the month.">Vector PDF (preview)</button>
+    <button class="btn btn-ghost" id="btnImport" type="button" title="Load last month's continuation (.data) file to restore history">Load previous month</button>
+    <button class="btn btn-gold" id="btnPdf" disabled>Finalize Report</button>
+    <button class="btn btn-ghost" id="btnDlPdf" type="button" disabled title="Download the finalised PDF">Download PDF</button>
+    <button class="btn btn-ghost" id="btnDlPptx" type="button" disabled title="Download the finalised PowerPoint (image-based, matches the PDF)">Download PowerPoint</button>
+    <button class="btn btn-ghost" id="btnDlData" type="button" disabled title="Download this month's continuation file to start next month">Save for Next Month</button>
+    <button class="btn btn-ghost" id="btnSignOut" type="button" title="Sign out and clear this page">Sign out</button>
+  </div>
+  <input type="file" id="contFile" accept=".data,application/json,.json" hidden>
+  <div class="mrnote" id="mrnote">Your work is not stored by the website. Download the report files (PDF, PowerPoint and Save for Next Month) before leaving or refreshing this page.</div>
+  <div class="main">
+    <aside class="panel">
+      <div class="tabs" role="tablist">
+        <button class="tab" role="tab" aria-selected="true" data-tab="figures">Figures</button>
+        <button class="tab" role="tab" aria-selected="false" data-tab="kpis">KPIs &amp; volumes</button>
+        <button class="tab" role="tab" aria-selected="false" data-tab="text">Commentary</button>
+        <button class="tab" role="tab" aria-selected="false" data-tab="clients">Client mix</button>
+        <button class="tab" role="tab" aria-selected="false" data-tab="setup">Setup</button>
+      </div>
+      <div class="pane" data-pane="figures"></div>
+      <div class="pane" data-pane="kpis" hidden></div>
+      <div class="pane" data-pane="text" hidden></div>
+      <div class="pane" data-pane="clients" hidden></div>
+      <div class="pane" data-pane="setup" hidden></div>
+    </aside>
+    <section class="stage" id="stage"></section>
+  </div>
+</div>
+<input type="file" id="file" accept=".xlsx,.xls" multiple hidden>
+<div class="toast" id="toast" hidden></div>
+
+<script>
+/* ================= constants ================= */
+const LOGO_SVG = (cls, markFill) => `<svg class="${cls}" viewBox="0 0 396 94"><path d="M11.0614 80.4441L127.778 11.2672C131.539 9.03804 136.402 10.7353 137.959 14.8209L161.821 77.4418C163.579 82.0553 160.171 87.0001 155.234 87.0001L127.149 87.0001C125.138 87.0001 123.222 86.1406 121.885 84.6381L105.648 66.3987C103.515 64.0025 100.033 63.349 97.1764 64.8086L55.2553 86.2282C54.2624 86.7355 53.1633 87.0001 52.0482 87.0001L12.8583 87.0001C9.27394 87.0001 7.97797 82.2716 11.0614 80.4441Z" fill="${markFill||'#2E2A8C'}"/><path d="M88.1037 86.508C86.5213 86.508 85.2012 85.2031 85.6183 83.6766C86.1064 81.8899 87.0528 80.2432 88.3855 78.9106C90.4004 76.8957 93.1333 75.7637 95.9829 75.7637C98.8324 75.7637 101.565 76.8957 103.58 78.9106C104.913 80.2432 105.859 81.8899 106.347 83.6766C106.764 85.2031 105.444 86.508 103.862 86.508L88.1037 86.508Z" fill="currentColor"/><path d="M238.682 42.875H214.744L210.713 51H197.775L220.244 8.0625H233.182L255.65 51H242.713L238.682 42.875ZM218.9 34.5H234.588L226.775 18.6875L218.9 34.5ZM274.275 51H262.682V8.0625H291.744C294.869 8.0625 297.515 8.38542 299.682 9.03125C301.869 9.67708 303.64 10.5938 304.994 11.7812C306.369 12.9688 307.359 14.4062 307.963 16.0938C308.588 17.7604 308.9 19.625 308.9 21.6875C308.9 23.5 308.64 25.0833 308.119 26.4375C307.619 27.7917 306.932 28.9583 306.057 29.9375C305.203 30.8958 304.203 31.7083 303.057 32.375C301.911 33.0417 300.703 33.5938 299.432 34.0312L313.494 51H299.932L286.932 35.1875H274.275V51ZM297.182 21.625C297.182 20.7917 297.067 20.0833 296.838 19.5C296.63 18.9167 296.255 18.4479 295.713 18.0938C295.171 17.7188 294.442 17.4479 293.525 17.2812C292.63 17.1146 291.505 17.0312 290.15 17.0312H274.275V26.2188H290.15C291.505 26.2188 292.63 26.1354 293.525 25.9688C294.442 25.8021 295.171 25.5417 295.713 25.1875C296.255 24.8125 296.63 24.3333 296.838 23.75C297.067 23.1667 297.182 22.4583 297.182 21.625ZM321.807 51V8.0625H333.4V51H321.807ZM346.869 51V8.0625H390.338V17.2188H358.775V24.3125H388.713V33.4688H358.775V41.8438H390.775V51H346.869ZM206.905 67.5815V71.4326H221.294V76.1538H206.905V85H200.927V62.8604H222.084V67.5815H206.905ZM227.192 85V62.8604H233.17V85H227.192ZM261.03 85L246.093 69.7891V85H240.115V62.8604H246.608L261.562 78.1357V62.8604H267.507V85H261.03ZM292.225 80.8105H279.882L277.804 85H271.133L282.718 62.8604H289.389L300.975 85H294.304L292.225 80.8105ZM282.025 76.4922H290.114L286.086 68.3389L282.025 76.4922ZM325.515 85L310.578 69.7891V85H304.6V62.8604H311.094L326.047 78.1357V62.8604H331.993V85H325.515ZM363.317 83.4854C362.544 83.8076 361.765 84.0977 360.981 84.3555C360.196 84.6133 359.385 84.8335 358.547 85.0161C357.71 85.2095 356.823 85.3545 355.889 85.4512C354.965 85.5479 353.971 85.5962 352.908 85.5962C350.652 85.5962 348.573 85.3545 346.672 84.8711C344.781 84.3877 343.148 83.6626 341.773 82.6958C340.409 81.7183 339.346 80.5044 338.583 79.0542C337.82 77.5933 337.439 75.8906 337.439 73.9463C337.439 72.002 337.82 70.3047 338.583 68.8545C339.346 67.3936 340.409 66.1797 341.773 65.2129C343.148 64.2354 344.781 63.5049 346.672 63.0215C348.573 62.5381 350.652 62.2964 352.908 62.2964C353.971 62.2964 354.965 62.3447 355.889 62.4414C356.823 62.5381 357.71 62.6831 358.547 62.8765C359.385 63.0591 360.196 63.2793 360.981 63.5371C361.765 63.7949 362.544 64.085 363.317 64.4072V69.7891C362.705 69.4561 362.06 69.1284 361.383 68.8062C360.707 68.4731 359.96 68.1777 359.144 67.9199C358.327 67.6514 357.43 67.4365 356.453 67.2754C355.475 67.1035 354.374 67.0176 353.149 67.0176C351.27 67.0176 349.707 67.2109 348.461 67.5977C347.225 67.9844 346.237 68.5 345.496 69.1445C344.754 69.7891 344.233 70.5303 343.933 71.3682C343.632 72.1953 343.482 73.0547 343.482 73.9463C343.482 74.5371 343.546 75.1226 343.675 75.7026C343.804 76.272 344.019 76.8145 344.319 77.3301C344.62 77.835 345.012 78.3022 345.496 78.7319C345.979 79.1616 346.581 79.5322 347.3 79.8438C348.02 80.1553 348.858 80.4023 349.814 80.585C350.781 80.7568 351.893 80.8428 353.149 80.8428C354.374 80.8428 355.475 80.7676 356.453 80.6172C357.43 80.4561 358.327 80.2466 359.144 79.9888C359.96 79.731 360.707 79.4409 361.383 79.1187C362.06 78.7856 362.705 78.4473 363.317 78.1035V83.4854ZM368.892 85V62.8604H391.306V67.5815H375.031V71.2393H390.468V75.9604H375.031V80.2788H391.531V85H368.892Z" fill="currentColor"/></svg>`;
+const MARK_PATH = "M11.0614 80.4441L127.778 11.2672C131.539 9.03804 136.402 10.7353 137.959 14.8209L161.821 77.4418C163.579 82.0553 160.171 87.0001 155.234 87.0001L127.149 87.0001C125.138 87.0001 123.222 86.1406 121.885 84.6381L105.648 66.3987C103.515 64.0025 100.033 63.349 97.1764 64.8086L55.2553 86.2282C54.2624 86.7355 53.1633 87.0001 52.0482 87.0001L12.8583 87.0001C9.27394 87.0001 7.97797 82.2716 11.0614 80.4441Z";
+const MON = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+const MONL = ['January','February','March','April','May','June','July','August','September','October','November','December'];
+const REV_CATS = [['acc','Accounts opening fees'],['subTxn','Subscription and transaction fees'],['fxOther','FX transactions & other fees'],['maint','Account maintenance fees'],['advisory','Investment advisory & admin fees']];
+const EXP_CATS = [['staff','Salary & staff pension cost'],['prof','Professional & compliance fees'],['other','Other operational expenses'],['intro','Commission paid to introducers']];
+const DEFAULT_DIRECT = ['Payment to ACIB (on boarding & IT recharge)','Professional Fees','Introducer Fees','Bank charges','Compliance services','Membership fees'];
+const PALETTE = ['#0B1437','#C19A3E','#9DB0D4','#7A6326','#3A5A9C','#E7DCC4','#2D3650','#C9A24E','#C5CAD8','#1A2444','#B0892E','#6F83B3','#DCCB9E','#3E475F','#8E7431','#DBE2EF','#565E78','#F1EADC'];
+
+/* ================= state ================= */
+const S = { recProvisional:false, dbPending:false, pl:null, bs:null, txn:null, files:{}, key:null, rec:null, cfg:null, hist:{}, db:null, dl:null, tab:'figures', lastSaved:{}, dbReady:false };
+
+function defaultCfg(){ return { map:{}, directCosts:DEFAULT_DIRECT.slice(), yearVolumes:[], includeFinPos:false, company:'ARIE FINANCE', entity:'', domestic:'Mauritius', knownAccounts:null }; }
+S.cfg = defaultCfg();
+
+/* ================= helpers ================= */
+const $ = s => document.querySelector(s);
+const esc = s => String(s??'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const num = v => { if(v===null||v===undefined||v==='') return null; if(typeof v==='number') return isFinite(v)?v:null; const t=String(v).replace(/[,$\s]/g,''); if(/^\(.*\)$/.test(t)) { const n=parseFloat(t.slice(1,-1)); return isNaN(n)?null:-n; } const n=parseFloat(t); return isNaN(n)?null:n; };
+const isNum = v => typeof v==='number' && isFinite(v);
+const r0 = v => Math.round(v);
+const fmtInt = v => Math.abs(r0(v)).toLocaleString('en-US');
+function money(v, dash){ if(!isNum(v)) return '–'; if(r0(v)===0) return dash?'$ –':'$0'; return v<0?`($${fmtInt(v)})`:`$${fmtInt(v)}`; }
+function moneyK(v){ if(!isNum(v)) return '–'; return `$${(v/1000).toFixed(1)}K`; }
+function mUSD(v){ if(!isNum(v)) return '–'; return `$${v.toFixed(1)}M`; }
+function pct(v,d=0){ return isNum(v)?`${(v*100).toFixed(d)}%`:'–'; }
+function keyOf(y,m){ return `${y}-${String(m+1).padStart(2,'0')}`; }
+function parseKey(k){ const [y,m]=k.split('-').map(Number); return {y, m:m-1}; }
+function shiftKey(k,n){ const {y,m}=parseKey(k); const d=new Date(y,m+n,1); return keyOf(d.getFullYear(),d.getMonth()); }
+function shortLbl(k){ const {y,m}=parseKey(k); return `${MON[m]} ${String(y).slice(2)}`; }
+function longLbl(k){ const {y,m}=parseKey(k); return `${MONL[m]} ${y}`; }
+function endDate(k){ const {y,m}=parseKey(k); return `${new Date(y,m+1,0).getDate()} ${MONL[m]} ${y}`; }
+function monthIdx(s){ const i=MON.findIndex(x=>x.toLowerCase()===String(s).slice(0,3).toLowerCase()); return i; }
+function parseMonthLabel(v){
+  if(isNum(v) && v>30000){ const d=new Date(Math.round((v-25569)*864e5)); return keyOf(d.getUTCFullYear(),d.getUTCMonth()); }
+  const s=String(v).trim(); let m=s.match(/^([A-Za-z]{3,9})\.?\s+(\d{4})$/); if(m){ const i=monthIdx(m[1]); if(i>=0) return keyOf(+m[2],i); }
+  m=s.match(/^\d{1,2}\s+([A-Za-z]{3,9})\s+(\d{4})$/); if(m){ const i=monthIdx(m[1]); if(i>=0) return keyOf(+m[2],i); }
+  return null;
+}
+function clone(o){ return JSON.parse(JSON.stringify(o)); }
+function getPath(o,p){ return p.split('.').reduce((a,k)=>a==null?undefined:a[k],o); }
+function setPath(o,p,v){ const ks=p.split('.'); let a=o; ks.slice(0,-1).forEach(k=>{ if(a[k]==null||typeof a[k]!=='object') a[k]={}; a=a[k]; }); a[ks.at(-1)]=v; }
+let toastT; function toast(msg,ms=3200){ const t=$('#toast'); t.textContent=msg; t.hidden=false; clearTimeout(toastT); toastT=setTimeout(()=>t.hidden=true,ms); }
+
+/* ================= Excel parsing ================= */
+function sheetRows(wb){ const ws=wb.Sheets[wb.SheetNames[0]]; return XLSX.utils.sheet_to_json(ws,{header:1,raw:true,defval:null}); }
+function detectKind(rows){
+  const top=rows.slice(0,6).map(r=>(r||[]).filter(x=>typeof x==='string').join(' ')).join(' ').toLowerCase();
+  if(top.includes('profit and loss')||top.includes('profit & loss')) return 'pl';
+  if(top.includes('balance sheet')) return 'bs';
+  return null;
+}
+function parsePL(rows){
+  const h=rows.findIndex(r=>r&&String(r[0]??'').trim().toLowerCase()==='account');
+  if(h<0) throw new Error('Could not find the "Account" header row in the Profit and Loss sheet.');
+  const head=rows[h]; const months=[]; let ytdCol=-1;
+  for(let c=1;c<head.length;c++){ const v=head[c]; if(v==null||v==='') continue; if(/^ytd$/i.test(String(v).trim())){ ytdCol=c; break; } const k=parseMonthLabel(v); if(k) months.push({col:c,key:k}); }
+  if(!months.length) throw new Error('No month columns found in the Profit and Loss sheet.');
+  let clients=months.map(()=>null);
+  for(let i=h-1;i>=Math.max(0,h-4);i--){ const cr=rows[i]||[]; const v=months.map(m=>isNum(cr[m.col])&&cr[m.col]>0&&cr[m.col]<100000?cr[m.col]:null); if(v.filter(x=>x!==null).length>=Math.ceil(months.length/2)){ clients=v; break; } }
+  const entity=(rows.slice(0,h).map(r=>r&&r[0]).find(x=>typeof x==='string'&&/ltd|limited|inc|plc/i.test(x)))||'';
+  let period=null;
+  rows.slice(0,h).forEach(r=>{ const s=String((r&&r[0])??''); const m=s.match(/for the\s+(\d+)\s+months?\s+ended\s+(.+?)\s*$/i);
+    if(m){ const k=parseMonthLabel(m[2].trim()); if(k) period={n:+m[1], key:k, label:m[2].trim()}; } });
+  const lines=[]; let section='';
+  for(let i=h+1;i<rows.length;i++){
+    const r=rows[i]; if(!r) continue; const name=String(r[0]??'').trim(); if(!name) continue;
+    const vals=months.map(m=>num(r[m.col])); const ytd=ytdCol>=0?num(r[ytdCol]):null;
+    if(!vals.some(v=>v!==null) && ytd===null){ section=name; continue; }
+    lines.push({name, section, vals:vals.map(v=>v||0), ytd: ytd===null? vals.reduce((a,b)=>a+(b||0),0) : ytd, isTotal:/^total\b/i.test(name)||/^(gross profit|ebitda|net profit|net loss)$/i.test(name)});
+  }
+  return {months, clients, entity, lines, period, key:months[0].key};
+}
+function parseBS(rows){
+  let h=-1, ac=-1;
+  for(let i=0;i<rows.length&&h<0;i++){ const r=rows[i]||[]; for(let c=0;c<r.length;c++){ if(String(r[c]??'').trim().toLowerCase()==='account'){ h=i; ac=c; break; } } }
+  if(h<0) throw new Error('Could not find the "Account" header row in the Balance Sheet.');
+  const head=rows[h]; const dates=[];
+  for(let c=ac+1;c<head.length;c++){ const k=head[c]!=null?parseMonthLabel(head[c]):null; if(k) dates.push({col:c,key:k}); }
+  const lines=[];
+  for(let i=h+1;i<rows.length;i++){
+    const r=rows[i]||[]; const name=[r[0],r[1]].map(x=>String(x??'').trim()).find(x=>x&&x!=='[FX]'); if(!name) continue;
+    if(/^\[fx\]/i.test(name)) break;
+    const vals=dates.map(d=>num(r[d.col])); if(!vals.some(v=>v!==null)) continue;
+    lines.push({name, vals:vals.map(v=>v||0)});
+  }
+  return {dates, lines, key:dates[0]?.key};
+}
+
+/* ---------- Transaction Summary workbook ---------- */
+function txnBlocks(rows){
+  const out={}; const lc=v=>String(v??'').trim().toLowerCase();
+  for(let i=0;i<rows.length;i++){
+    const r=rows[i]||[];
+    for(let c=0;c<r.length;c++){
+      if(lc(r[c])!=='row labels') continue;
+      let key=null;
+      for(let up=1;up<=2&&!key&&i-up>=0;up++){ const v=(rows[i-up]||[])[c]; if(v!=null) key=parseMonthLabel(v); }
+      if(!key||out[key]) continue;
+      let vc=-1,cc=-1;
+      for(let c2=c+1;c2<Math.min(r.length,c+6);c2++){ const h=lc(r[c2]);
+        if(vc<0&&/amount/.test(h)&&/usd/.test(h)) vc=c2;
+        if(cc<0&&/count/.test(h)) cc=c2; }
+      if(vc<0||cc<0) continue;
+      const b={};
+      for(let j=i+1;j<Math.min(rows.length,i+10);j++){
+        const lab=lc((rows[j]||[])[c]);
+        if(lab==='grand total') break;
+        if(lab==='in'||lab==='out') b[lab]={usd:num((rows[j]||[])[vc]),count:num((rows[j]||[])[cc])};
+      }
+      if(b.in&&b.out&&b.in.usd!=null&&b.out.usd!=null&&b.in.count!=null&&b.out.count!=null)
+        out[key]={inUsd:b.in.usd,outUsd:b.out.usd,inCount:b.in.count,outCount:b.out.count};
+    }
+  }
+  return out;
+}
+function txnYtd(rows){
+  const lc=v=>String(v??'').trim().toLowerCase();
+  for(let i=0;i<rows.length;i++){ const r=rows[i]||[];
+    for(let c=0;c<r.length;c++){
+      const s=String(r[c]??''); if(!/^\s*ytd\b/i.test(s)) continue;
+      const key=parseMonthLabel(s.replace(/^\s*ytd\s*/i,'').replace(/[^A-Za-z0-9 ]/g,' ').trim());
+      if(!key) continue;
+      for(let j=i+1;j<Math.min(rows.length,i+4);j++){
+        const hr=rows[j]||[]; if(lc(hr[c])!=='type') continue;
+        let vc=-1,cc=-1;
+        for(let c2=c+1;c2<Math.min(hr.length,c+6);c2++){ const h=lc(hr[c2]);
+          if(vc<0&&/amount/.test(h)&&/usd/.test(h)) vc=c2; if(cc<0&&/count/.test(h)) cc=c2; }
+        if(vc<0) continue;
+        let iu=null,ou=null,ic=null,oc=null;
+        for(let k2=j+1;k2<Math.min(rows.length,j+6);k2++){ const lab=lc((rows[k2]||[])[c]);
+          if(lab==='in'){ iu=num((rows[k2]||[])[vc]); ic=cc>=0?num((rows[k2]||[])[cc]):null; }
+          if(lab==='out'){ ou=num((rows[k2]||[])[vc]); oc=cc>=0?num((rows[k2]||[])[cc]):null; } }
+        if(iu!=null&&ou!=null) return {key,usd:iu+ou,count:(ic||0)+(oc||0)};
+      }
+    }
+  }
+  return null;
+}
+function parseTxnSummary(wb){
+  let best=null;
+  for(const sn of wb.SheetNames){
+    const rows=XLSX.utils.sheet_to_json(wb.Sheets[sn],{header:1,raw:true,defval:null});
+    const months=txnBlocks(rows);
+    if(Object.keys(months).length && (!best||Object.keys(months).length>Object.keys(best.months).length))
+      best={months, ytd:txnYtd(rows), sheet:sn};
+  }
+  return best;
+}
+
+/* ================= mapping & computation ================= */
+function incomeLines(){ return S.pl.lines.filter(l=>!l.isTotal && /income|revenue|sales/i.test(l.section) && !/cost of/i.test(l.section)); }
+function opexLines(){ return S.pl.lines.filter(l=>!l.isTotal && /^operating expenses/i.test(l.section)); }
+function findLine(re){ return S.pl.lines.find(l=>re.test(l.name)); }
+function defaultRevCat(n){ n=n.toLowerCase();
+  if(/opening/.test(n)) return 'acc'; if(/subscription|transaction fee/.test(n)) return 'subTxn';
+  if(/maintenance/.test(n)) return 'maint'; if(/advisory|admin/.test(n)) return 'advisory'; return 'fxOther'; }
+function defaultExpCat(n){ n=n.toLowerCase();
+  if(/salary|pension|acib/.test(n)) return 'staff'; if(/professional|compliance serv/.test(n)) return 'prof';
+  if(/introducer|commission/.test(n)) return 'intro'; return 'other'; }
+const revCat = n => S.cfg.map['rev:'+n] || defaultRevCat(n);
+const expCat = n => S.cfg.map['exp:'+n] || defaultExpCat(n);
+
+function figsAt(idx){ // idx: month index or 'ytd'
+  const val = l => idx==='ytd'? l.ytd : l.vals[idx];
+  const f={acc:0,subTxn:0,fxOther:0,maint:0,advisory:0,staff:0,prof:0,other:0,intro:0};
+  incomeLines().forEach(l=>f[revCat(l.name)]+=val(l));
+  opexLines().forEach(l=>f[expCat(l.name)]+=val(l));
+  const tti=findLine(/^total (trading )?income$/i); f.rev = tti? val(tti) : REV_CATS.reduce((a,[k])=>a+f[k],0);
+  const tox=findLine(/^total operating expenses$/i); f.opex = tox? val(tox) : EXP_CATS.reduce((a,[k])=>a+f[k],0);
+  const eb=findLine(/^ebitda$/i); const tno=findLine(/^total non operating/i);
+  if(eb){ f.ebitda=val(eb); f.nonop=(f.rev-f.opex)-f.ebitda; } else { f.nonop=tno?-val(tno):0; f.ebitda=f.rev-f.opex-f.nonop; }
+  const direct=opexLines().filter(l=>S.cfg.directCosts.includes(l.name)).reduce((a,l)=>a+val(l),0);
+  f.gp=f.rev-direct;
+  return f;
+}
+function compute(){
+  const rec=S.rec, a=rec.adj||{};
+  const cur=figsAt(0), ytd=figsAt('ytd');
+  const rm=+a.reclassMonth||0, ry=+a.reclassYtd||0, yo=+a.ytdOther||0;
+  cur.fxOther-=rm; cur.advisory+=rm;
+  ytd.fxOther-=ry; ytd.advisory+=ry; ytd.fxOther+=yo; ytd.rev+=yo; ytd.ebitda+=yo; ytd.gp+=yo;
+  // comparative
+  const pk=shiftKey(S.key,-1); const prevRec=S.hist[pk];
+  let prev=null, compSrc='none';
+  const wantRep = rec.compMode!=='excel';
+  if(wantRep && prevRec?.published?.fig){ prev=prevRec.published.fig; compSrc='reported'; }
+  else if(S.pl.months.length>1 && S.pl.months[1].key===pk){ prev=figsAt(1); compSrc='excel'; }
+  // clients & KPIs
+  const k=rec.kpi||{};
+  const clientsX=S.pl.clients[0];
+  const clients = isNum(k.clients)?k.clients:(isNum(clientsX)?clientsX:null);
+  // Slide 9 denominator: NEVER inferred. Blank means the per-client metrics stay blank.
+  const active = isNum(k.activeClients)? k.activeClients : null;
+  const cl=S.pl.clients.filter(isNum); const nM=S.pl.months.length;
+  const avgClients = cl.length===nM? cl.reduce((x,y)=>x+y,0)/nM : clients;
+  const avgRevPerClient = avgClients? (ytd.rev/nM)/avgClients : null;
+  // client distributions
+  const sumList=l=>(l||[]).filter(x=>x&&x.name&&isNum(+x.count)&&x.count!=='').reduce((a,x)=>a+ +x.count,0);
+  const namedList=l=>(l||[]).filter(x=>x&&String(x.name).trim()).length;
+  const jurTot=sumList(rec.juris), indTot=sumList(rec.industries);
+  const jurNamed=namedList(rec.juris), indNamed=namedList(rec.industries);
+  const dom=String(S.cfg.domestic||'').trim().toLowerCase();
+  const domCount=(rec.juris||[]).filter(x=>x&&String(x.name).trim().toLowerCase()===dom&&isNum(+x.count)).reduce((a,x)=>a+ +x.count,0);
+  const intlAuto = (jurTot>0&&dom)? 100-Math.round(domCount/jurTot*100) : null;
+  const intlPct = isNum(k.intlPct)? k.intlPct : intlAuto;
+  const jurisdictions = isNum(k.jurisdictions)? k.jurisdictions : (jurNamed||null);
+  // transactions & volumes — a missing side is NEVER treated as zero
+  const t=rec.txn||{};
+  const inU=num(t.inUsd), outU=num(t.outUsd), inC=num(t.inCount), outC=num(t.outCount);
+  const usdDone = inU!=null&&outU!=null, cntDone = inC!=null&&outC!=null;
+  const usdPart = (inU!=null)!==(outU!=null), cntPart = (inC!=null)!==(outC!=null);
+  const volAuto = usdDone ? (inU+outU)/1e6 : null;
+  const volMonth = isNum(k.volMonth)?k.volMonth:volAuto;
+  const pm = prevRec?.published?.metrics||{};
+  const sameYear = parseKey(pk).y===parseKey(S.key).y;
+  const volYtdAuto = volMonth!=null ? (sameYear? (isNum(pm.volYtd)? pm.volYtd+volMonth : null) : volMonth) : null;
+  const volYtd = isNum(k.volYtd)?k.volYtd:volYtdAuto;
+  const volIncAuto = volMonth!=null && isNum(pm.volSinceInc)? pm.volSinceInc+volMonth : null;
+  const volSinceInc = isNum(k.volSinceInc)?k.volSinceInc:volIncAuto;
+  const ov=rec.ov||{};
+  const auto={
+    gpMargin: cur.rev? cur.gp/cur.rev : null,
+    revPerClient: active? cur.rev/active : null,
+    gpPerClient: active? cur.gp/active : null,
+    volPerClient: volMonth!=null&&clients? volMonth*1e6/clients : null,
+    txnPerClient: cntDone&&clients? (inC+outC)/clients : null,
+  };
+  const metrics={ inCount:inC, outCount:outC, inUsd:inU, outUsd:outU, volMonth, volYtd, volSinceInc };
+  Object.keys(auto).forEach(x=>metrics[x]= isNum(ov[x])? (x==='gpMargin'?ov[x]/100:ov[x]) : auto[x]);
+  return {cur,ytd,prev,compSrc,prevKey:pk,clients,clientsX,active,avgRevPerClient,volAuto,volYtdAuto,volIncAuto,
+          auto,metrics,nM,jurTot,indTot,jurNamed,indNamed,intlAuto,intlPct,jurisdictions,domCount,
+          usdDone,cntDone,usdPart,cntPart};
+}
+
+/* ================= report-readiness gate ================= */
+const TEXTS=[['pipeline','Pipeline'],['regulatory','Regulatory commentary'],['tech','Technology commentary'],
+             ['ebitdaNote','EBITDA note'],['metricsNote','Metrics note']];
+function newAccounts(){
+  if(!S.pl) return [];
+  const known=S.cfg.knownAccounts; if(!Array.isArray(known)) return [];
+  return [...incomeLines(),...opexLines()].map(l=>l.name).filter(n=>!known.includes(n));
+}
+const UE_FIELDS=[['gpMargin','GP margin'],['revPerClient','revenue/client'],['gpPerClient','GP/client'],
+                 ['volPerClient','volume/client'],['txnPerClient','transactions/client']];
+const TXN_FIELDS=['inUsd','outUsd','inCount','outCount'];
+function ueComplete(k,c){ return UE_FIELDS.every(([f])=>isNum(metricFor(k,c,f))); }
+function txnComplete(k,c){ return TXN_FIELDS.every(f=>isNum(metricFor(k,c,f))); }
+function historyGaps(c){
+  const ks=last6().slice(0,-1);
+  const txnMissing=ks.filter(k=>!txnComplete(k,c));
+  // every one of the five series on the Unit economics page must have a value
+  const ueMissing=ks.map(k=>({k,miss:UE_FIELDS.filter(([f])=>!isNum(metricFor(k,c,f))).map(([,l])=>l)}))
+                    .filter(x=>x.miss.length);
+  return {txnMissing,ueMissing};
+}
+function readiness(){
+  const R=[]; const add=(lvl,label,detail)=>R.push({lvl,label,detail:detail||''});
+  if(!S.pl){ add('e','Financial data','Upload the Xero Profit and Loss export.'); return {items:R,errors:1,warns:0}; }
+  const c=compute(), rec=S.rec;
+  // 1. source integrity
+  const p=S.pl.period;
+  if(p && p.key!==S.key) add('e','Reporting month',`Profit and Loss header says ${longLbl(p.key)} but the first month column is ${longLbl(S.key)}. Check the export.`);
+  else if(p && p.n!==S.pl.months.length) add('w','Reporting month',`Header says ${p.n} months; ${S.pl.months.length} month columns found.`);
+  else add('o','Reporting month',longLbl(S.key)+(p?' — matches the export header':''));
+  const desc=S.pl.months.every((m,i)=>i===0||m.key<S.pl.months[i-1].key);
+  if(!desc) add('e','Month column order','Month columns are not newest-first, so the reporting month cannot be identified reliably.');
+  if(S.bs&&S.bs.key!==S.key) add('w','Balance Sheet',`Balance Sheet is ${longLbl(S.bs.key)}, Profit and Loss is ${longLbl(S.key)}.`);
+  add('o','Financial data',`Revenue ${money(c.cur.rev)} · OPEX ${money(c.cur.opex)} · EBITDA ${money(c.cur.ebitda)}`);
+  // 2. mapping
+  const na=newAccounts();
+  if(na.length&&!rec.confirm.accounts) add('e','Unmapped accounts',`${na.length} account${na.length>1?'s':''} not seen before (${na.slice(0,3).map(esc).join(', ')}${na.length>3?'…':''}). Review the line mapping, then accept them in the Figures tab.`);
+  else if(na.length) add('o','New accounts',`${na.length} accepted this month.`);
+  else add('o','Line mapping','All accounts recognised.');
+  // 3. comparative basis
+  if(rec.compMode!=='excel'&&c.compSrc!=='reported') add('w','Comparative month',`No saved report for ${longLbl(c.prevKey)}, so the comparative column uses this month's restated Xero figures.`);
+  else if(c.compSrc==='reported') add('o','Comparative month',`${shortLbl(c.prevKey)} as previously reported.`);
+  else add('o','Comparative month',`${shortLbl(c.prevKey)} restated per Xero (selected).`);
+  // 4. YTD management adjustment
+  if(rec.adj.ytdOtherCarried&&!rec.confirm.adjYtd) add('e','YTD adjustment',`${money(+rec.adj.ytdOther)}${rec.adj.ytdOtherLabel?' ('+esc(rec.adj.ytdOtherLabel)+')':''} carried from last month. Confirm it still applies.`);
+  else if(+rec.adj.ytdOther) add('o','YTD adjustment',`${money(+rec.adj.ytdOther)} applied and confirmed.`);
+  // 5. per-client denominator
+  const basis=String(rec.kpi.activeBasis||'').trim();
+  if(!isNum(c.active)) add('e','Per-client denominator','Not set. Monthly revenue/client and gross profit/client cannot be calculated.');
+  else if(basis.length<3) add('e','Per-client denominator basis',`Denominator ${c.active} has no stated source. Record where the figure came from, e.g. "Finance confirmation — transacting clients".`);
+  else add('o','Per-client denominator',`${c.active} — ${esc(basis)}`);
+  // accounts
+  const aa=rec.kpi.accountsActive, ah=rec.kpi.accountsHeld;
+  if(!isNum(aa)||!isNum(ah)) add('e','Accounts',`${!isNum(aa)&&!isNum(ah)?'Active accounts and accounts held are':(!isNum(aa)?'Active accounts is':'Accounts held is')} not set. The KPI page would print “–”.`);
+  else if(aa>ah) add('e','Accounts',`Active accounts (${aa}) exceeds accounts held (${ah}). Check the client reporting — neither figure has been changed.`);
+  else add('o','Accounts',`${aa} active of ${ah} held.`);
+  // 6. transactions
+  if(c.usdPart||c.cntPart) add('e','Transaction data','Only one side entered. Enter both incoming and outgoing, using 0 where a side is genuinely nil.');
+  else if(!c.usdDone||!c.cntDone) add('e','Transaction data','Incomplete. Import the Transaction Summary workbook or enter all four figures.');
+  else add('o','Transaction data',`${c.metrics.inCount+c.metrics.outCount} transactions · ${mUSD(c.metrics.volMonth)}`);
+  if(!isNum(c.metrics.volYtd)) add('e','Year-to-date volume','Not available. It is stated in the operational commentary. Import the Transaction Summary or enter it.');
+  else add('o','Year-to-date volume',mUSD(c.metrics.volYtd));
+  if(!isNum(c.metrics.volSinceInc)) add('e','Since-incorporation volume','Not available. It is a headline KPI and would print “–”. Enter it once; it rolls forward after that.');
+  else add('o','Since-incorporation volume',mUSD(c.metrics.volSinceInc));
+  // 7. client base
+  if(!isNum(c.clients)) add('e','Client count','Not available from the Profit and Loss export. Enter it in the KPIs tab.');
+  else add('o','Client count',String(c.clients));
+  const dmm=isNum(c.clients)&&c.jurTot>0&&c.jurTot!==c.clients;
+  const imm=isNum(c.clients)&&c.indTot>0&&c.indTot!==c.clients;
+  if(c.jurTot===0) add('e','Jurisdiction distribution','No counts entered for this month.');
+  else if(dmm) add('w','Jurisdiction distribution',`Headline clients ${c.clients}; jurisdiction total ${c.jurTot}. Review the source before finalising.`);
+  else add('o','Jurisdiction distribution',`${c.jurTot} across ${c.jurNamed} jurisdictions.`);
+  if(c.indTot===0) add('e','Industry distribution','No counts entered for this month.');
+  else if(imm) add('w','Industry distribution',`Headline clients ${c.clients}; industry total ${c.indTot}. Review the source before finalising.`);
+  else add('o','Industry distribution',`${c.indTot} across ${c.indNamed} industries.`);
+  if((dmm||imm)&&!rec.confirm.dist) add('e','Distribution difference','Acknowledge the difference in the Client mix tab before generating the report.');
+  // 8. commentary
+  const nu=rec.noUpdate||{};
+  TEXTS.forEach(([k,label])=>{
+    const cur=(rec.text[k]||'').trim(), prev=(rec.prevText&&rec.prevText[k]||'').trim();
+    const onSlide=(k==='pipeline'||k==='regulatory'||k==='tech');
+    if(nu[k]&&!cur){ add('o',label,`Confirmed as no update — the page will read “${NO_UPDATE}”`); return; }
+    if(!cur){
+      if(onSlide) add('e',label,'Empty. Either write this month\u2019s update, or tick “No update this month”.');
+      return;
+    }
+    if(!rec.review[k]) add('e',label,cur&&prev&&cur===prev?`Unchanged from ${longLbl(c.prevKey)} and not yet reviewed.`:'Not yet reviewed for this month.');
+    else add('o',label, cur===prev&&prev?`Reviewed — intentionally unchanged from ${shortLbl(c.prevKey)}.`:'Reviewed for this month.');
+  });
+  // 9. history for the six-month charts
+  const g=historyGaps(c);
+  if(g.txnMissing.length) add('e','Transaction history',`Incomplete for ${g.txnMissing.map(shortLbl).join(', ')}. Seed them from the Transaction Summary in Setup.`);
+  else add('o','Transaction history','Six months complete.');
+  if(g.ueMissing.length) add('e','Unit-economics history',
+    g.ueMissing.map(x=>`${shortLbl(x.k)} missing ${x.miss.join(', ')}`).join('; ')+'. Enter the previously published values in Setup.');
+  else add('o','Unit-economics history','Six months complete on all five metrics.');
+  // published / draft state
+  if(rec.published&&rec.status!=='published'&&!rec.confirm.republish)
+    add('e','Republish confirmation',`${longLbl(S.key)} was already finalised${rec.published.at?' on '+esc(String(rec.published.at).slice(0,10)):''} and has since been edited. The published version is unchanged. Confirm in the Figures tab that you intend to replace it.`);
+  else if(rec.status==='published') add('o','Status','Finalised — this month is published history.');
+  else if(rec.published) add('o','Status','Republish confirmed; finalising will replace the published version.');
+  else add('o','Status','Draft — not yet published history.');
+  return {items:R, errors:R.filter(x=>x.lvl==='e').length, warns:R.filter(x=>x.lvl==='w').length};
+}
+function readyPanel(){
+  const R=readiness(); const ord={e:0,w:1,o:2};
+  const items=R.items.slice().sort((a,b)=>ord[a.lvl]-ord[b.lvl]);
+  const ic={e:'✕',w:'!',o:'✓'};
+  return `<div class="ready"><h4>Report readiness — ${esc(longLbl(S.key))}</h4>
+    <p class="sum">${R.errors} blocking${R.errors===1?'':''} · ${R.warns} warning${R.warns===1?'':'s'} · ${R.items.length-R.errors-R.warns} checks passed</p>
+    <ul>${items.map(x=>`<li class="${x.lvl}"><i>${ic[x.lvl]}</i><span><b>${esc(x.label)}</b>${x.detail?' — <span class="d">'+x.detail+'</span>':''}</span></li>`).join('')}</ul>
+    <div class="verdict ${R.errors?'block':'go'}">${R.errors?'Action required before report generation':'Ready to generate PDF'}</div></div>`;
+}
+
+/* ================= records ================= */
+/* A new month inherits CONFIGURATION and commentary drafts only.
+   Every current-month measurement starts blank and must come from a
+   current-month source or be explicitly confirmed by the operator. */
+const NO_UPDATE='No material update for this reporting period.';
+const FIGKEYS=['acc','subTxn','fxOther','maint','advisory','rev','staff','prof','other','intro','opex','nonop','ebitda'];
+/* A month is a DRAFT until it is finalised. Only a published snapshot is ever
+   used as "previously reported" by a later month. */
+function publishMonth(){
+  const c=compute();
+  S.rec.published={ key:S.key, at:new Date().toISOString(),
+    fig:pick(c.cur,FIGKEYS), metrics:c.metrics };
+  S.rec.status='published';
+  if(S.rec.confirm) S.rec.confirm.republish=false;
+  return saveNow();
+}
+function migrateHist(){
+  Object.values(S.hist||{}).forEach(r=>{
+    if(r&&typeof r==='object'&&r.reported&&!r.published){ r.published=r.reported; r.migrated=true; }
+  });
+}
+function blankRec(key){
+  const pk=shiftKey(key,-1); const p=S.hist[pk]; const sameYear=parseKey(pk).y===parseKey(key).y;
+  const carriedYtd = sameYear&&p?.adj&&isNum(+p.adj.ytdOther)&&+p.adj.ytdOther!==0;
+  const namesOnly = l => (l||[]).filter(x=>x&&x.name).map(x=>({name:x.name,count:''}));
+  return {
+    key,
+    adj:{ reclassMonth:0, reclassYtd:0,
+          ytdOther: carriedYtd? (+p.adj.ytdOther||0):0,
+          ytdOtherLabel: carriedYtd? (p.adj.ytdOtherLabel||''):'',
+          ytdOtherCarried: !!carriedYtd },
+    compMode:'reported',
+    kpi:{ clients:null, activeClients:null, activeBasis:'', jurisdictions:null, accountsActive:null,
+          accountsHeld:null, intlPct:null, volMonth:null, volYtd:null, volSinceInc:null },
+    txn:{ inCount:null, outCount:null, inUsd:null, outUsd:null },
+    ov:{},
+    text: clone(p?.text||{ ebitdaNote:'', pipeline:'', regulatory:'', tech:'', metricsNote:'' }),
+    prevText: clone(p?.text||{}),
+    review:{ ebitdaNote:false, pipeline:false, regulatory:false, tech:false, metricsNote:false },
+    confirm:{ adjYtd:!carriedYtd, dist:false, accounts:false },
+    noUpdate:{ pipeline:false, regulatory:false, tech:false },
+    status:'draft',
+    juris: namesOnly(p?.juris), industries: namesOnly(p?.industries),
+  };
+}
+function ensureRec(){
+  if(!S.key) return;
+  if(!S.rec || S.rec.key!==S.key){
+    S.recProvisional = S.dbPending;
+    S.rec = S.hist[S.key] && S.hist[S.key].adj ? clone(S.hist[S.key])
+          : Object.assign(blankRec(S.key), S.hist[S.key]? {published:S.hist[S.key].published, seed:S.hist[S.key].seed}:{});
+    ['adj','kpi','txn','ov','text','prevText','review','confirm','noUpdate'].forEach(k=>S.rec[k]=S.rec[k]||{});
+    S.rec.status = S.rec.status || (S.rec.published?'published':'draft');
+    S.rec.juris=S.rec.juris||[]; S.rec.industries=S.rec.industries||[];
+  }
+}
+
+/* ================= persistence ================= */
+/* Stateless build: report state lives in browser memory only, for the current
+   session. Nothing is written to localStorage, sessionStorage, IndexedDB, any
+   Claude capability, or any server. saveNow() only keeps the in-memory history
+   in step so month-to-month comparatives work while the page is open. */
+let saveT=null;
+function scheduleSave(){ clearTimeout(saveT); saveT=setTimeout(saveNow,1200); }
+async function saveNow(){
+  if(S.rec && S.pl){
+    const prev=S.hist[S.key];
+    if(prev&&prev.published&&!S.rec.published) S.rec.published=prev.published;
+    if(prev&&prev.seed&&!S.rec.seed) S.rec.seed=prev.seed;
+    S.hist[S.key]=clone(S.rec);
+  }
+  if(S.pl && !Array.isArray(S.cfg.knownAccounts))
+    S.cfg.knownAccounts=[...incomeLines(),...opexLines()].map(l=>l.name);
+}
+function pick(o,ks){ const r={}; ks.forEach(k=>r[k]=isNum(o[k])?Math.round(o[k]*100)/100:o[k]); return r; }
+/* writeDoc removed — the stateless build performs no persistence of any kind. */
+function initCaps(){
+  // Stateless build: no localStorage, no IndexedDB, no Claude DB, no server
+  // load. History starts empty each session and is populated only by importing
+  // a continuation .data file.
+  migrateHist();
+  renderAll();
+}
+
+/* ================= uploads ================= */
+async function handleFiles(list){
+  for(const f of list){
+    try{
+      const wb=XLSX.read(await f.arrayBuffer(),{type:'array'}); const rows=sheetRows(wb); const kind=detectKind(rows);
+      if(kind==='pl'){ S.pl=parsePL(rows); S.files.pl=f.name; }
+      else if(kind==='bs'){ S.bs=parseBS(rows); S.files.bs=f.name; }
+      else {
+        const ts=parseTxnSummary(wb);
+        if(ts){ S.txn=ts; S.files.txn=f.name; toast(`${f.name}: ${Object.keys(ts.months).length} months of transaction data read. Apply them in the KPIs and Setup tabs.`,6000); }
+        else { toast(`${f.name}: not recognised as a Xero Profit and Loss, Balance Sheet or Transaction Summary export.`,5000); }
+        continue;
+      }
+    }catch(e){ toast(`${f.name}: ${e.message}`,6000); }
+  }
+  if(S.pl){
+    S.key=S.pl.key; if(!S.cfg.entity) S.cfg.entity=S.pl.entity;
+    S.rec=null; ensureRec();
+    if(S.bs && S.bs.key!==S.key) toast(`Balance sheet is for ${longLbl(S.bs.key)} but P&L is for ${longLbl(S.key)}.`,6000);
+    if(S.contMonth && S.contMonth!==shiftKey(S.key,-1)){
+      const need=shiftKey(S.key,-1), wrong=S.contMonth;
+      S.hist={}; S.cfg=defaultCfg(); S.contMonth=null; S.rec=null; ensureRec();
+      toast(`Rejected: the loaded continuation is for ${longLbl(wrong)}, but this report is for ${longLbl(S.key)}. Its history was cleared — load the ${longLbl(need)} continuation file, then re-upload the source files.`,11000);
+    }
+    scheduleSave();
+  }
+  renderAll();
+}
+
+/* ================= markup ================= */
+function md(t){
+  const lines=String(t||'').split(/\r?\n/); let out='', open=0, para=[];
+  const flushP=()=>{ if(para.length){ out+=`<p>${inl(para.join(' '))}</p>`; para=[]; } };
+  const setDepth=d=>{ while(open<d){ out+='<ul>'; open++; } while(open>d){ out+='</ul>'; open--; } };
+  for(const raw of lines){
+    const line=raw.replace(/\s+$/,''); const m=line.match(/^(\s*)[-*•]\s+(.*)$/);
+    if(!line.trim()){ flushP(); setDepth(0); continue; }
+    if(/^#\s+/.test(line)){ flushP(); setDepth(0); out+=`<h4>${inl(line.replace(/^#\s+/,''))}</h4>`; continue; }
+    if(m){ flushP(); const d=m[1].length>=2?2:1; setDepth(d); out+=`<li>${inl(m[2])}</li>`; continue; }
+    if(open){ out=out.replace(/<\/li>$/,' '+inl(line.trim())+'</li>'); continue; }
+    para.push(line.trim());
+  }
+  flushP(); setDepth(0); return out;
+}
+function inl(s){ return esc(s).replace(/\*\*(.+?)\*\*/g,'<b>$1</b>'); }
+
+/* ================= charts (SVG, explicit colours for PDF rendering) ================= */
+const FONT='Hanken Grotesk, Arial, sans-serif';
+function colChart(labels, series, w, h, fmt){
+  const pad={l:10,r:10,t:26,b:30}; const iw=w-pad.l-pad.r, ih=h-pad.t-pad.b;
+  const max=Math.max(1,...series.flatMap(s=>s.data.filter(isNum)));
+  const gw=iw/labels.length, bw=Math.min(34,(gw-18)/series.length);
+  let g=`<svg width="${w}" height="${h}" viewBox="0 0 ${w} ${h}" xmlns="http://www.w3.org/2000/svg">`;
+  g+=`<line x1="${pad.l}" x2="${w-pad.r}" y1="${pad.t+ih}" y2="${pad.t+ih}" stroke="#CAD7E6"/>`;
+  labels.forEach((lb,i)=>{
+    const x0=pad.l+i*gw+(gw-bw*series.length-4*(series.length-1))/2;
+    series.forEach((s,j)=>{ const v=s.data[i]; if(!isNum(v)) return; const bh=Math.max(1,v/max*ih); const x=x0+j*(bw+4), y=pad.t+ih-bh;
+      g+=`<rect x="${x}" y="${y}" width="${bw}" height="${bh}" fill="${s.color}" rx="2"/>`;
+      g+=`<text x="${x+bw/2}" y="${y-6}" text-anchor="middle" font-family="${FONT}" font-size="11" fill="#1B2448" font-weight="600">${esc(fmt(v))}</text>`; });
+    g+=`<text x="${pad.l+i*gw+gw/2}" y="${h-10}" text-anchor="middle" font-family="${FONT}" font-size="12" fill="#454E66">${esc(lb)}</text>`;
+  });
+  return g+'</svg>';
+}
+function hbarChart(labels, series, w, h, fmt){
+  const pad={l:56,r:74,t:6,b:6}; const iw=w-pad.l-pad.r, ih=h-pad.t-pad.b;
+  const max=Math.max(1,...series.flatMap(s=>s.data.filter(isNum)));
+  const gh=ih/labels.length, bh=Math.min(14,(gh-10)/series.length);
+  let g=`<svg width="${w}" height="${h}" viewBox="0 0 ${w} ${h}" xmlns="http://www.w3.org/2000/svg">`;
+  g+=`<line x1="${pad.l}" x2="${pad.l}" y1="${pad.t}" y2="${h-pad.b}" stroke="#CAD7E6"/>`;
+  labels.forEach((lb,i)=>{
+    const y0=pad.t+i*gh+(gh-bh*series.length-3*(series.length-1))/2;
+    g+=`<text x="${pad.l-10}" y="${pad.t+i*gh+gh/2+4}" text-anchor="end" font-family="${FONT}" font-size="12" fill="#454E66">${esc(lb)}</text>`;
+    series.forEach((s,j)=>{ const v=s.data[i]; if(!isNum(v)) return; const bw=Math.max(1,v/max*iw); const y=y0+j*(bh+3);
+      g+=`<rect x="${pad.l}" y="${y}" width="${bw}" height="${bh}" fill="${s.color}" rx="2"/>`;
+      g+=`<text x="${pad.l+bw+6}" y="${y+bh-3}" font-family="${FONT}" font-size="11" fill="#1B2448" font-weight="600">${esc(fmt(v))}</text>`; });
+  });
+  return g+'</svg>';
+}
+function lineChart(labels, series, w, h, fmt){
+  const pad={l:34,r:34,t:24,b:30}; const iw=w-pad.l-pad.r, ih=h-pad.t-pad.b;
+  const all=series.flatMap(s=>s.data.filter(isNum)); const max=Math.max(1,...all)*1.12, min=0;
+  const X=i=>pad.l+(labels.length===1?iw/2:i*iw/(labels.length-1)); const Y=v=>pad.t+ih-(v-min)/(max-min)*ih;
+  let g=`<svg width="${w}" height="${h}" viewBox="0 0 ${w} ${h}" xmlns="http://www.w3.org/2000/svg">`;
+  [0,.5,1].forEach(f=>{ const y=pad.t+ih*f; g+=`<line x1="${pad.l}" x2="${w-pad.r}" y1="${y}" y2="${y}" stroke="#E8EEF6"/>`; });
+  series.forEach(s=>{
+    const pts=s.data.map((v,i)=>isNum(v)?[X(i),Y(v)]:null);
+    let d=''; pts.forEach((p,i)=>{ if(!p) return; d+=(d&&pts[i-1]?'L':'M')+p[0].toFixed(1)+' '+p[1].toFixed(1)+' '; });
+    g+=`<path d="${d}" fill="none" stroke="${s.color}" stroke-width="2.5" stroke-linejoin="round"/>`;
+    pts.forEach((p,i)=>{ if(!p) return; g+=`<circle cx="${p[0]}" cy="${p[1]}" r="4" fill="#fff" stroke="${s.color}" stroke-width="2"/>`;
+      g+=`<text x="${p[0]}" y="${p[1]-10}" text-anchor="middle" font-family="${FONT}" font-size="11" fill="${s.color}" font-weight="600">${esc(fmt(s.data[i]))}</text>`; });
+  });
+  labels.forEach((lb,i)=>{ g+=`<text x="${X(i)}" y="${h-10}" text-anchor="middle" font-family="${FONT}" font-size="12" fill="#454E66">${esc(lb)}</text>`; });
+  return g+'</svg>';
+}
+function donut(items, size, label){
+  const tot=items.reduce((a,b)=>a+b.v,0)||1; const R=size/2, r=R*0.58; let a0=-Math.PI/2;
+  let g=`<svg width="${size}" height="${size}" viewBox="0 0 ${size} ${size}" xmlns="http://www.w3.org/2000/svg">`;
+  items.forEach((it)=>{ const a1=a0+it.v/tot*Math.PI*2; const large=a1-a0>Math.PI?1:0;
+    const p=(ang,rad)=>[R+rad*Math.cos(ang), R+rad*Math.sin(ang)];
+    if(it.v/tot>0.9999){ g+=`<circle cx="${R}" cy="${R}" r="${(R+r)/2}" fill="none" stroke="${it.c}" stroke-width="${R-r}"/>`; }
+    else { const [x1,y1]=p(a0,R),[x2,y2]=p(a1,R),[x3,y3]=p(a1,r),[x4,y4]=p(a0,r);
+      g+=`<path d="M${x1} ${y1}A${R} ${R} 0 ${large} 1 ${x2} ${y2}L${x3} ${y3}A${r} ${r} 0 ${large} 0 ${x4} ${y4}Z" fill="${it.c}" stroke="#fff" stroke-width="1.5"/>`; }
+    a0=a1; });
+  g+=`<text x="${R}" y="${R+4}" text-anchor="middle" font-family="Newsreader, Georgia, serif" font-size="${size*0.16}" fill="#06113A">${tot}</text>`;
+  g+=`<text x="${R}" y="${R+size*0.1}" text-anchor="middle" font-family="${FONT}" font-size="14" fill="#454E66">${esc(label||'listed')}</text>`;
+  return g+'</svg>';
+}
+
+/* ================= slides ================= */
+let pageNo=0;
+const pg2 = n => String(n).padStart(2,'0');
+function footer(){ return `<div class="s-foot"><span>ARIE Finance | Management report | ${esc(longLbl(S.key))} | Confidential</span><span class="pg">${pg2(pageNo)}</span></div>`; }
+function slide(eyebrow, title, sub, body){
+  pageNo++;
+  return `<section class="slide">${LOGO_SVG('s-logo','#241F86')}
+    <div class="s-head"><div class="eyb">${esc(eyebrow)}</div><h2>${esc(title)}</h2>${sub?`<div class="sub">${sub}</div>`:''}</div>
+    <div class="s-body">${body}</div>${footer()}</section>`;
+}
+function coverSlide(c){
+  pageNo++;
+  const hl=[[money(c.cur.rev),`Revenue, ${longLbl(S.key)}`],[money(c.cur.ebitda),'EBITDA for the month'],[mUSD(c.metrics.volMonth),'Transaction volume for the month']];
+  return `<section class="slide cover">
+    ${LOGO_SVG('lg','#241F86')}
+    <div class="ctag">Management report</div>
+    <svg class="art" viewBox="0 0 200 110"><defs><linearGradient id="cg" x1="0" y1="1" x2="0.3" y2="0"><stop offset="0" stop-color="#0B1437"/><stop offset="1" stop-color="#2E2A8C"/></linearGradient></defs>
+      <path d="${MARK_PATH}" transform="translate(34 16)" fill="none" stroke="#C9A24E" stroke-width=".7"/>
+      <path d="${MARK_PATH}" transform="translate(22 8)" fill="url(#cg)"/></svg>
+    <div class="t"><h1>Monthly management report for <em>${esc(longLbl(S.key))}</em></h1>${S.cfg.entity?`<div class="e">${esc(S.cfg.entity)}</div>`:''}</div>
+    <div class="hls">${hl.map(([v,l])=>`<div><div class="v">${v}</div><div class="l">${esc(l)}</div></div>`).join('')}</div>
+    ${footer()}</section>`;
+}
+function revCategoryList(c){ const names={acc:'account opening fees',subTxn:'monthly subscription and transaction fees',fxOther:'FX transaction and other fees',maint:'account maintenance fees',advisory:'investment advisory and admin fees'};
+  const parts=REV_CATS.filter(([k])=>Math.abs(c[k])>0.5).map(([k])=>names[k]); if(parts.length<2) return parts.join(''); return parts.slice(0,-1).join(', ')+' and '+parts.at(-1); }
+function sign(v){ return v<0?'negative':'positive'; }
+function operationalSlide(c){
+  const co=esc(S.cfg.company||'The Company'), mon=longLbl(S.key), pl=c.prev?shortLbl(c.prevKey):null, y=parseKey(S.key).y;
+  const ytdTxt=`for the ${c.nM} months ended ${endDate(S.key)}`;
+  let h='<ul>';
+  h+=`<li>${co} recorded revenue of <b>${money(c.cur.rev)}</b> for ${mon}${c.prev?` (${pl}: ${money(c.prev.rev)})`:''}. This brought revenue ${ytdTxt} to <b>${money(c.ytd.rev)}</b>. The ${MONL[parseKey(S.key).m]} revenue consists of ${revCategoryList(c.cur)}.</li>`;
+  h+=`<li>In ${mon} the Company recorded operating costs of <b>${money(c.cur.opex)}</b>${c.prev?` (${pl}: ${money(c.prev.opex)})`:''}, bringing operating costs ${ytdTxt} to <b>${money(c.ytd.opex)}</b>.</li>`;
+  h+=`<li>The above revenue and operating costs resulted in a ${sign(c.cur.ebitda)} EBITDA of <b>${money(Math.abs(c.cur.ebitda))}</b> for the month${c.prev?` (${sign(c.prev.ebitda)} ${money(Math.abs(c.prev.ebitda))} in ${pl})`:''}. EBITDA ${ytdTxt} is ${sign(c.ytd.ebitda)} at <b>${money(Math.abs(c.ytd.ebitda))}</b>.${S.rec.text.ebitdaNote?' '+inl(S.rec.text.ebitdaNote):''}</li>`;
+  const m=c.metrics; if(isNum(m.volMonth)) h+=`<li>${co} transaction volume for ${mon} amounted to <b>${mUSD(m.volMonth)}</b>${isNum(m.volYtd)?`, bringing the ${y} year-to-date total to <b>${mUSD(m.volYtd)}</b>`:''}${isNum(m.volSinceInc)?`. Transaction value since incorporation now stands at <b>${mUSD(m.volSinceInc)}</b>`:''}.</li>`;
+  h+='</ul>';
+  const pipe=(noUpdateText('pipeline')||'').trim();
+  return slide('Operations','Operational updates',`Revenue, costs and pipeline for ${esc(mon)}.`,
+    `<div class="opgrid"><div class="card"><div class="lbl">Financial performance</div><div class="fill"><div class="prose fit1">${h}</div></div></div>
+     <div class="rcol"><div class="card navy"><div class="lbl">${esc(shortLbl(S.key))} at a glance</div><div class="stat2"><div><div class="v">${money(c.cur.rev)}</div><div class="l">Revenue</div></div><div><div class="v">${money(c.cur.ebitda)}</div><div class="l">EBITDA</div></div></div></div>
+     <div class="card beige"><div class="lbl">Pipeline</div><div class="fill"><div class="prose fit1">${pipe?md(pipe):'<p style="color:#7F7A66">Add the pipeline in the Commentary tab.</p>'}</div></div></div></div></div>`);
+}
+/* Entered commentary always wins: a "No update" flag only speaks for an empty block. */
+function noUpdateText(k){
+  const cur=String((S.rec.text||{})[k]||'').trim();
+  if(cur) return S.rec.text[k];
+  return (S.rec.noUpdate||{})[k] ? NO_UPDATE : S.rec.text[k];
+}
+function sections(t){
+  const out=[]; let cur={title:'',lines:[]};
+  String(t||'').split(/\r?\n/).forEach(l=>{ if(/^#\s+/.test(l)){ if(cur.title||cur.lines.join('').trim()) out.push(cur); cur={title:l.replace(/^#\s+/,''),lines:[]}; } else cur.lines.push(l); });
+  if(cur.title||cur.lines.join('').trim()) out.push(cur); return out;
+}
+const TINTS=['beige','','blue',''];
+function textSlide(eyebrow,title,sub,txt,emptyMsg){
+  const secs=sections(txt);
+  if(!secs.length) return slide(eyebrow,title,sub,`<p style="color:#7F7A66">${esc(emptyMsg)}</p>`);
+  const cards=secs.map((s,i)=>`<div class="card ${TINTS[i%TINTS.length]}">${s.title?`<div class="lbl">${esc(s.title)}</div>`:''}<div class="prose">${md(s.lines.join('\n'))}</div></div>`).join('');
+  return slide(eyebrow,title,sub,`<div class="cards fitc ${secs.length<2?'one':''}">${cards}</div>`);
+}
+function finTable(rows, c){
+  const pl=c.prev?shortLbl(c.prevKey):'Prior month', cl=shortLbl(S.key);
+  const neg=v=>isNum(v)&&r0(v)<0?' class="neg"':'';
+  let h=`<table class="num"><thead><tr><th>All actual numbers</th><th>${cl}</th><th>${pl}</th><th>YTD ${esc(endDate(S.key))}</th><th>Monthly variance<br>(${cl} vs ${pl})</th></tr></thead><tbody>`;
+  rows.forEach(r=>{ const a=r.v(c.cur), b=c.prev?r.v(c.prev):null, y=r.v(c.ytd), d=c.prev?a-b:null;
+    h+=`<tr class="${r.cls||''}"><td>${esc(r.l)}</td><td${neg(a)}>${money(a,1)}</td><td${neg(b)}>${money(b,1)}</td><td${neg(y)}>${money(y,1)}</td><td${neg(d)}>${money(d,1)}</td></tr>`; });
+  return h+'</tbody></table>';
+}
+function mixBars(c, cats){ const tot=cats.reduce((a,[k])=>a+Math.max(0,c.cur[k]),0)||1;
+  return `<div class="mix">${cats.map(([k,l])=>{ const v=Math.max(0,c.cur[k]); return `<div class="row"><div class="lab"><span>${esc(l)}</span><b>${pct(v/tot)}</b></div><div class="track"><div class="fillb" style="width:${(v/tot*100).toFixed(1)}%"></div></div></div>`; }).join('')}</div>`; }
+function revenueSlide(c){
+  const rows=REV_CATS.map(([k,l])=>({l, v:f=>f[k]})); rows.push({l:'Revenue', v:f=>f.rev, cls:'tot'});
+  const note=[];
+  if(c.compSrc==='reported') note.push(`${shortLbl(c.prevKey)} figures as previously reported.`);
+  if(+S.rec.adj.ytdOther) note.push(`YTD FX & other fees include a management adjustment of ${money(+S.rec.adj.ytdOther)}${S.rec.adj.ytdOtherLabel?` (${esc(S.rec.adj.ytdOtherLabel)})`:''}.`);
+  return slide('Financials','Numbers at a glance: revenue',`Revenue of ${money(c.cur.rev)} for ${esc(longLbl(S.key))} and ${money(c.ytd.rev)} for the year to date.`,
+    `<div class="fin"><div>${finTable(rows,c)}${note.length?`<div class="fnote">${note.join(' ')}</div>`:''}</div>
+    <div class="side"><div class="card"><div class="lbl">Revenue mix</div>${mixBars(c,REV_CATS)}</div>
+    <div class="card navy"><div class="lbl">Gross profit margin</div><div class="big">${pct(c.metrics.gpMargin)}</div><div class="l2">${esc(longLbl(S.key))}</div></div></div></div>`);
+}
+function expenseSlide(c){
+  const rows=EXP_CATS.map(([k,l])=>({l, v:f=>f[k]}));
+  rows.push({l:'Total operating expenses', v:f=>f.opex, cls:'tot'});
+  rows.push({l:'Non-operating expenses*', v:f=>f.nonop, cls:'sub'});
+  rows.push({l:'EBITDA (revenue less opex and non-operating)', v:f=>f.ebitda, cls:'ebit'});
+  return slide('Financials','Numbers at a glance: expenses',`Operating costs of ${money(c.cur.opex)} and EBITDA of ${money(c.cur.ebitda)} for ${esc(longLbl(S.key))}.`,
+    `<div class="fin"><div>${finTable(rows,c)}<div class="fnote">* Relates to realised and unrealised FX gains and losses.${c.compSrc==='reported'?` ${shortLbl(c.prevKey)} figures as previously reported.`:''}</div></div>
+    <div class="side"><div class="card"><div class="lbl">Operating cost mix</div>${mixBars(c,EXP_CATS)}</div>
+    <div class="card navy"><div class="lbl">EBITDA, year to date</div><div class="big">${money(c.ytd.ebitda)}</div><div class="l2">${c.nM} months ended ${esc(endDate(S.key))}</div></div></div></div>`);
+}
+function kpiSlide(c){
+  const k=S.rec.kpi, m=c.metrics;
+  const tiles=[[isNum(c.clients)?c.clients:'–','Clients','',''],
+    [isNum(k.accountsActive)?k.accountsActive:'–','Active accounts','*',''],
+    [mUSD(m.volSinceInc),'Transaction volume','**',''],
+    [isNum(c.jurisdictions)?c.jurisdictions:'–','Jurisdictions','',''],
+    [isNum(c.intlPct)?c.intlPct+'%':'–','International clients','',''],
+    [moneyK(c.avgRevPerClient),'Avg monthly revenue per client','','']];
+  const tint=['navy','beige','blue','','',''];
+  const notes=[]; if(isNum(k.accountsActive)&&isNum(k.accountsHeld)) notes.push(`* ${k.accountsActive} accounts are active out of the ${k.accountsHeld} accounts held.`); notes.push('** Since incorporation.');
+  return slide('KPIs',`Main KPIs, ${longLbl(S.key)}`,`Client base, accounts and volumes at ${esc(endDate(S.key))}.`,
+    `<div class="kpis">${tiles.map(([v,l,sup],i)=>`<div class="card kpi ${tint[i]}"><div class="lbl">${esc(l)}</div><div class="v">${v}${sup?`<sup>${sup}</sup>`:''}</div></div>`).join('')}</div><div class="fnote">${notes.join('&nbsp;&nbsp;&nbsp;')}</div>`);
+}
+function last6(){ const ks=[]; for(let i=5;i>=0;i--) ks.push(shiftKey(S.key,-i)); return ks; }
+function metricFor(key,c,f){ if(key===S.key) return c?c.metrics[f]:null; const v=S.hist[key]?.published?.metrics?.[f]; return isNum(v)?v:null; }
+const C_IN='#C19A3E', C_OUT='#0B1437';
+function volumeSlide(c){
+  const m=c.metrics, y=parseKey(S.key).y;
+  const yrs=(S.cfg.yearVolumes||[]).filter(v=>isNum(+v.value)&&v.value!==''&&+v.year<y).sort((a,b)=>b.year-a.year).slice(0,4);
+  const tiles=[[longLbl(S.key),m.volMonth,'navy'],[`YTD ${y}`,m.volYtd,''],...yrs.map(v=>[String(v.year),+v.value,'']),['Since incorporation',m.volSinceInc,'beige']];
+  const ks=last6(), lbl=ks.map(shortLbl);
+  const usd=hbarChart(lbl.slice().reverse(), [{data:ks.map(k=>metricFor(k,c,'outUsd')).reverse(),color:C_OUT},{data:ks.map(k=>metricFor(k,c,'inUsd')).reverse(),color:C_IN}], 520, 236, v=>(v/1e6).toFixed(2)+'M');
+  const cnt=colChart(lbl, [{data:ks.map(k=>metricFor(k,c,'inCount')),color:C_IN},{data:ks.map(k=>metricFor(k,c,'outCount')),color:C_OUT}], 520, 236, v=>String(r0(v)));
+  const lg=`<div class="legend"><span><i style="background:${C_IN}"></i>In</span><span><i style="background:${C_OUT}"></i>Out</span></div>`;
+  return slide('Traction','Transaction volume summary',`${mUSD(m.volMonth)} processed in ${esc(longLbl(S.key))}; ${mUSD(m.volSinceInc)} since incorporation.`,
+    `<div class="tiles" style="grid-template-columns:repeat(${tiles.length},1fr)">${tiles.map(([l,v,t])=>`<div class="card ${t}"><div class="lbl">${esc(l)}</div><div class="v">${mUSD(v)}</div></div>`).join('')}</div>
+    <div class="charts2"><div class="card chart"><h5>Transactions in USD</h5>${lg}${usd}</div><div class="card chart"><h5>Number of transactions</h5>${lg}${cnt}</div></div>`);
+}
+function metricsSlide(c){
+  const ks=last6(), lbl=ks.map(shortLbl);
+  const rev=ks.map(k=>metricFor(k,c,'revPerClient')), gp=ks.map(k=>metricFor(k,c,'gpPerClient')), vol=ks.map(k=>metricFor(k,c,'volPerClient'));
+  const gm=ks.map(k=>metricFor(k,c,'gpMargin')), tp=ks.map(k=>metricFor(k,c,'txnPerClient'));
+  const gmv=gm.filter(isNum); const gmAvg=gmv.length?gmv.reduce((a,b)=>a+b,0)/gmv.length:null;
+  const row=(l,arr,f)=>`<tr><td>${l}</td>${arr.map((v,i)=>`<td class="${i===arr.length-1?'cur':''}">${f(v)}</td>`).join('')}</tr>`;
+  const head=`<tr><th></th>${lbl.map(l=>`<th>${l}</th>`).join('')}</tr>`;
+  const lc1=lineChart(lbl,[{data:rev,color:'#0B1437'},{data:gp,color:'#C19A3E'}],520,190,v=>'$'+fmtInt(v));
+  const lc2=lineChart(lbl,[{data:vol,color:'#3A5A9C'}],520,190,v=>'$'+(v/1000).toFixed(0)+'K');
+  const note=(S.rec.text.metricsNote||'').trim();
+  return slide('Unit economics','Other metrics',`Six-month view of per-client economics. Average gross profit margin ${pct(gmAvg)}.`,
+    `<div class="charts2" style="margin-top:0;height:100%">
+    <div class="card chart"><h5>Average monthly revenue and gross profit per client</h5><div class="legend"><span><i style="background:#0B1437"></i>Revenue per client</span><span><i style="background:#C19A3E"></i>Gross profit per client</span></div>${lc1}
+      <table class="mtbl">${head}${row('Gross profit margin',gm,v=>pct(v))}</table></div>
+    <div class="card chart"><h5>Average volume of transactions per client</h5><div class="legend"><span><i style="background:#3A5A9C"></i>USD per client</span></div>${lc2}
+      <table class="mtbl">${head}${row('Avg transactions per client',tp,v=>isNum(v)?r0(v):'–')}</table>
+      ${note?`<div class="fnote">${inl(note)}</div>`:''}</div></div>`);
+}
+function distSlide(title, list, noun){
+  const items=list.filter(x=>x.name&&+x.count>0).map(x=>({n:x.name,v:+x.count})).sort((a,b)=>b.v-a.v).map((x,i)=>({...x,c:PALETTE[i%PALETTE.length]}));
+  if(!items.length) return slide('Client base',title,'',`<p style="color:#7F7A66">Add client counts in the Client mix tab.</p>`);
+  const tot=items.reduce((a,b)=>a+b.v,0);
+  return slide('Client base',title,`Share of the client base across ${items.length} ${noun}.`,
+    `<div class="dist"><div>${donut(items,400,'listed')}</div><div class="card"><div class="dlist">${items.map(x=>`<div><i style="background:${x.c}"></i><span class="n">${esc(x.n)}</span><em>${x.v}</em><b>${pct(x.v/tot)}</b></div>`).join('')}</div></div></div>`);
+}
+function finPosSlide(c){
+  if(!S.bs) return '';
+  const bi=Math.max(0,S.bs.dates.findIndex(d=>d.key===S.key)); const bp=bi+1<S.bs.dates.length?bi+1:null;
+  const L=re=>S.bs.lines.find(l=>re.test(l.name));
+  const rows=[['Bank',/^bank$/i],['Total current assets',/^total current assets/i],['Total assets',/^total assets/i],['Convertible loan notes',/^clns$/i],['Interest payable on CLNs',/^interest payable/i],['Total current liabilities',/^total current liabilities/i],['Total equity',/^total equity/i]];
+  let t=`<table class="num"><thead><tr><th>Balance sheet</th><th>${shortLbl(S.bs.dates[bi].key)}</th>${bp!=null?`<th>${shortLbl(S.bs.dates[bp].key)}</th><th>Movement</th>`:''}</tr></thead><tbody>`;
+  rows.forEach(([l,re])=>{ const x=L(re); if(!x) return; const a=x.vals[bi], b=bp!=null?x.vals[bp]:null; t+=`<tr class="${/^total/i.test(l)?'tot':''}"><td>${l}</td><td>${money(a)}</td>${bp!=null?`<td>${money(b)}</td><td>${money(a-b)}</td>`:''}</tr>`; });
+  t+='</tbody></table>';
+  const P=re=>S.pl.lines.find(l=>re.test(l.name));
+  const prow=[['EBITDA (per Xero)',/^ebitda$/i],['Provision for bad debts',/^total provision for bad/i],['Depreciation and amortisation',/^total depreciation/i],['Interest on loan notes',/^total interest on loan/i],['Net profit / (loss)',/^net (profit|loss)$/i]];
+  let p=`<table class="num"><thead><tr><th>Below EBITDA</th><th>${shortLbl(S.key)}</th><th>YTD</th></tr></thead><tbody>`;
+  prow.forEach(([l,re])=>{ const x=P(re); if(!x) return; p+=`<tr class="${/^net/i.test(l)?'ebit':''}"><td>${l}</td><td>${money(x.vals[0])}</td><td>${money(x.ytd)}</td></tr>`; });
+  p+='</tbody></table>';
+  return slide('Balance sheet','Financial position','Below-EBITDA items and balance sheet movements, per Xero before management adjustments.',`<div style="display:grid;grid-template-columns:1fr 1.25fr;gap:24px">${p}${t}</div>`);
+}
+/* ================= render ================= */
+function renderSlides(){
+  const st=$('#stage');
+  if(!S.pl){ st.innerHTML=`<div class="empty"><h2>Upload this month's source files</h2><p>Drop the Xero Profit and Loss export (required), the Transaction Summary workbook and, optionally, the Balance Sheet into the Figures panel. Everything that is not in those files — the per-client denominator, the client mix and the commentary — is confirmed by you each month before the report can be generated.</p></div>`; $('#btnPdf').disabled=true; $('#btnPrint').disabled=true; return; }
+  const c=compute(); pageNo=0;
+  const html=[coverSlide(c), operationalSlide(c),
+    textSlide('Regulation','Regulatory updates','Licensing and regulator engagement.',noUpdateText('regulatory'),'Add regulatory updates in the Commentary tab.'),
+    textSlide('Technology','Tech updates','Platform, partners and go-live readiness.',noUpdateText('tech'),'Add tech updates in the Commentary tab.'),
+    revenueSlide(c), expenseSlide(c), kpiSlide(c), volumeSlide(c), metricsSlide(c),
+    distSlide('Client distribution by jurisdiction',S.rec.juris,'jurisdictions'), distSlide('Client distribution by industry',S.rec.industries,'industries'),
+    S.cfg.includeFinPos?finPosSlide(c):''].filter(Boolean);
+  const R=readiness();
+  st.innerHTML=readyPanel()+`<div class="slides">${html.map(h=>`<div class="sframe">${h}</div>`).join('')}</div>`;
+  fitSlides(); scaleFrames(); fitText();
+  const blocked=R.errors>0;
+  $('#btnPdf').disabled=blocked; $('#btnPrint').disabled=blocked;
+  $('#status').textContent=blocked
+    ? `${longLbl(S.key)} — ${R.errors} item${R.errors===1?'':'s'} to resolve`
+    : `${longLbl(S.key)}, ${html.length} pages${R.warns?` — ${R.warns} warning${R.warns===1?'':'s'}`:''}`;
+}
+function scaleFrames(){
+  const st=$('#stage'); const w=Math.min(1280, st.clientWidth-56); const s=Math.max(.2,w/1280);
+  st.querySelectorAll('.sframe').forEach(f=>{ f.style.width=1280*s+'px'; f.style.height=720*s+'px'; f.firstElementChild.style.transform=`scale(${s})`; });
+}
+function fitSlides(){}
+function fitText(root=document){
+  const shrink=(el,fs,min,over)=>{ el.style.fontSize=fs+'px'; while(over() && fs>min){ fs-=.5; el.style.fontSize=fs+'px'; } };
+  // text inside a fixed-height card: shrink only
+  root.querySelectorAll('.fit1').forEach(el=>{ const box=el.parentElement; shrink(el,17,10,()=>el.scrollHeight>box.clientHeight+1); });
+  // card grids: prefer two columns when there are several sections
+  root.querySelectorAll('.fitc').forEach(el=>{
+    const over=()=>{ const r=el.getBoundingClientRect(), t=2*(r.width/el.offsetWidth||1); return [...el.children].some(ch=>{ const b=ch.getBoundingClientRect(); return b.right>r.right+t||b.bottom>r.bottom+t; }); };
+    shrink(el,17,10,over); });
+}
+let rT; function rerender(){ clearTimeout(rT); rT=setTimeout(()=>{ renderSlides(); },160); }
+
+/* ================= editor panes ================= */
+function fld(label, path, opts={}){
+  const v=getPath(opts.obj||S.rec,path); const id='f_'+path.replace(/\W/g,'_');
+  return `<div class="fld"><label for="${id}">${esc(label)}</label><input id="${id}" data-bind="${path}" ${opts.obj?'data-cfg="1"':''} type="${opts.type||'number'}" step="any" value="${v==null?'':esc(v)}" placeholder="${esc(opts.ph??'')}">${opts.auto?`<span class="auto">${opts.auto}</span>`:''}</div>`;
+}
+function txt(label, path, rows, hint){ const v=getPath(S.rec,path)||''; return `<div class="fld"><label>${esc(label)}</label>${hint?`<span class="auto">${hint}</span>`:''}<textarea data-bind="${path}" data-str="1" rows="${rows||8}">${esc(v)}</textarea></div>`; }
+function paneFigures(){
+  let h=`<h3>Xero exports</h3><p class="hint">Profit and Loss (monthly columns with YTD) is required. The Balance Sheet is used for the optional financial position page.</p>
+  <div class="drop" id="drop"><strong>Drop .xlsx files here</strong><span class="hint">or click to choose files</span></div>
+  <ul class="files"><li><span>Profit and Loss</span><span class="${S.files.pl?'ok':''}">${S.files.pl?esc(S.files.pl):'Not loaded'}</span></li><li><span>Balance Sheet</span><span class="${S.files.bs?'ok':''}">${S.files.bs?esc(S.files.bs):'Not loaded'}</span></li></ul>`;
+  if(!S.pl) return h;
+  const c=compute();
+  h+=`<h3>Comparative month</h3><p class="hint">Show ${shortLbl(c.prevKey)} as it was reported last month, or as restated in this month's Xero export.</p>
+  <div class="seg" id="compSeg"><button data-mode="reported" aria-pressed="${S.rec.compMode!=='excel'}">As previously reported</button><button data-mode="excel" aria-pressed="${S.rec.compMode==='excel'}">Restated per Xero</button></div>
+  ${S.rec.compMode!=='excel'&&c.compSrc!=='reported'?`<div class="note">No saved report for ${longLbl(c.prevKey)} yet, so the Xero figures are used.</div>`:''}
+  <h3>Management adjustments</h3><p class="hint">Applied on top of the Xero figures before they reach the report.</p>
+  <div class="grid2">${fld('Admin fees within other fees, this month','adj.reclassMonth',{auto:'Moved to advisory & admin fees'})}${fld('Same reclass, YTD','adj.reclassYtd',{auto:'Leave 0 to reclass the month only'})}</div>
+  <div class="grid2" style="margin-top:10px">${fld('YTD adjustment to FX & other fees','adj.ytdOther',{auto:'Negative to exclude; also flows to YTD EBITDA'})}${fld('Adjustment label','adj.ytdOtherLabel',{type:'text',ph:'e.g. one-off FX, May'})}</div>
+  ${S.rec.published&&S.rec.status!=='published'?`<label class="ack"><input type="checkbox" data-ck="confirm.republish" ${S.rec.confirm.republish?'checked':''}><span>${esc(longLbl(S.key))} was already finalised${S.rec.published.at?' on '+esc(String(S.rec.published.at).slice(0,10)):''}. The published figures are frozen and still in use by later months. Confirm you intend to replace them when you next finalise.</span></label>`:''}
+  ${S.rec.adj.ytdOtherCarried?`<label class="ack"><input type="checkbox" data-ck="confirm.adjYtd" ${S.rec.confirm.adjYtd?'checked':''}><span>This YTD adjustment of ${money(+S.rec.adj.ytdOther)}${S.rec.adj.ytdOtherLabel?' ('+esc(S.rec.adj.ytdOtherLabel)+')':''} was carried over from last month. Confirm it still applies to ${esc(longLbl(S.key))}.</span></label>`:''}
+  ${(()=>{const na=newAccounts(); return na.length?`<div class="note">New account${na.length>1?'s':''} in this export: ${na.map(esc).join(', ')}. Check the mapping below, then accept.</div><label class="ack"><input type="checkbox" data-ck="confirm.accounts" ${S.rec.confirm.accounts?'checked':''}><span>Mapping reviewed for the new account${na.length>1?'s':''}.</span></label>`:'';})()}
+  <h3>Result</h3>
+  <table class="maptbl"><tr><td>Revenue, ${shortLbl(S.key)}</td><td style="text-align:right">${money(c.cur.rev)}</td></tr><tr><td>Revenue, YTD</td><td style="text-align:right">${money(c.ytd.rev)}</td></tr><tr><td>Operating expenses</td><td style="text-align:right">${money(c.cur.opex)}</td></tr><tr><td>EBITDA, month</td><td style="text-align:right">${money(c.cur.ebitda)}</td></tr><tr><td>EBITDA, YTD</td><td style="text-align:right">${money(c.ytd.ebitda)}</td></tr></table>
+  <h3>Line mapping</h3><p class="hint">How each Xero account rolls up into the report. New accounts default to FX & other fees or other operational expenses.</p>
+  <table class="maptbl">${incomeLines().map(l=>`<tr><td>${esc(l.name)}</td><td><select data-map="rev:${esc(l.name)}">${REV_CATS.map(([k,n])=>`<option value="${k}" ${revCat(l.name)===k?'selected':''}>${esc(n)}</option>`).join('')}</select></td></tr>`).join('')}
+  ${opexLines().map(l=>`<tr><td>${esc(l.name)}</td><td><select data-map="exp:${esc(l.name)}">${EXP_CATS.map(([k,n])=>`<option value="${k}" ${expCat(l.name)===k?'selected':''}>${esc(n)}</option>`).join('')}</select></td></tr>`).join('')}</table>`;
+  return h;
+}
+function paneKpis(){
+  if(!S.pl) return `<p class="hint">Upload the Profit and Loss export first.</p>`;
+  const c=compute(); const r1=v=>isNum(v)?(Math.round(v*10)/10).toString():'';
+  const a=c.auto;
+  const tm=S.txn&&S.txn.months[S.key];
+  let ts='';
+  if(S.txn){
+    ts=`<div class="tstat">${esc(S.files.txn||'Transaction Summary')} — ${Object.keys(S.txn.months).length} months read.</div>`;
+    ts+= tm
+      ? `<div class="tstat">${esc(longLbl(S.key))} in file: <b>${fmtInt(tm.inCount)}</b> in / <b>${fmtInt(tm.outCount)}</b> out &nbsp;·&nbsp; <b>${money(tm.inUsd)}</b> in / <b>${money(tm.outUsd)}</b> out</div><button class="btn" id="txnApply">Use these figures for ${esc(shortLbl(S.key))}</button>`
+      : `<div class="note">The workbook holds no ${esc(longLbl(S.key))} block. Check you have this month's file.</div>`;
+  } else ts=`<p class="hint">Drop the Transaction Summary workbook into the Figures tab and these can be filled from the source instead of typed.</p>`;
+  const part=(c.usdPart||c.cntPart)?`<div class="note">Only one side is entered. A blank side is never treated as zero — type 0 if a side is genuinely nil.</div>`:'';
+  return `<h3>Clients and accounts</h3>
+  <div class="grid2">${fld('Clients','kpi.clients',{ph:c.clientsX??'',auto:c.clientsX!=null?'From the Xero client row':'Not found in the export — enter it'})}${fld('Active accounts','kpi.accountsActive')}
+  ${fld('Accounts held','kpi.accountsHeld')}${fld('Jurisdictions','kpi.jurisdictions',{ph:c.jurNamed||'',auto:'Blank uses the Client mix list'})}
+  ${fld('International clients (%)','kpi.intlPct',{ph:isNum(c.intlAuto)?c.intlAuto:'',auto:isNum(c.intlAuto)?`Blank derives ${c.intlAuto}% from the Client mix list`:'Blank derives it from the Client mix list'})}</div>
+  <h3>Per-client metric denominator</h3>
+  <p class="hint">Used for monthly revenue per client and gross profit per client on the Other metrics page. Confirm the appropriate client population for ${esc(longLbl(S.key))}. It is deliberately not carried forward from last month and is not assumed to equal the headline client count.</p>
+  <div class="grid2">${fld('Denominator','kpi.activeClients')}${fld('Source / basis','kpi.activeBasis',{type:'text',ph:'e.g. Finance confirmation'})}</div>
+  ${isNum(c.active)
+    ? `<div class="tstat">At ${c.active}: revenue per client <b>${money(c.metrics.revPerClient)}</b> · gross profit per client <b>${money(c.metrics.gpPerClient)}</b></div>`
+    : `<div class="note">Blank. Revenue per client and gross profit per client will print as “–” and the report cannot be generated until this is set.</div>`}
+  <h3>Transactions this month</h3><p class="hint">These feed the volume summary and per-client metrics. All four are required.</p>
+  ${ts}${part}
+  <div class="grid2">${fld('Incoming transactions (count)','txn.inCount')}${fld('Outgoing transactions (count)','txn.outCount')}${fld('Incoming value (USD)','txn.inUsd')}${fld('Outgoing value (USD)','txn.outUsd')}</div>
+  <h3>Volumes (USD millions)</h3><p class="hint">Leave blank to use the calculated figure.</p>
+  <div class="grid2">${fld('This month','kpi.volMonth',{ph:r1(c.volAuto)})}${fld('Year to date','kpi.volYtd',{ph:r1(c.volYtdAuto),auto:c.volYtdAuto==null?`Needs ${longLbl(c.prevKey)} saved, or enter it`:'Last month\'s YTD plus this month'})}${fld('Since incorporation','kpi.volSinceInc',{ph:r1(c.volIncAuto),auto:c.volIncAuto==null?'Enter once; carried forward after':''})}</div>
+  <h3>Metric overrides</h3><p class="hint">Calculated from the figures above; enter a value only to override. Overrides apply to this month only and are never carried forward.</p>
+  <div class="grid2">${fld('Gross profit margin (%)','ov.gpMargin',{ph:isNum(a.gpMargin)?(a.gpMargin*100).toFixed(1):''})}${fld('Avg transactions per client','ov.txnPerClient',{ph:isNum(a.txnPerClient)?a.txnPerClient.toFixed(2):''})}
+  ${fld('Revenue per client (USD)','ov.revPerClient',{ph:isNum(a.revPerClient)?r0(a.revPerClient):''})}${fld('Gross profit per client (USD)','ov.gpPerClient',{ph:isNum(a.gpPerClient)?r0(a.gpPerClient):''})}
+  ${fld('Volume per client (USD)','ov.volPerClient',{ph:isNum(a.volPerClient)?r0(a.volPerClient):''})}</div>`;
+}
+/* Editing a commentary block re-opens it: its review tick is cleared, and a
+   "No update this month" flag can no longer suppress the text just typed.
+   Only the edited block is touched. */
+function commentaryEdited(k){
+  if(!S.rec) return;
+  let changedFlag=false;
+  if(S.rec.review && S.rec.review[k]){ S.rec.review[k]=false; changedFlag=true;
+    const cb=document.querySelector(`input[data-ck="review.${k}"]`); if(cb) cb.checked=false; }
+  if(S.rec.noUpdate && S.rec.noUpdate[k] && String(S.rec.text[k]||'').trim()){
+    S.rec.noUpdate[k]=false; changedFlag=true;
+    const cb=document.querySelector(`input[data-ck="noUpdate.${k}"]`); if(cb) cb.checked=false;
+    renderPanes();
+  }
+  return changedFlag;
+}
+function revBox(k){
+  const cur=(S.rec.text[k]||'').trim(), prev=((S.rec.prevText||{})[k]||'').trim();
+  const same=cur&&prev&&cur===prev;
+  const nu=(S.rec.noUpdate||{})[k];
+  const canNoUpdate=(k==='pipeline'||k==='regulatory'||k==='tech');
+  if(canNoUpdate&&(!cur||nu))
+    return `<label class="rev"><input type="checkbox" data-ck="noUpdate.${k}" ${nu?'checked':''}> No update this month</label>
+    ${nu?`<div class="tstat">The page will read: “${NO_UPDATE}”</div>`:`<div class="stale">Empty. Write this month\u2019s update above, or tick “No update this month”.</div>`}`;
+  return `${same?`<div class="stale">Unchanged from ${esc(longLbl(shiftKey(S.key,-1)))} — confirm this is intentional before it goes to management.</div>`:''}
+  <label class="rev"><input type="checkbox" data-ck="review.${k}" ${S.rec.review[k]?'checked':''}> Reviewed / updated for ${esc(longLbl(S.key))}</label>`;
+}
+function paneText(){
+  if(!S.pl) return `<p class="hint">Upload the Profit and Loss export first.</p>`;
+  return `<p class="hint">Last month's commentary is carried forward as a drafting start point only. Each block must be marked as reviewed for ${esc(longLbl(S.key))} before the report can be generated — carried text can contain dated statements. Start a line with "# " for a subheading and "- " for a bullet (indent two spaces for a sub-bullet). Wrap text in **double asterisks** for bold.</p>
+  <h3>Operational updates</h3><p class="hint">The revenue, cost, EBITDA and volume sentences are written from the figures automatically.</p>
+  ${txt('EBITDA commentary (appended to the EBITDA sentence)','text.ebitdaNote',3)}${revBox('ebitdaNote')}
+  ${txt('Pipeline','text.pipeline',8)}${revBox('pipeline')}
+  <h3>Regulatory updates</h3>${txt('','text.regulatory',14)}${revBox('regulatory')}
+  <h3>Tech updates</h3>${txt('','text.tech',14)}${revBox('tech')}
+  <h3>Other metrics</h3>${txt('Note under the metrics page','text.metricsNote',2)}${revBox('metricsNote')}`;
+}
+function listEditor(key,label,clients){
+  const L=S.rec[key]||[]; const tot=L.reduce((a,b)=>a+(+b.count||0),0);
+  const mm=isNum(clients)&&tot>0&&tot!==clients;
+  return `<h3>${label}</h3><p class="hint">${tot} listed across ${L.filter(x=>x.name&&String(x.name).trim()).length} categories.${mm?` <b>Headline client count is ${clients}.</b>`:''}</p><table class="listed">${L.map((x,i)=>`<tr><td><input data-list="${key}" data-i="${i}" data-k="name" value="${esc(x.name)}" aria-label="Name"></td><td class="n"><input data-list="${key}" data-i="${i}" data-k="count" type="number" min="0" value="${esc(x.count)}" aria-label="Clients"></td><td class="x"><button data-del="${key}" data-i="${i}" aria-label="Remove">×</button></td></tr>`).join('')}</table>
+  <button class="linkbtn" data-add="${key}">Add row</button>`;
+}
+function paneClients(){
+  if(!S.pl) return `<p class="hint">Upload the Profit and Loss export first.</p>`;
+  const c=compute();
+  const mm=(isNum(c.clients)&&c.jurTot>0&&c.jurTot!==c.clients)||(isNum(c.clients)&&c.indTot>0&&c.indTot!==c.clients);
+  let h=`<p class="hint">Category names carry over from last month; the counts start blank every month and must be entered from this month's client reporting. Totals are never adjusted to match the headline client count.</p>`;
+  h+=listEditor('juris','Jurisdictions',c.clients)+listEditor('industries','Industries',c.clients);
+  if(mm) h+=`<label class="ack"><input type="checkbox" data-ck="confirm.dist" ${S.rec.confirm.dist?'checked':''}><span>Headline client count ${c.clients}; jurisdiction total ${c.jurTot}; industry total ${c.indTot}. I have reviewed the source data and confirm the report should be produced with these figures as supplied.</span></label>`;
+  h+=`<h3>International clients</h3>${fld('Domestic jurisdiction','domestic',{obj:S.cfg,type:'text',ph:'Mauritius',auto:isNum(c.intlAuto)?`${c.domCount} of ${c.jurTot} listed → ${c.intlAuto}% international`:'Names must match the list above exactly'})}`;
+  return h;
+}
+function setHist(key,f,val){
+  const r=S.hist[key]=S.hist[key]||{}; r.published=r.published||{};
+  const mt=r.published.metrics=r.published.metrics||{};
+  const v=val===''?null:num(val);
+  mt[f]= v==null?null:(f==='gpMargin'?v/100:v);
+  r.reported=r.published; r.seed=true;
+}
+/* Seeds transaction history for months that were NOT produced in this tool.
+   A month with its own saved record is published history and is never overwritten. */
+function txnBackfill(){
+  if(!S.txn) return; let n=0, skipped=0;
+  last6().slice(0,-1).forEach(x=>{
+    const m=S.txn.months[x]; if(!m) return;
+    if(S.hist[x]&&S.hist[x].adj){ skipped++; return; }
+    const r=S.hist[x]=S.hist[x]||{}; r.reported=r.reported||{};
+    const mt=r.reported.metrics=r.reported.metrics||{};
+    mt.inUsd=m.inUsd; mt.outUsd=m.outUsd; mt.inCount=m.inCount; mt.outCount=m.outCount;
+    mt.volMonth=(m.inUsd+m.outUsd)/1e6; r.seed=true; r.published=r.reported; n++;
+  });
+  scheduleSave(); renderAll();
+  toast(n?`${n} month${n===1?'':'s'} seeded from the workbook${skipped?`; ${skipped} left untouched because ${skipped===1?'it was':'they were'} produced in this tool`:''}.`
+         :'Nothing to seed. Months produced in this tool are never overwritten.',6000);
+}
+function paneSetup(){
+  const yv=S.cfg.yearVolumes||[];
+  let h=`<h3>Report</h3>
+  <div class="grid2">${fld('Company name in commentary','company',{obj:S.cfg,type:'text'})}${fld('Entity on cover','entity',{obj:S.cfg,type:'text'})}</div>
+  <label class="switch"><input type="checkbox" id="finpos" ${S.cfg.includeFinPos?'checked':''}> Add a financial position page from the Balance Sheet</label>
+  <h3>Annual transaction volumes</h3><p class="hint">USD millions, shown on the volume summary (latest four years).</p>
+  <table class="listed">${yv.map((x,i)=>`<tr><td><input data-yv="${i}" data-k="year" type="number" value="${esc(x.year)}" aria-label="Year"></td><td><input data-yv="${i}" data-k="value" type="number" step="any" value="${esc(x.value)}" aria-label="Volume"></td><td class="x"><button data-yvdel="${i}" aria-label="Remove">×</button></td></tr>`).join('')}</table>
+  <button class="linkbtn" id="yvAdd">Add year</button>`;
+  if(S.pl){
+    const tot=opexLines().filter(l=>S.cfg.directCosts.includes(l.name)).reduce((a,l)=>a+l.vals[0],0);
+    h+=`<h3>Direct costs for gross profit</h3><p class="hint">Gross profit = revenue less the ticked lines. ${shortLbl(S.key)} direct costs: ${money(tot)}.</p>
+    ${opexLines().map(l=>`<label class="chk"><input type="checkbox" data-dc="${esc(l.name)}" ${S.cfg.directCosts.includes(l.name)?'checked':''}> ${esc(l.name)}<span class="v">${money(l.vals[0])}</span></label>`).join('')}`;
+  }
+  const ks=last6().slice(0,-1);
+  const has=(x,f)=>isNum(metricFor(x,null,f));
+  const txnOk=x=>has(x,'inUsd')&&has(x,'outUsd')&&has(x,'inCount')&&has(x,'outCount');
+  h+=`<h3>Six-month history</h3><p class="hint">The volume summary and unit-economics pages show the last six months. Months produced in this tool fill in on their own; earlier months are seeded once, here. Seeded values are stored as previously reported and are never recalculated.</p>
+  <table class="htbl"><tr><th>Month</th><th>Transactions</th><th>Unit economics</th><th>In workbook</th></tr>
+  ${ks.map(x=>{const locked=!!(S.hist[x]&&S.hist[x].adj);
+    const ue=ueComplete(x,null);
+    return `<tr><td>${esc(shortLbl(x))}${locked?' <span style="color:var(--muted)">·built</span>':''}</td><td style="text-align:center">${txnOk(x)?'✓':'—'}</td><td style="text-align:center">${ue?'✓':'—'}</td><td style="text-align:center">${S.txn&&S.txn.months[x]?(locked?'n/a':'available'):'—'}</td></tr>`;}).join('')}</table>`;
+  h+= S.txn
+    ? `<button class="btn" id="txnBackfill" style="margin-top:8px">Seed missing transaction months</button>`
+    : `<p class="hint">Drop the Transaction Summary workbook into the Figures tab to seed transaction history automatically.</p>`;
+  h+=`<h3>Previously published unit economics</h3><p class="hint">For months produced before this tool. Enter the values exactly as they were published — they are not recalculated from today's mappings. Months built in this tool are locked.</p>
+  <table class="htbl"><tr><th>Month</th><th>GP&nbsp;%</th><th>Rev/cl</th><th>GP/cl</th><th>Vol/cl</th><th>Txn/cl</th></tr>
+  ${ks.map(x=>{const locked=!!(S.hist[x]&&S.hist[x].adj);
+    const g=f=>{const v=metricFor(x,null,f); return isNum(v)?(f==='gpMargin'?(v*100).toFixed(1):Math.round(v)):'';};
+    return `<tr><td>${esc(shortLbl(x))}</td>${['gpMargin','revPerClient','gpPerClient','volPerClient','txnPerClient'].map(f=>
+      `<td><input type="number" step="any" data-hist="${x}" data-hk="${f}" value="${g(f)}"${locked?' disabled title="Produced in this tool — frozen as reported."':''}></td>`).join('')}</tr>`;}).join('')}</table>`;
+  h+=`<p class="hint" style="margin-top:18px">Nothing is stored by the website. Your work stays in this browser only while the page is open — use <b>Save for Next Month</b> to download the continuation file before you leave or refresh.</p>`;
+  return h;
+}
+function renderPanes(){
+  const map={figures:paneFigures,kpis:paneKpis,text:paneText,clients:paneClients,setup:paneSetup};
+  document.querySelectorAll('.pane').forEach(p=>{ const k=p.dataset.pane; if(k===S.tab){ const y=p.scrollTop; p.innerHTML=map[k](); p.scrollTop=y; p.hidden=false; } else p.hidden=true; });
+  document.querySelectorAll('.tab').forEach(t=>t.setAttribute('aria-selected',t.dataset.tab===S.tab));
+  const d=$('#drop'); if(d){ d.onclick=()=>$('#file').click(); ['dragover','dragenter'].forEach(e=>d.addEventListener(e,ev=>{ev.preventDefault();d.classList.add('over');})); ['dragleave','drop'].forEach(e=>d.addEventListener(e,ev=>{ev.preventDefault();d.classList.remove('over');})); d.addEventListener('drop',ev=>handleFiles([...ev.dataTransfer.files])); }
+}
+function renderAll(){ renderPanes(); renderSlides(); }
+function changed(refreshPanel){
+  invalidateFinal();   // any edit invalidates a finalised snapshot; require Finalize again
+  if(S.rec&&S.rec.status==='published'){ S.rec.status='draft'; if(S.rec.confirm) S.rec.confirm.republish=false; }
+  scheduleSave(); rerender(); if(refreshPanel){ clearTimeout(changed.t); changed.t=setTimeout(()=>{ const a=document.activeElement; const id=a&&a.id; renderPanes(); if(id){ const n=document.getElementById(id); if(n){ n.focus(); try{ const L=n.value.length; n.setSelectionRange&&n.type==='text'&&n.setSelectionRange(L,L);}catch(e){} } } },700); } }
+
+/* ================= events ================= */
+document.addEventListener('input',e=>{
+  const t=e.target;
+  if(t.dataset.bind){ const v=t.dataset.str||t.type==='text'?t.value:(t.value===''?null:num(t.value)); setPath(t.dataset.cfg?S.cfg:S.rec,t.dataset.bind,v);
+    const tm=/^text\.(\w+)$/.exec(t.dataset.bind);
+    if(tm) commentaryEdited(tm[1]);                    // clears that block's review tick and no-update flag
+    changed(!t.dataset.str && t.type!=='text'); return; }
+  if(t.dataset.list){ const L=S.rec[t.dataset.list]; L[+t.dataset.i][t.dataset.k]= t.dataset.k==='count'?(t.value===''?'':+t.value):t.value; changed(false); return; }
+  if(t.dataset.yv!=null){ S.cfg.yearVolumes[+t.dataset.yv][t.dataset.k]= t.value===''?'':+t.value; changed(false); return; }
+  if(t.dataset.hist){ setHist(t.dataset.hist,t.dataset.hk,t.value); changed(false); return; }
+});
+document.addEventListener('change',e=>{
+  const t=e.target;
+  if(t.dataset.map){ S.cfg.map[t.dataset.map]=t.value; changed(true); }
+  if(t.dataset.dc!=null){ const n=t.dataset.dc; S.cfg.directCosts=S.cfg.directCosts.filter(x=>x!==n); if(t.checked) S.cfg.directCosts.push(n); changed(true); }
+  if(t.id==='finpos'){ S.cfg.includeFinPos=t.checked; changed(false); }
+  if(t.dataset.ck){
+    setPath(S.rec,t.dataset.ck,t.checked);
+    if(t.dataset.ck==='confirm.accounts'&&t.checked)
+      S.cfg.knownAccounts=[...new Set([...(S.cfg.knownAccounts||[]),...[...incomeLines(),...opexLines()].map(l=>l.name)])];
+    changed(false); renderPanes();
+  }
+});
+document.addEventListener('click',e=>{
+  const t=e.target.closest('button'); if(!t) return;
+  if(t.dataset.tab){ S.tab=t.dataset.tab; renderPanes(); return; }
+  if(t.dataset.mode){ S.rec.compMode=t.dataset.mode; changed(true); renderPanes(); return; }
+  if(t.dataset.add){ (S.rec[t.dataset.add]=S.rec[t.dataset.add]||[]).push({name:'',count:''}); renderPanes(); return; }
+  if(t.dataset.del){ S.rec[t.dataset.del].splice(+t.dataset.i,1); changed(false); renderPanes(); return; }
+  if(t.id==='yvAdd'){ (S.cfg.yearVolumes=S.cfg.yearVolumes||[]).push({year:'',value:''}); renderPanes(); return; }
+  if(t.dataset.yvdel!=null){ S.cfg.yearVolumes.splice(+t.dataset.yvdel,1); changed(false); renderPanes(); return; }
+  if(t.id==='txnBackfill'){ txnBackfill(); return; }
+  if(t.id==='txnApply'){
+    const m=S.txn&&S.txn.months[S.key];
+    if(m){ S.rec.txn={inCount:m.inCount,outCount:m.outCount,inUsd:m.inUsd,outUsd:m.outUsd};
+      if(S.txn.ytd&&S.txn.ytd.key===S.key&&!isNum(S.rec.kpi.volYtd)) S.rec.kpi.volYtd=S.txn.ytd.usd/1e6;
+      changed(false); renderPanes(); toast(`${shortLbl(S.key)} transaction figures taken from ${esc(S.files.txn||'the workbook')}.`); }
+    return; }
+});
+$('#btnUpload').onclick=()=>$('#file').click();
+$('#file').onchange=e=>{ handleFiles([...e.target.files]); e.target.value=''; };
+window.addEventListener('resize',()=>scaleFrames());
+window.addEventListener('beforeunload',function(e){
+  if(window.__mrBypassUnload) return;            // intentional sign-out reload
+  if(S && S.pl && !finalSnapshot){ e.preventDefault(); e.returnValue=''; return ''; }
+});
+document.addEventListener('dragover',e=>e.preventDefault());
+document.addEventListener('drop',e=>{ if(!e.target.closest('#drop')){ e.preventDefault(); if(e.dataTransfer.files.length) handleFiles([...e.dataTransfer.files]); } });
+
+/* ================= PDF export ================= */
+async function svgToImages(root){
+  const jobs=[...root.querySelectorAll('svg')].map(async svg=>{
+    const r=svg.getBoundingClientRect(); if(!r.width||!r.height) return;
+    const c=svg.cloneNode(true); c.setAttribute('xmlns','http://www.w3.org/2000/svg'); c.setAttribute('width',r.width); c.setAttribute('height',r.height);
+    const col=getComputedStyle(svg).color||'#06113A';
+    const str=new XMLSerializer().serializeToString(c).replace(/currentColor/g,col);
+    const img=new Image(); img.className=svg.getAttribute('class')||''; img.style.width=r.width+'px'; img.style.height=r.height+'px'; img.style.display='block';
+    img.src='data:image/svg+xml;charset=utf-8,'+encodeURIComponent(str);
+    try{ await img.decode(); }catch(e){}
+    svg.replaceWith(img);
+  });
+  await Promise.all(jobs);
+}
+function exportBlocked(){
+  const R=readiness();
+  if(R.errors){ toast(`${R.errors} item${R.errors===1?'':'s'} must be resolved before the report can be generated. See Report readiness above the slides.`,6000); return true; }
+  return false;
+}
+$('#btnPrint').onclick=async()=>{
+  if(!S.pl||exportBlocked()) return;
+  await saveNow();
+  if(document.fonts&&document.fonts.ready) await document.fonts.ready;
+  toast('Preview only — this does not finalise the month. Choose "Save as PDF", landscape, no margins, and turn on background graphics.',8000);
+  setTimeout(()=>window.print(),400);
+};
+function downloadBlob(blob,name){
+  try{
+    const url=URL.createObjectURL(blob);
+    const a=document.createElement('a'); a.href=url; a.download=name; a.style.display='none';
+    document.body.appendChild(a); a.click(); a.remove();
+    setTimeout(()=>URL.revokeObjectURL(url),60000);
+    return true;
+  }catch(e){ console.error(e); return false; }
+}
+/* ===== Finalize once: one frozen render -> PDF + PPTX + .data =====
+   Renders the finalised report pages a SINGLE time to page images, then builds
+   the PDF and the image-based PPTX from those same images (so they cannot
+   diverge), and the continuation .data from the published state. Any later
+   edit invalidates the snapshot and disables the three outputs. */
+let finalSnapshot=null;
+function outputBtns(){ return [$('#btnDlPdf'),$('#btnDlPptx'),$('#btnDlData')]; }
+function setOutputsEnabled(on){ outputBtns().forEach(b=>{ if(b) b.disabled=!on; }); }
+function invalidateFinal(){
+  if(!finalSnapshot) return;
+  finalSnapshot=null; setOutputsEnabled(false);
+  const b=$('#btnPdf'); if(b) b.textContent='Finalize Report';
+}
+async function renderSlidePngs(progress){
+  const host=document.createElement('div'); host.style.cssText='position:fixed;left:-20000px;top:0;width:1280px;background:#fff';
+  document.body.appendChild(host);
+  try{
+    const slides=[...document.querySelectorAll('.sframe .slide')];
+    const imgs=[];
+    for(let i=0;i<slides.length;i++){
+      if(progress) progress(i+1,slides.length);
+      const cl=slides[i].cloneNode(true); cl.style.transform='none'; host.innerHTML=''; host.appendChild(cl);
+      await svgToImages(cl);
+      const cv=await window.html2canvas(cl,{scale:2,backgroundColor:'#ffffff',useCORS:true,logging:false,width:1280,height:720,windowWidth:1280});
+      imgs.push(cv.toDataURL('image/jpeg',0.92));
+    }
+    return imgs;
+  } finally { host.remove(); }
+}
+function buildPdfFromImages(imgs){
+  const pdf=new window.jspdf.jsPDF({orientation:'landscape',unit:'px',format:[1280,720],hotfixes:['px_scaling'],compress:true});
+  imgs.forEach((d,i)=>{ if(i>0) pdf.addPage([1280,720],'landscape'); pdf.addImage(d,'JPEG',0,0,1280,720,undefined,'FAST'); });
+  return pdf.output('blob');
+}
+async function buildPptxFromImages(imgs){
+  const P=window.PptxGenJS; const pptx=new P();
+  pptx.defineLayout({name:'MR169',width:13.333,height:7.5}); pptx.layout='MR169';   // 16:9
+  imgs.forEach(d=>{ const s=pptx.addSlide(); s.addImage({data:d,x:0,y:0,w:13.333,h:7.5}); });
+  const out=await pptx.write('blob');
+  return (out instanceof Blob) ? out : new Blob([out],{type:'application/vnd.openxmlformats-officedocument.presentationml.presentation'});
+}
+async function finalizeReport(){
+  const btn=$('#btnPdf'); if(!S.pl||exportBlocked()) return;
+  if(!window.jspdf||!window.html2canvas||!window.PptxGenJS){
+    toast('The export libraries did not load. Reload the page and try again — nothing was finalised.',8000); return; }
+  invalidateFinal();
+  btn.disabled=true; const old='Finalize Report'; btn.textContent='Finalising…';
+  try{
+    await saveNow();
+    if(document.fonts&&document.fonts.ready) await document.fonts.ready;
+    // Publish the month exactly as the builder does, then render from that state.
+    await publishMonth(); renderAll();
+    btn.disabled=true;   // renderAll() re-enables via readiness; keep locked during render
+    if(document.fonts&&document.fonts.ready) await document.fonts.ready;
+    const monthKey=S.key, label=longLbl(monthKey).replace(/ /g,'_');
+    const imgs=await renderSlidePngs((n,t)=>{ btn.textContent=`Rendering ${n}/${t}`; });
+    const pdfBlob=buildPdfFromImages(imgs);
+    btn.textContent='Building PowerPoint…';
+    const pptxBlob=await buildPptxFromImages(imgs);
+    const cont=exportContinuationBlob();   // from the just-published state
+    finalSnapshot={ month:monthKey,
+      pdf:{blob:pdfBlob,name:`ARIE_Finance_Management_Report_${label}.pdf`},
+      pptx:{blob:pptxBlob,name:`ARIE_Finance_Management_Report_${label}.pptx`},
+      data:{blob:cont.blob,name:cont.name} };
+    setOutputsEnabled(true);
+    btn.textContent='Re-finalize';
+    toast(`${longLbl(monthKey)} finalised. Download the PDF, PowerPoint and continuation file — nothing is stored by the website, so download before you leave.`,9000);
+  }catch(err){ console.error(err); toast(`Could not finalise: ${err.message||err}. Nothing was downloaded.`,8000); invalidateFinal(); btn.textContent=old; }
+  finally{ btn.disabled=false; }
+}
+function downloadFinal(which){ if(!finalSnapshot) return; const o=finalSnapshot[which]; if(o&&!downloadBlob(o.blob,o.name)) toast('The download could not be started.',6000); }
+$('#btnPdf').onclick=finalizeReport;
+if($('#btnDlPdf'))  $('#btnDlPdf').onclick =()=>downloadFinal('pdf');
+if($('#btnDlPptx')) $('#btnDlPptx').onclick=()=>downloadFinal('pptx');
+if($('#btnDlData')) $('#btnDlData').onclick=()=>downloadFinal('data');
+
+/* ================= continuation .data file (portable month-to-month state) =================
+   Replaces server/browser persistence. Carries exactly the two objects the
+   builder has always used for continuity (S.hist + S.cfg), so month-to-month
+   behaviour is identical to the original tool. No raw workbooks are included. */
+const MR_BUILD='2026-09-stateless-1';
+const CONT_FORMAT='arie-management-report-continuation';
+const CONT_SCHEMA=1;
+const CONT_MAX_BYTES=8*1024*1024;
+function stableStringify(v){
+  if(v===null||typeof v!=='object') return JSON.stringify(v);
+  if(Array.isArray(v)) return '['+v.map(stableStringify).join(',')+']';
+  return '{'+Object.keys(v).sort().map(k=>JSON.stringify(k)+':'+stableStringify(v[k])).join(',')+'}';
+}
+/* djb2 over canonical JSON — CORRUPTION detection only, not tamper-proof. */
+function contChecksum(core){ const s=stableStringify(core); let h=5381; for(let i=0;i<s.length;i++){ h=((h<<5)+h+s.charCodeAt(i))>>>0; } return ('0000000'+h.toString(16)).slice(-8); }
+function validKey(k){ return typeof k==='string' && /^\d{4}-(0[1-9]|1[0-2])$/.test(k); }
+function latestPublishedKey(){ let best=null; for(const k of Object.keys(S.hist||{})){ if(S.hist[k]&&S.hist[k].published){ if(!best||k>best) best=k; } } return best||S.key||null; }
+function buildContinuation(){
+  const core={hist:S.hist||{}, cfg:S.cfg||{}};
+  return { formatId:CONT_FORMAT, schemaVersion:CONT_SCHEMA, reportingMonth:latestPublishedKey(),
+    generatedAt:new Date().toISOString(), builderVersion:MR_BUILD, hist:core.hist, cfg:core.cfg, checksum:contChecksum(core) };
+}
+function continuationName(){ const k=latestPublishedKey(); return 'ARIE_Management_Report_'+(k?longLbl(k).replace(' ','_'):'current')+'.data'; }
+function exportContinuationBlob(){ return { blob:new Blob([JSON.stringify(buildContinuation(),null,1)],{type:'application/json'}), name:continuationName() }; }
+/* Validate a parsed object; returns {ok:true} or {ok:false,msg}. */
+function validateContinuation(obj){
+  if(!obj||typeof obj!=='object') return {ok:false,msg:'That file is not a valid continuation file.'};
+  if(obj.formatId!==CONT_FORMAT) return {ok:false,msg:'That file is not an ARIE Management Report continuation file.'};
+  if(obj.schemaVersion!==CONT_SCHEMA) return {ok:false,msg:'That continuation file was made by a different version and cannot be read.'};
+  if(typeof obj.hist!=='object'||obj.hist===null||Array.isArray(obj.hist)) return {ok:false,msg:'That continuation file is missing its history data.'};
+  if(typeof obj.cfg!=='object'||obj.cfg===null||Array.isArray(obj.cfg)) return {ok:false,msg:'That continuation file is missing its configuration.'};
+  if(!validKey(obj.reportingMonth)) return {ok:false,msg:'That continuation file has an invalid reporting month.'};
+  if(obj.checksum!==contChecksum({hist:obj.hist,cfg:obj.cfg})) return {ok:false,msg:'That continuation file looks corrupted (checksum mismatch) and was not loaded.'};
+  return {ok:true};
+}
+function applyContinuation(obj){
+  S.hist=clone(obj.hist);
+  S.cfg=Object.assign(defaultCfg(),clone(obj.cfg));
+  S.contMonth=obj.reportingMonth;
+  migrateHist();
+  if(S.key){ S.rec=null; ensureRec(); }
+  renderAll();
+}
+function importContinuation(file){
+  if(!file) return;
+  if(file.size>CONT_MAX_BYTES){ toast('That continuation file is too large to be valid.',6000); return; }
+  const reader=new FileReader();
+  reader.onerror=function(){ toast('Could not read that file.',6000); };
+  reader.onload=function(){
+    let obj; try{ obj=JSON.parse(reader.result); }catch(e){ toast('That file is not valid JSON and was not loaded.',6000); return; }
+    const v=validateContinuation(obj); if(!v.ok){ toast(v.msg,7000); return; }
+    if(S.key){ const need=shiftKey(S.key,-1); if(obj.reportingMonth!==need){ toast('This continuation file is for '+longLbl(obj.reportingMonth)+', but the report month is '+longLbl(S.key)+'. Load the '+longLbl(need)+' file instead.',9000); return; } }
+    applyContinuation(obj);
+    toast('Loaded continuation from '+longLbl(obj.reportingMonth)+'. Now upload this month’s source files.',6000);
+  };
+  reader.readAsText(file);
+}
+if($('#btnImport')) $('#btnImport').onclick=()=>$('#contFile') && $('#contFile').click();
+if($('#contFile')) $('#contFile').onchange=e=>{ const f=e.target.files&&e.target.files[0]; importContinuation(f); e.target.value=''; };
+
+renderAll();
+initCaps();
+</script>
+<script>
+/* ===== Access gate + session (sibling of the Sales Tracker) =====
+   Password is verified server-side by /api/managementreport. The tool is
+   revealed only for a valid session. Sign out clears the cookie and RELOADS
+   the page, which wipes all financials, commentary, uploaded workbook objects
+   and rendered pages from browser memory. */
+(function(){
+  var API="/api/managementreport";
+  function api(opts){
+    opts=opts||{};
+    var init={method:opts.method||"GET",headers:{"Content-Type":"application/json"},credentials:"same-origin"};
+    if(opts.body) init.body=JSON.stringify(opts.body);
+    return fetch(API+(opts.query||""),init).then(function(r){
+      return r.json().catch(function(){return {};}).then(function(j){
+        if(!r.ok){ var e=new Error(j.error||("http_"+r.status)); e.code=j.error; e.status=r.status; throw e; }
+        return j;
+      });
+    });
+  }
+  var gate=document.getElementById("mrgate");
+  var errEl=document.getElementById("mrgateErr");
+  function showGate(msg){ if(gate) gate.classList.remove("hidden"); document.body.classList.add("locked"); if(msg!=null&&errEl) errEl.textContent=msg; var p=document.getElementById("mrgatePass"); if(p){ p.value=""; try{p.focus();}catch(e){} } }
+  function hideGate(){ if(gate) gate.classList.add("hidden"); document.body.classList.remove("locked"); }
+  function signOut(){ window.__mrBypassUnload=true; api({method:"POST",body:{action:"logout"}}).catch(function(){}).then(function(){ location.reload(); }); }
+  var soBtn=document.getElementById("btnSignOut"); if(soBtn) soBtn.addEventListener("click",signOut);
+  var form=document.getElementById("mrgateForm");
+  if(form) form.addEventListener("submit",function(ev){
+    ev.preventDefault();
+    var btn=document.getElementById("mrgateBtn"), pass=document.getElementById("mrgatePass").value;
+    if(!pass){ errEl.textContent="Enter the passcode."; return; }
+    btn.disabled=true; var old=btn.textContent; btn.textContent="Signing in…"; errEl.textContent="";
+    api({method:"POST",body:{action:"login",passcode:pass}}).then(function(){ hideGate(); })
+      .catch(function(err){
+        var m = err.code==="invalid_passcode" ? "Incorrect passcode."
+          : err.code==="too_many_attempts" ? "Too many attempts. Wait a few minutes and try again."
+          : (err.code==="storage_unconfigured"||err.code==="passcode_unconfigured") ? "Not configured yet — contact the administrator."
+          : "Could not sign in. Please try again.";
+        errEl.textContent=m;
+      }).then(function(){ btn.disabled=false; btn.textContent=old; });
+  });
+  // On load, the gate is shown until a valid session is confirmed.
+  showGate("");
+  api({method:"GET",query:"?action=session"}).then(function(){ hideGate(); }).catch(function(){ showGate(""); });
+})();
+</script>
+</body>
+</html>

@@ -282,6 +282,9 @@ table.num tr.ebit td.neg{color:#F2B8B0}
 .mrgate-foot{margin-top:16px;font-size:11px;color:var(--muted)}
 body.locked{overflow:hidden}
 .mrnote{background:var(--warn-bg);color:var(--warn);font-size:12.5px;font-weight:600;padding:8px 22px;border-bottom:1px solid var(--border-soft);text-align:center}
+.mrbusy{position:fixed;inset:0;z-index:1200;background:rgba(6,17,58,.45);display:none;align-items:center;justify-content:center}
+.mrbusy.on{display:flex}
+.mrbusy-card{background:var(--surface);color:var(--text);padding:18px 28px;border-radius:12px;font-weight:600;font-size:15px;box-shadow:0 24px 70px -22px rgba(0,0,0,.55)}
 </style>
 </head>
 <body>
@@ -298,6 +301,7 @@ body.locked{overflow:hidden}
     <div class="mrgate-foot">Sessions expire after 12 hours. Nothing you enter is stored by the website.</div>
   </div>
 </div>
+<div class="mrbusy" id="mrbusy"><div class="mrbusy-card">Finalising report… please wait</div></div>
 <div class="app">
   <div class="bar">
     <svg class="logo" viewBox="0 0 396 94" aria-label="ARIE Finance" role="img"><defs><linearGradient id="lgA" x1="82.7" y1="87" x2="82.7" y2="7" gradientUnits="userSpaceOnUse"><stop stop-color="#6B63F0"/><stop offset="1" stop-color="#4940D6"/></linearGradient></defs><path d="M11.0614 80.4441L127.778 11.2672C131.539 9.03804 136.402 10.7353 137.959 14.8209L161.821 77.4418C163.579 82.0553 160.171 87.0001 155.234 87.0001L127.149 87.0001C125.138 87.0001 123.222 86.1406 121.885 84.6381L105.648 66.3987C103.515 64.0025 100.033 63.349 97.1764 64.8086L55.2553 86.2282C54.2624 86.7355 53.1633 87.0001 52.0482 87.0001L12.8583 87.0001C9.27394 87.0001 7.97797 82.2716 11.0614 80.4441Z" fill="url(#lgA)"/><path d="M88.1037 86.508C86.5213 86.508 85.2012 85.2031 85.6183 83.6766C86.1064 81.8899 87.0528 80.2432 88.3855 78.9106C90.4004 76.8957 93.1333 75.7637 95.9829 75.7637C98.8324 75.7637 101.565 76.8957 103.58 78.9106C104.913 80.2432 105.859 81.8899 106.347 83.6766C106.764 85.2031 105.444 86.508 103.862 86.508L88.1037 86.508Z" fill="currentColor"/><path d="M238.682 42.875H214.744L210.713 51H197.775L220.244 8.0625H233.182L255.65 51H242.713L238.682 42.875ZM218.9 34.5H234.588L226.775 18.6875L218.9 34.5ZM274.275 51H262.682V8.0625H291.744C294.869 8.0625 297.515 8.38542 299.682 9.03125C301.869 9.67708 303.64 10.5938 304.994 11.7812C306.369 12.9688 307.359 14.4062 307.963 16.0938C308.588 17.7604 308.9 19.625 308.9 21.6875C308.9 23.5 308.64 25.0833 308.119 26.4375C307.619 27.7917 306.932 28.9583 306.057 29.9375C305.203 30.8958 304.203 31.7083 303.057 32.375C301.911 33.0417 300.703 33.5938 299.432 34.0312L313.494 51H299.932L286.932 35.1875H274.275V51ZM297.182 21.625C297.182 20.7917 297.067 20.0833 296.838 19.5C296.63 18.9167 296.255 18.4479 295.713 18.0938C295.171 17.7188 294.442 17.4479 293.525 17.2812C292.63 17.1146 291.505 17.0312 290.15 17.0312H274.275V26.2188H290.15C291.505 26.2188 292.63 26.1354 293.525 25.9688C294.442 25.8021 295.171 25.5417 295.713 25.1875C296.255 24.8125 296.63 24.3333 296.838 23.75C297.067 23.1667 297.182 22.4583 297.182 21.625ZM321.807 51V8.0625H333.4V51H321.807ZM346.869 51V8.0625H390.338V17.2188H358.775V24.3125H388.713V33.4688H358.775V41.8438H390.775V51H346.869ZM206.905 67.5815V71.4326H221.294V76.1538H206.905V85H200.927V62.8604H222.084V67.5815H206.905ZM227.192 85V62.8604H233.17V85H227.192ZM261.03 85L246.093 69.7891V85H240.115V62.8604H246.608L261.562 78.1357V62.8604H267.507V85H261.03ZM292.225 80.8105H279.882L277.804 85H271.133L282.718 62.8604H289.389L300.975 85H294.304L292.225 80.8105ZM282.025 76.4922H290.114L286.086 68.3389L282.025 76.4922ZM325.515 85L310.578 69.7891V85H304.6V62.8604H311.094L326.047 78.1357V62.8604H331.993V85H325.515ZM363.317 83.4854C362.544 83.8076 361.765 84.0977 360.981 84.3555C360.196 84.6133 359.385 84.8335 358.547 85.0161C357.71 85.2095 356.823 85.3545 355.889 85.4512C354.965 85.5479 353.971 85.5962 352.908 85.5962C350.652 85.5962 348.573 85.3545 346.672 84.8711C344.781 84.3877 343.148 83.6626 341.773 82.6958C340.409 81.7183 339.346 80.5044 338.583 79.0542C337.82 77.5933 337.439 75.8906 337.439 73.9463C337.439 72.002 337.82 70.3047 338.583 68.8545C339.346 67.3936 340.409 66.1797 341.773 65.2129C343.148 64.2354 344.781 63.5049 346.672 63.0215C348.573 62.5381 350.652 62.2964 352.908 62.2964C353.971 62.2964 354.965 62.3447 355.889 62.4414C356.823 62.5381 357.71 62.6831 358.547 62.8765C359.385 63.0591 360.196 63.2793 360.981 63.5371C361.765 63.7949 362.544 64.085 363.317 64.4072V69.7891C362.705 69.4561 362.06 69.1284 361.383 68.8062C360.707 68.4731 359.96 68.1777 359.144 67.9199C358.327 67.6514 357.43 67.4365 356.453 67.2754C355.475 67.1035 354.374 67.0176 353.149 67.0176C351.27 67.0176 349.707 67.2109 348.461 67.5977C347.225 67.9844 346.237 68.5 345.496 69.1445C344.754 69.7891 344.233 70.5303 343.933 71.3682C343.632 72.1953 343.482 73.0547 343.482 73.9463C343.482 74.5371 343.546 75.1226 343.675 75.7026C343.804 76.272 344.019 76.8145 344.319 77.3301C344.62 77.835 345.012 78.3022 345.496 78.7319C345.979 79.1616 346.581 79.5322 347.3 79.8438C348.02 80.1553 348.858 80.4023 349.814 80.585C350.781 80.7568 351.893 80.8428 353.149 80.8428C354.374 80.8428 355.475 80.7676 356.453 80.6172C357.43 80.4561 358.327 80.2466 359.144 79.9888C359.96 79.731 360.707 79.4409 361.383 79.1187C362.06 78.7856 362.705 78.4473 363.317 78.1035V83.4854ZM368.892 85V62.8604H391.306V67.5815H375.031V71.2393H390.468V75.9604H375.031V80.2788H391.531V85H368.892Z" fill="currentColor"/></svg>
@@ -773,9 +777,12 @@ function initCaps(){
 
 /* ================= uploads ================= */
 async function handleFiles(list){
+  if(isFinalizing) return;              // locked during finalisation
+  invalidateFinal();                    // new source files change the report -> old outputs no longer valid
   for(const f of list){
     try{
-      const wb=XLSX.read(await f.arrayBuffer(),{type:'array'}); const rows=sheetRows(wb); const kind=detectKind(rows);
+      const buf=await f.arrayBuffer(); if(isFinalizing) return;   // finalisation started during the async read: abort
+      const wb=XLSX.read(buf,{type:'array'}); const rows=sheetRows(wb); const kind=detectKind(rows);
       if(kind==='pl'){ S.pl=parsePL(rows); S.files.pl=f.name; }
       else if(kind==='bs'){ S.bs=parseBS(rows); S.files.bs=f.name; }
       else {
@@ -1195,6 +1202,8 @@ function setHist(key,f,val){
 /* Seeds transaction history for months that were NOT produced in this tool.
    A month with its own saved record is published history and is never overwritten. */
 function txnBackfill(){
+  if(isFinalizing) return;              // locked during finalisation
+  invalidateFinal();                    // seeding history changes the report -> old outputs no longer valid
   if(!S.txn) return; let n=0, skipped=0;
   last6().slice(0,-1).forEach(x=>{
     const m=S.txn.months[x]; if(!m) return;
@@ -1249,12 +1258,14 @@ function renderPanes(){
 }
 function renderAll(){ renderPanes(); renderSlides(); }
 function changed(refreshPanel){
+  if(isFinalizing) return;   // inputs are locked while a report is being finalised
   invalidateFinal();   // any edit invalidates a finalised snapshot; require Finalize again
   if(S.rec&&S.rec.status==='published'){ S.rec.status='draft'; if(S.rec.confirm) S.rec.confirm.republish=false; }
   scheduleSave(); rerender(); if(refreshPanel){ clearTimeout(changed.t); changed.t=setTimeout(()=>{ const a=document.activeElement; const id=a&&a.id; renderPanes(); if(id){ const n=document.getElementById(id); if(n){ n.focus(); try{ const L=n.value.length; n.setSelectionRange&&n.type==='text'&&n.setSelectionRange(L,L);}catch(e){} } } },700); } }
 
 /* ================= events ================= */
 document.addEventListener('input',e=>{
+  if(isFinalizing) return;                                 // no state mutation while finalising (before any write)
   const t=e.target;
   if(t.dataset.bind){ const v=t.dataset.str||t.type==='text'?t.value:(t.value===''?null:num(t.value)); setPath(t.dataset.cfg?S.cfg:S.rec,t.dataset.bind,v);
     const tm=/^text\.(\w+)$/.exec(t.dataset.bind);
@@ -1265,6 +1276,7 @@ document.addEventListener('input',e=>{
   if(t.dataset.hist){ setHist(t.dataset.hist,t.dataset.hk,t.value); changed(false); return; }
 });
 document.addEventListener('change',e=>{
+  if(isFinalizing) return;                                 // no state mutation while finalising (before any write)
   const t=e.target;
   if(t.dataset.map){ S.cfg.map[t.dataset.map]=t.value; changed(true); }
   if(t.dataset.dc!=null){ const n=t.dataset.dc; S.cfg.directCosts=S.cfg.directCosts.filter(x=>x!==n); if(t.checked) S.cfg.directCosts.push(n); changed(true); }
@@ -1277,6 +1289,7 @@ document.addEventListener('change',e=>{
   }
 });
 document.addEventListener('click',e=>{
+  if(isFinalizing) return;                                 // no state mutation while finalising (before any write)
   const t=e.target.closest('button'); if(!t) return;
   if(t.dataset.tab){ S.tab=t.dataset.tab; renderPanes(); return; }
   if(t.dataset.mode){ S.rec.compMode=t.dataset.mode; changed(true); renderPanes(); return; }
@@ -1343,6 +1356,14 @@ function downloadBlob(blob,name){
    diverge), and the continuation .data from the published state. Any later
    edit invalidates the snapshot and disables the three outputs. */
 let finalSnapshot=null;
+let isFinalizing=false;
+function setBusy(on){
+  isFinalizing=on;
+  const b=$('#mrbusy'); if(b) b.classList.toggle('on',on);
+  const app=$('.app'); if(app) app.inert=on;               // native: whole UI non-interactive while finalising
+  const f=$('#file'); if(f) f.disabled=on;                 // hidden file pickers cannot fire during finalisation
+  const cf=$('#contFile'); if(cf) cf.disabled=on;
+}
 function outputBtns(){ return [$('#btnDlPdf'),$('#btnDlPptx'),$('#btnDlData')]; }
 function setOutputsEnabled(on){ outputBtns().forEach(b=>{ if(b) b.disabled=!on; }); }
 function invalidateFinal(){
@@ -1379,24 +1400,29 @@ async function buildPptxFromImages(imgs){
   return (out instanceof Blob) ? out : new Blob([out],{type:'application/vnd.openxmlformats-officedocument.presentationml.presentation'});
 }
 async function finalizeReport(){
+  if(isFinalizing) return;                              // no second finalisation while one is running
   const btn=$('#btnPdf'); if(!S.pl||exportBlocked()) return;
   if(!window.jspdf||!window.html2canvas||!window.PptxGenJS){
     toast('The export libraries did not load. Reload the page and try again — nothing was finalised.',8000); return; }
   invalidateFinal();
+  setBusy(true);                                        // lock the UI: overlay blocks all input while rendering
   btn.disabled=true; const old='Finalize Report'; btn.textContent='Finalising…';
+  let prePublishRec=null, prePublishHist=null;            // set only once we are about to publish; drives rollback
   try{
     await saveNow();
-    if(document.fonts&&document.fonts.ready) await document.fonts.ready;
-    // Publish the month exactly as the builder does, then render from that state.
-    await publishMonth(); renderAll();
-    btn.disabled=true;   // renderAll() re-enables via readiness; keep locked during render
+    renderAll();                                        // reflect current state in the slides (does NOT publish)
     if(document.fonts&&document.fonts.ready) await document.fonts.ready;
     const monthKey=S.key, label=longLbl(monthKey).replace(/ /g,'_');
+    // 1) render the 11 pages ONCE, 2) PDF and 3) PPTX from those same images
     const imgs=await renderSlidePngs((n,t)=>{ btn.textContent=`Rendering ${n}/${t}`; });
     const pdfBlob=buildPdfFromImages(imgs);
     btn.textContent='Building PowerPoint…';
     const pptxBlob=await buildPptxFromImages(imgs);
-    const cont=exportContinuationBlob();   // from the just-published state
+    // Only after BOTH outputs succeed: publish the month, then build the .data from that published state.
+    // Snapshot the pre-publish in-memory state so a failure AFTER publish can be fully rolled back.
+    prePublishRec=clone(S.rec); prePublishHist=clone(S.hist);
+    await publishMonth();
+    const cont=exportContinuationBlob();
     finalSnapshot={ month:monthKey,
       pdf:{blob:pdfBlob,name:`ARIE_Finance_Management_Report_${label}.pdf`},
       pptx:{blob:pptxBlob,name:`ARIE_Finance_Management_Report_${label}.pptx`},
@@ -1404,8 +1430,15 @@ async function finalizeReport(){
     setOutputsEnabled(true);
     btn.textContent='Re-finalize';
     toast(`${longLbl(monthKey)} finalised. Download the PDF, PowerPoint and continuation file — nothing is stored by the website, so download before you leave.`,9000);
-  }catch(err){ console.error(err); toast(`Could not finalise: ${err.message||err}. Nothing was downloaded.`,8000); invalidateFinal(); btn.textContent=old; }
-  finally{ btn.disabled=false; }
+  }catch(err){
+    console.error(err);
+    // If we had already published when the failure occurred, undo the publish so the in-memory
+    // report truthfully matches the message: nothing published, nothing downloaded.
+    if(prePublishRec){ S.rec=prePublishRec; S.hist=prePublishHist; try{ renderAll(); }catch(_){} }
+    toast(`Could not finalise: ${err.message||err}. Nothing was published or downloaded.`,8000);
+    invalidateFinal(); btn.textContent=old;
+  }
+  finally{ setBusy(false); btn.disabled=false; }
 }
 function downloadFinal(which){ if(!finalSnapshot) return; const o=finalSnapshot[which]; if(o&&!downloadBlob(o.blob,o.name)) toast('The download could not be started.',6000); }
 $('#btnPdf').onclick=finalizeReport;
@@ -1449,6 +1482,8 @@ function validateContinuation(obj){
   return {ok:true};
 }
 function applyContinuation(obj){
+  if(isFinalizing) return;              // locked during finalisation
+  invalidateFinal();                    // importing prior-month state changes the report -> old outputs no longer valid
   S.hist=clone(obj.hist);
   S.cfg=Object.assign(defaultCfg(),clone(obj.cfg));
   S.contMonth=obj.reportingMonth;
@@ -1462,6 +1497,7 @@ function importContinuation(file){
   const reader=new FileReader();
   reader.onerror=function(){ toast('Could not read that file.',6000); };
   reader.onload=function(){
+    if(isFinalizing) return;            // finalisation started while the file was being read: ignore this import
     let obj; try{ obj=JSON.parse(reader.result); }catch(e){ toast('That file is not valid JSON and was not loaded.',6000); return; }
     const v=validateContinuation(obj); if(!v.ok){ toast(v.msg,7000); return; }
     if(S.key){ const need=shiftKey(S.key,-1); if(obj.reportingMonth!==need){ toast('This continuation file is for '+longLbl(obj.reportingMonth)+', but the report month is '+longLbl(S.key)+'. Load the '+longLbl(need)+' file instead.',9000); return; } }

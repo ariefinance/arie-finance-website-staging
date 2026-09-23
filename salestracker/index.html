@@ -601,13 +601,20 @@ const SEGMENTS = {
   film:      {name:"Film & TV",           blurb:"Production companies from the film and TV prospect research — ranked by research score, with the researched flow band in each lead's notes"},
   uae:       {name:"UAE introducers",     blurb:"Abu Dhabi and Dubai CSPs and introducers"},
   mauritius: {name:"Mauritius ManCos",    blurb:"Management companies and CSPs licensed in Mauritius"},
-  uk:        {name:"UK & international",  blurb:"UK contact database"},
-  africa:    {name:"Africa",              blurb:"Africa corridor ICP database"},
+  uk:        {name:"UK & international",  blurb:"UK contact database", hidden:true},
+  africa:    {name:"Africa",              blurb:"Africa corridor ICP database", hidden:true},
   miscmu:    {name:"Miscellaneous (Mauritius)", blurb:"Mauritius leads that do not sit in any other segment"},
   onboarding:{name:"Onboarding",          blurb:"Clients working through KYC and account opening — leads land here on their own once their stage is set to Onboarding"},
   existing:  {name:"Existing clients",    blurb:"Live ARIE clients — leads land here on their own once their stage is set to Won"}
 };
 const SEG_KEYS = Object.keys(SEGMENTS);
+// Data-layer iterations (normData, mergeOnto, sweepRoutes, findLead, sync)
+// keep using SEG_KEYS above so hidden segments' leads are preserved and kept
+// consistent with the server. Anything user-facing (tab bar, dashboard tables,
+// assumptions table, totals, "all segments" pipeline view) iterates the visible
+// subset below so hidden segments disappear from view without their data being
+// touched. Flip the hidden flag on a segment above to unhide it.
+const VISIBLE_SEG_KEYS = SEG_KEYS.filter(k => !SEGMENTS[k].hidden);
 const STAGES = ["Not Contacted","Contacted","Follow-up Due","Followed Up","Meeting Booked","Qualified","Proposal / Terms Sent","Referral agreement signed","Onboarding","Won","Lost","On Hold"];
 const LADDER = STAGES.filter(s => s !== "Lost" && s !== "On Hold");
 const CLOSED = ["Won","Lost"];
@@ -698,7 +705,10 @@ function emptyData(){ const d={}; SEG_KEYS.forEach(k=>d[k]=[]); return d; }
 let DATA = emptyData(), SET = JSON.parse(JSON.stringify(DEFAULTS));
 function boardState(){ return {v:1, savedAt:new Date().toISOString(), settings:SET, data:DATA}; }
 function save(){ scheduleSync(); }
-function allLeads(){ return SEG_KEYS.flatMap(k => DATA[k].map(x => ({lead:x, seg:k}))); }
+// Only visible segments — hidden segments' leads still live in DATA[k] and are
+// preserved on save, but are excluded from every dashboard/pipeline computation
+// and every user-facing count.
+function allLeads(){ return VISIBLE_SEG_KEYS.flatMap(k => DATA[k].map(x => ({lead:x, seg:k}))); }
 function findLead(id){ for(const k of SEG_KEYS){ const x = DATA[k].find(z => z.id === id); if(x) return {lead:x, seg:k}; } return null; }
 
 /* ---------------- automatic routing between segments ---------------- */
@@ -713,8 +723,10 @@ function routeLead(id){
   return {from:f.seg, to:dest, lead:f.lead};
 }
 function sweepRoutes(){
+  // Sweep ALL segments, including hidden ones, so a hidden lead that has since
+  // moved to Won/Onboarding still gets auto-routed to Existing / Onboarding.
   let n = 0;
-  allLeads().forEach(({lead}) => { if(routeLead(lead.id)) n++; });
+  SEG_KEYS.forEach(k => DATA[k].forEach(l => { if(routeLead(l.id)) n++; }));
   return n;
 }
 
@@ -854,7 +866,7 @@ function renderDashboard(){
   const cover = target ? (wonVal + weighted) / target : 0;
 
   document.getElementById("asof").innerHTML = "As at " + new Date().toLocaleDateString("en-GB",{day:"numeric",month:"long",year:"numeric"}) +
-    "<br>" + rows.length.toLocaleString() + " leads across " + SEG_KEYS.length + " segments";
+    "<br>" + rows.length.toLocaleString() + " leads across " + VISIBLE_SEG_KEYS.length + " segments";
   set("k-weighted", usdK(weighted));
   set("k-weighted-note", live.length + " live deal" + (live.length === 1 ? "" : "s") + " · average " + usdK(live.length ? weighted / live.length : 0) + " each");
   set("k-gross", usdK(gross));
@@ -943,7 +955,7 @@ function renderDashboard(){
     `<button class="flag ${x.cls}" data-flag="${x.id}"><b>${x.n.toLocaleString()}</b><span>${x.label}</span></button>`).join("");
 
   /* segments */
-  document.getElementById("seg-table").innerHTML = SEG_KEYS.map(k => {
+  document.getElementById("seg-table").innerHTML = VISIBLE_SEG_KEYS.map(k => {
     const rs = rows.filter(r => r.seg === k);
     const lv = rs.filter(r => isOpen(r.lead) && r.lead.status !== "Not Contacted");
     return `<tr><td class="co">${esc(SEGMENTS[k].name)}</td><td class="num">${rs.length}</td>
@@ -1043,7 +1055,7 @@ function currentRows(){
 function renderPipeline(){
   document.getElementById("segbar").innerHTML =
     (view.seg === "all" ? `<button class="seg" data-seg="all" aria-pressed="true">Across all segments <small>${allLeads().length}</small></button>` : "") +
-    SEG_KEYS.map(k => `<button class="seg" data-seg="${k}" aria-pressed="${view.seg === k}">${esc(SEGMENTS[k].name)} <small>${DATA[k].length}</small></button>`).join("");
+    VISIBLE_SEG_KEYS.map(k => `<button class="seg" data-seg="${k}" aria-pressed="${view.seg === k}">${esc(SEGMENTS[k].name)} <small>${DATA[k].length}</small></button>`).join("");
   document.getElementById("pipe-title").textContent = view.seg === "all" ? "Every lead" : SEGMENTS[view.seg].name;
   document.getElementById("pipe-sub").textContent = view.seg === "all" ? "Every segment in one list, filtered from the dashboard. Pick a segment to leave this view." : SEGMENTS[view.seg].blurb;
 
@@ -1111,7 +1123,7 @@ function renderSettings(){
   document.getElementById("s-actual").value = SET.actualAnnualisedRevenue;
   document.getElementById("s-fee").value = SET.defaultFee;
   document.getElementById("s-owners").value = SET.owners.join("\n");
-  document.getElementById("seg-assump").innerHTML = SEG_KEYS.map(k => {
+  document.getElementById("seg-assump").innerHTML = VISIBLE_SEG_KEYS.map(k => {
     const priced = allLeads().filter(({lead,seg}) => {
       const a = annual(lead, seg); return a.assumed && a.from === k;
     });

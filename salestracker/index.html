@@ -1589,7 +1589,13 @@ function syncPull(){
   if(hasLocalDiff()) return;
   api({query:"?action=ver"}).then(function(v){
     if(!(v.version>baseVer)) return;
+    // Re-check right before the second fetch too — the version query itself is a
+    // round-trip during which the user may have started editing or opened a lead.
+    if(hasLocalDiff() || document.getElementById("modal").classList.contains("open")) return;
     return api({query:"?action=board"}).then(function(j){
+      // And once more before we replace DATA — anything typed during the second
+      // round-trip has to win, or the refresh silently wipes an in-flight edit.
+      if(hasLocalDiff() || document.getElementById("modal").classList.contains("open")) return;
       if(j.state && j.version>baseVer){ DATA=normData(j.state.data); SET=mergedSettings(j.state.settings); baseVer=j.version; snap(); renderAll(); }
     });
   }).catch(function(){});
@@ -1609,7 +1615,19 @@ function syncStatus(state){
 /* ---- login gate ---- */
 function gateShow(msg){ var g=document.getElementById("gate"); if(!g) return; g.classList.remove("hidden"); if(msg) document.getElementById("gateErr").textContent=msg; var p=document.getElementById("gatePass"); if(p){ p.value=""; try{p.focus();}catch(e){} } }
 function gateHide(){ var g=document.getElementById("gate"); if(g) g.classList.add("hidden"); }
-function signOut(){ api({method:"POST", body:{action:"logout"}}).catch(function(){}).then(function(){ DATA=emptyData(); SET=JSON.parse(JSON.stringify(DEFAULTS)); baseVer=0; gateShow(""); }); }
+function signOut(){
+  // Cancel pending auto-save timers and clear the base snapshot so that after
+  // sign-out DATA and baseData agree (both empty) — otherwise the boot() merge
+  // on the next sign-in would see the emptied DATA as "unsaved deletions" and
+  // sync an empty board over the top of the server.
+  if(syncTimer){ clearTimeout(syncTimer); syncTimer=null; }
+  if(retryTimer){ clearTimeout(retryTimer); retryTimer=null; }
+  api({method:"POST", body:{action:"logout"}}).catch(function(){}).then(function(){
+    DATA=emptyData(); SET=JSON.parse(JSON.stringify(DEFAULTS)); baseVer=0;
+    baseData=null; baseSet=null;
+    gateShow("");
+  });
+}
 document.getElementById("gateForm").addEventListener("submit", function(ev){
   ev.preventDefault();
   var btn=document.getElementById("gateBtn"), pass=document.getElementById("gatePass").value;
@@ -1678,6 +1696,18 @@ function boot(){
     importShow(false);
     // SEED is only read by the one-time import (which sets it from the uploaded file),
     // so there is no need to fetch the stored seed on every boot.
+    // If we're re-booting with unsaved local edits (e.g. after a session expiry and
+    // re-login), merge those edits onto the server's latest state instead of throwing
+    // them away. This reuses the same field-level merge that resolves CAS conflicts.
+    if(baseData && hasLocalDiff()){
+      var merged = mergeOnto({data:j.state.data, settings:j.state.settings});
+      DATA = merged.data; SET = merged.settings; baseVer = j.version;
+      // Do NOT snap() — leave the "unsaved" state so the auto-save fires next.
+      startApp();
+      scheduleSync();
+      toast("Your unsaved edits were kept and are being saved now.");
+      return;
+    }
     DATA=normData(j.state.data); SET=mergedSettings(j.state.settings); baseVer=j.version; snap();
     startApp();
   });

@@ -306,6 +306,7 @@ select.inp{min-width:104px}
     <div class="right">
       <button class="gbtn" id="btn-theme" title="Switch light/dark">Dark</button>
       <button class="gbtn" id="btn-backup">Back up</button>
+      <button class="gbtn" id="btn-backups" title="Server-side backups — restore an earlier saved state of the board">Backups…</button>
       <button class="gbtn" id="btn-print">Print board</button>
       <button class="gbtn" id="btn-csv">Export CSV</button>
       <span class="syncchip chip-idle" id="syncchip">Synced</span><button class="gbtn primary" id="btn-add">Add lead</button>
@@ -569,6 +570,20 @@ select.inp{min-width:104px}
         <button class="btn" id="m-cancel">Cancel</button>
         <button class="btn primary" id="m-save">Save lead</button>
       </span>
+    </div>
+  </div>
+</div>
+
+<!-- ============ BACKUPS / RESTORE ============ -->
+<div class="modal" id="backups-modal">
+  <div class="sheet" role="dialog" aria-modal="true" aria-labelledby="bk-title" style="max-width:640px">
+    <header><h3 id="bk-title">Backups</h3><button id="bk-close" aria-label="Close">×</button></header>
+    <div class="sheetbody">
+      <p class="hint" style="margin:0 0 14px">
+        The board is snapshotted automatically on every save (at most one snapshot every 5 minutes; last 30 kept for 30 days).
+        Restoring will overwrite the current board with the chosen snapshot — the current state is itself snapshotted first, so restores are undo-able.
+      </p>
+      <div id="bk-list" style="min-height:60px">Loading…</div>
     </div>
   </div>
 </div>
@@ -1360,6 +1375,78 @@ function doBackup(){
   download("ARIE_sales_board_" + stamp() + ".json", JSON.stringify({v:1, savedAt:new Date().toISOString(), settings:SET, data:DATA}, null, 1), "application/json");
 }
 $("btn-backup").onclick = $("s-backup").onclick = doBackup;
+
+/* server-side backups: list + restore */
+function relTime(iso){
+  const then = Date.parse(iso); if(!Number.isFinite(then)) return iso || "";
+  const s = Math.max(0, Math.round((Date.now() - then) / 1000));
+  if(s < 60) return s + "s ago";
+  if(s < 3600) return Math.round(s/60) + "m ago";
+  if(s < 86400) return Math.round(s/3600) + "h ago";
+  return Math.round(s/86400) + "d ago";
+}
+function fmtLocal(iso){
+  try { return new Date(iso).toLocaleString(); } catch(e){ return iso || ""; }
+}
+function openBackups(){
+  const modal = document.getElementById("backups-modal");
+  const list = document.getElementById("bk-list");
+  list.textContent = "Loading…";
+  modal.classList.add("open");
+  api({query:"?action=history"}).then(function(j){
+    const snaps = (j && j.snapshots) || [];
+    if(!snaps.length){ list.innerHTML = '<p class="hint" style="margin:0">No snapshots yet. One will be taken on the next save.</p>'; return; }
+    list.innerHTML = '<table style="width:100%;border-collapse:collapse">'
+      + '<thead><tr><th style="text-align:left;padding:6px 8px;border-bottom:1px solid var(--rule)">Saved</th>'
+      + '<th style="text-align:left;padding:6px 8px;border-bottom:1px solid var(--rule)">Version</th>'
+      + '<th style="padding:6px 8px;border-bottom:1px solid var(--rule)"></th></tr></thead><tbody>'
+      + snaps.map(function(s){
+          return '<tr>'
+            + '<td style="padding:6px 8px;border-bottom:1px solid var(--rule)">' + esc(fmtLocal(s.savedAt)) + '<div class="sub">' + esc(relTime(s.savedAt)) + '</div></td>'
+            + '<td style="padding:6px 8px;border-bottom:1px solid var(--rule)"><span class="sub">v' + esc(String(s.version)) + '</span></td>'
+            + '<td style="padding:6px 8px;border-bottom:1px solid var(--rule);text-align:right"><button class="btn" data-restore="' + esc(String(s.version)) + '">Restore</button></td>'
+            + '</tr>';
+        }).join("") + '</tbody></table>';
+  }).catch(function(e){
+    list.innerHTML = '<p class="hint" style="margin:0;color:var(--danger,#c02)">Could not load backups: ' + esc((e && e.message) || "unknown error") + '</p>';
+  });
+}
+function doRestore(version){
+  const v = parseInt(version, 10); if(!Number.isFinite(v)) return;
+  if(hasLocalDiff()){
+    if(!confirm("You have unsaved edits that will be discarded by the restore. Continue?")) return;
+  } else {
+    if(!confirm("Restore the board to version " + v + "? The current state will be snapshotted first so this restore is itself undo-able.")) return;
+  }
+  // Cancel any pending auto-save and discard local edits before the restore, so a
+  // scheduled syncPush cannot re-apply the discarded edits back on top of the restore.
+  if(syncTimer){ clearTimeout(syncTimer); syncTimer=null; }
+  if(retryTimer){ clearTimeout(retryTimer); retryTimer=null; }
+  if(baseData){ DATA = JSON.parse(JSON.stringify(baseData)); }
+  if(baseSet){  SET  = JSON.parse(JSON.stringify(baseSet)); }
+  api({method:"POST", body:{action:"restore", version:v, baseVersion:baseVer}}).then(function(j){
+    // Reload the board from the server so DATA/SET reflect the restored state.
+    return api({query:"?action=board"}).then(function(b){
+      if(b && b.state){ DATA = normData(b.state.data); SET = mergedSettings(b.state.settings); baseVer = b.version; snap(); renderAll(); }
+      document.getElementById("backups-modal").classList.remove("open");
+      toast("Restored to v" + j.restoredFrom);
+    });
+  }).catch(function(e){
+    if(e && e.conflict){
+      toast("Restore skipped: board changed while you were choosing. Try again.");
+      openBackups();
+      return;
+    }
+    toast("Restore failed: " + ((e && e.message) || "unknown error"));
+  });
+}
+$("btn-backups").onclick = openBackups;
+$("bk-close").onclick = function(){ document.getElementById("backups-modal").classList.remove("open"); };
+document.getElementById("backups-modal").addEventListener("click", function(e){ if(e.target.id === "backups-modal") e.currentTarget.classList.remove("open"); });
+document.getElementById("bk-list").addEventListener("click", function(e){
+  const b = e.target.closest("[data-restore]"); if(!b) return;
+  doRestore(b.dataset.restore);
+});
 $("btn-csv").onclick = () => {
   const rows = currentRows();
   download("ARIE_pipeline_" + (view.seg === "all" ? "all" : view.seg) + "_" + stamp() + ".csv", csvRows(rows), "text/csv");

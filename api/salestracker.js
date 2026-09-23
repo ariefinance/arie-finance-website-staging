@@ -10,24 +10,30 @@
 //  the client merges its own changes onto the latest and retries.
 //
 //  Redis keys:
-//    st:board          STR  current state blob (JSON)
-//    st:board:ver       STR  monotonic version counter
-//    st:board:savedAt   STR  ISO timestamp of last save
-//    st:board:seed      STR  original seed (leads by segment) for Reset/merge
-//    st:signkey         STR  server HMAC key for session tokens
-//    st:loginfail:<ip>  STR  failed-login throttle counter (TTL)
+//    st:board             STR  current state blob (JSON)
+//    st:board:ver          STR  monotonic version counter
+//    st:board:savedAt      STR  ISO timestamp of last save
+//    st:board:seed         STR  original seed (leads by segment) for Reset/merge
+//    st:board:histz        ZSET score=save-time-ms, member=version           (backups)
+//    st:board:hist:v:<ver> STR  historical state blob (JSON, TTL 30d)         (backups)
+//    st:board:hist:lastAt  STR  ms timestamp of last kept snapshot (throttle)
+//    st:signkey            STR  server HMAC key for session tokens
+//    st:loginfail:<ip>     STR  failed-login throttle counter (TTL)
 // ----------------------------------------------------------------------------
 //  ENV (production Vercel project):
 //    SALESTRACKER_PASSCODE           staff passcode (secret; never in source)
 //    KV_REST_API_URL / KV_REST_API_TOKEN   (or UPSTASH_REDIS_REST_URL/TOKEN)
 // ----------------------------------------------------------------------------
 //  Actions (JSON body or ?action=; all except login/logout need the cookie):
-//    POST {action:"login", passcode}                 -> sets cookie
-//    POST {action:"logout"}                          -> clears cookie
-//    GET  ?action=board                              -> { state, version, savedAt }
-//    POST {action:"board", state, baseVersion}       -> { version } | 409 conflict
-//    GET  ?action=seed                               -> { seed }
-//    POST {action:"board-seed", state, seed}         -> { seeded } (once only)
+//    POST {action:"login", passcode}                       -> sets cookie
+//    POST {action:"logout"}                                -> clears cookie
+//    GET  ?action=board                                    -> { state, version, savedAt }
+//    POST {action:"board", state, baseVersion}             -> { version } | 409 conflict
+//    GET  ?action=ver                                      -> { version }
+//    GET  ?action=seed                                     -> { seed }
+//    POST {action:"board-seed", state, seed}               -> { seeded } (once only)
+//    GET  ?action=history                                  -> { snapshots:[{version,savedAt}] }
+//    POST {action:"restore", version, baseVersion}         -> { version } | 404 | 409
 // ============================================================================
 
 const crypto = require('crypto');
@@ -145,6 +151,52 @@ const SEED_LUA =
   "redis.call('SET',KEYS[1],ARGV[1]); redis.call('SET',KEYS[2],ARGV[2]);" +
   "redis.call('SET',KEYS[3],'1'); redis.call('SET',KEYS[4],ARGV[3]); return 1";
 
+// ---- backup / restore (rolling history of saved board snapshots) -----------
+// A snapshot is taken on every successful save, throttled to at most one per
+// HIST_MIN_INTERVAL_MS so a burst of edits does not churn out identical entries;
+// oldest entries beyond HIST_KEEP are dropped. Each snapshot is a separate
+// Redis STRING with a 30-day TTL, indexed in the ZSET st:board:histz by save
+// timestamp so history() returns metadata without shipping the state bodies.
+const HIST_KEEP             = 30;
+const HIST_MIN_INTERVAL_MS  = 5 * 60 * 1000;       // 5 min throttle between snapshots
+const HIST_TTL_S            = 60 * 60 * 24 * 30;   // 30 days
+function histKey(version) { return 'st:board:hist:v:' + String(version); }
+async function snapshotBoard(stateJson, version, savedAt, opts) {
+  try {
+    const now = Date.now();
+    if (!(opts && opts.force)) {
+      const lastAtRaw = await redis(['GET', 'st:board:hist:lastAt']);
+      const lastAt = lastAtRaw ? parseInt(lastAtRaw, 10) : 0;
+      if (Number.isFinite(lastAt) && lastAt > 0 && now - lastAt < HIST_MIN_INTERVAL_MS) return { kept: false, throttled: true };
+    }
+    const key = histKey(version);
+    // Record the snapshot: state blob (TTL'd), index it in the ZSET by timestamp,
+    // and stamp the throttle marker. Best-effort — a partial failure at worst
+    // leaves an orphan key that expires on its own.
+    await redis(['SET', key, stateJson, 'EX', String(HIST_TTL_S)]);
+    // Score is the save timestamp in ms; if savedAt is a valid ISO string use it,
+    // otherwise fall back to now so the history stays ordered even without one.
+    let ts = Date.parse(String(savedAt || '')); if (!Number.isFinite(ts)) ts = now;
+    await redis(['ZADD', 'st:board:histz', String(ts), String(version)]);
+    await redis(['SET', 'st:board:hist:lastAt', String(now)]);
+    // Prune oldest entries once the cap is exceeded.
+    const size = parseInt(await redis(['ZCARD', 'st:board:histz']), 10) || 0;
+    if (size > HIST_KEEP) {
+      const excess = size - HIST_KEEP;
+      const drop = await redis(['ZRANGE', 'st:board:histz', '0', String(excess - 1)]);
+      if (Array.isArray(drop) && drop.length) {
+        // Delete each old snapshot key and remove it from the index. Sequential
+        // is fine — pruning runs off the request's happy path.
+        for (const v of drop) { try { await redis(['DEL', histKey(v)]); } catch (_) {} try { await redis(['ZREM', 'st:board:histz', String(v)]); } catch (_) {} }
+      }
+    }
+    return { kept: true };
+  } catch (_) {
+    // Backups are best-effort: never fail the user's save because of a snapshot error.
+    return { kept: false, error: true };
+  }
+}
+
 module.exports = async function handler(req, res) {
   res.setHeader('Cache-Control', 'private, no-store, max-age=0');
   res.setHeader('X-Content-Type-Options', 'nosniff');
@@ -227,11 +279,66 @@ module.exports = async function handler(req, res) {
         }
       }
       const savedAt = new Date().toISOString();
+      const stateJson = JSON.stringify(body.state);
       const out = await redis(['EVAL', CAS_LUA, '3', 'st:board', 'st:board:ver', 'st:board:savedAt',
-        JSON.stringify(body.state), String(baseVersion), savedAt]);
+        stateJson, String(baseVersion), savedAt]);
       // out = [ok, ver]
-      if (Array.isArray(out) && Number(out[0]) === 1) return res.status(200).json({ ok: true, version: Number(out[1]), savedAt });
+      if (Array.isArray(out) && Number(out[0]) === 1) {
+        const newVer = Number(out[1]);
+        // Fire-and-forget backup snapshot — never delay the user's save on it.
+        snapshotBoard(stateJson, newVer, savedAt).catch(() => {});
+        return res.status(200).json({ ok: true, version: newVer, savedAt });
+      }
       // conflict: hand back the current state so the client can merge + retry
+      const cur = await redis(['GET', 'st:board']);
+      return res.status(409).json({ ok: false, error: 'conflict', state: cur ? JSON.parse(cur) : null, version: Array.isArray(out) ? Number(out[1]) : 0 });
+    }
+
+    // ---- list historical snapshots (metadata only, no state bodies) -----
+    if (action === 'history' && method === 'GET') {
+      // Newest first, capped to HIST_KEEP just in case the ZSET grew past it.
+      const raw = await redis(['ZREVRANGE', 'st:board:histz', '0', String(HIST_KEEP - 1), 'WITHSCORES']);
+      const snapshots = [];
+      if (Array.isArray(raw)) {
+        for (let i = 0; i + 1 < raw.length; i += 2) {
+          const version = parseInt(raw[i], 10);
+          const ts = parseInt(raw[i + 1], 10);
+          if (Number.isFinite(version) && Number.isFinite(ts)) snapshots.push({ version, savedAt: new Date(ts).toISOString() });
+        }
+      }
+      return res.status(200).json({ ok: true, snapshots });
+    }
+
+    // ---- restore a historical snapshot -----------------------------------
+    // The caller must supply the version to restore AND their current
+    // baseVersion so restore uses the same CAS discipline as a normal save.
+    // Before the write, we FORCE-snapshot the current state so an unwanted
+    // restore is itself recoverable.
+    if (action === 'restore' && method === 'POST') {
+      const { body, tooLarge } = readBody(req);
+      if (tooLarge) return res.status(413).json({ ok: false, error: 'too_large' });
+      if (!body || typeof body !== 'object') return res.status(400).json({ ok: false, error: 'bad_body' });
+      const target = Number.isFinite(body.version) ? body.version : parseInt(body.version, 10);
+      const baseVersion = Number.isFinite(body.baseVersion) ? body.baseVersion : parseInt(body.baseVersion, 10);
+      if (!Number.isFinite(target) || !Number.isFinite(baseVersion)) return res.status(400).json({ ok: false, error: 'bad_version' });
+      // Force a snapshot of the CURRENT state (so this restore itself is undo-able).
+      const [curStateRaw, curVerRaw, curSavedAt] = await Promise.all([
+        redis(['GET', 'st:board']), redis(['GET', 'st:board:ver']), redis(['GET', 'st:board:savedAt']),
+      ]);
+      if (curStateRaw) {
+        const curVer = curVerRaw ? parseInt(curVerRaw, 10) : 0;
+        await snapshotBoard(curStateRaw, curVer, curSavedAt || new Date().toISOString(), { force: true });
+      }
+      // Pull the requested snapshot and CAS it into place.
+      const snap = await redis(['GET', histKey(target)]);
+      if (!snap) return res.status(404).json({ ok: false, error: 'snapshot_missing' });
+      const savedAt = new Date().toISOString();
+      const out = await redis(['EVAL', CAS_LUA, '3', 'st:board', 'st:board:ver', 'st:board:savedAt',
+        snap, String(baseVersion), savedAt]);
+      if (Array.isArray(out) && Number(out[0]) === 1) {
+        const newVer = Number(out[1]);
+        return res.status(200).json({ ok: true, version: newVer, savedAt, restoredFrom: target });
+      }
       const cur = await redis(['GET', 'st:board']);
       return res.status(409).json({ ok: false, error: 'conflict', state: cur ? JSON.parse(cur) : null, version: Array.isArray(out) ? Number(out[1]) : 0 });
     }
@@ -246,9 +353,14 @@ module.exports = async function handler(req, res) {
       const vErr = validateCanonical(body.seed) || validateCanonical((body.state && body.state.data) || null);
       if (vErr) return res.status(400).json({ ok: false, error: 'invalid_seed', detail: vErr });
       const savedAt = new Date().toISOString();
+      const stateJson = JSON.stringify(body.state);
       const out = await redis(['EVAL', SEED_LUA, '4', 'st:board', 'st:board:seed', 'st:board:ver', 'st:board:savedAt',
-        JSON.stringify(body.state), JSON.stringify(body.seed), savedAt]);
-      if (Number(out) === 1) return res.status(200).json({ ok: true, seeded: true, version: 1 });
+        stateJson, JSON.stringify(body.seed), savedAt]);
+      if (Number(out) === 1) {
+        // Anchor the initial seed as the first history entry so it can be restored.
+        snapshotBoard(stateJson, 1, savedAt, { force: true }).catch(() => {});
+        return res.status(200).json({ ok: true, seeded: true, version: 1 });
+      }
       return res.status(200).json({ ok: true, seeded: false, already: true });
     }
 

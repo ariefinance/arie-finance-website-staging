@@ -206,6 +206,26 @@ module.exports = async function handler(req, res) {
       if (!body || typeof body.state !== 'object' || body.state === null) return res.status(400).json({ ok: false, error: 'bad_state' });
       const baseVersion = Number.isFinite(body.baseVersion) ? body.baseVersion : parseInt(body.baseVersion, 10);
       if (!Number.isFinite(baseVersion)) return res.status(400).json({ ok: false, error: 'bad_base_version' });
+      // Reject state carrying lead ids in a shape that could smuggle markup into the
+      // pipeline row template. The client escapes them too; this is defence in depth.
+      // Deliberately permissive on the character set (existing seeded ids vary), but
+      // blocks anything unsafe in an HTML attribute or as a script/style break-out,
+      // plus control characters, and caps length.
+      const ID_BAD = /[<>"'`&\u0000-\u001F\u007F]/;
+      const stateData = body.state && body.state.data;
+      if (stateData && typeof stateData === 'object') {
+        for (const k of Object.keys(stateData)) {
+          const arr = stateData[k];
+          if (!Array.isArray(arr)) continue;
+          for (const r of arr) {
+            if (!r || typeof r !== 'object') return res.status(400).json({ ok: false, error: 'bad_lead' });
+            const id = String(r.id == null ? '' : r.id);
+            if (!id || id.length > 128 || ID_BAD.test(id)) {
+              return res.status(400).json({ ok: false, error: 'bad_lead_id' });
+            }
+          }
+        }
+      }
       const savedAt = new Date().toISOString();
       const out = await redis(['EVAL', CAS_LUA, '3', 'st:board', 'st:board:ver', 'st:board:savedAt',
         JSON.stringify(body.state), String(baseVersion), savedAt]);

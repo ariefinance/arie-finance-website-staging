@@ -538,7 +538,7 @@ select.inp{min-width:104px}
           <div class="field"><label for="m-prio">Priority</label><select id="m-prio"><option>High</option><option>Medium</option><option>Low</option></select></div>
           <div class="field"><label for="m-last">Last contact</label><input id="m-last" type="date"></div>
           <div class="field"><label for="m-follow">Follow-up due</label><input id="m-follow" type="date"></div>
-          <div class="field"><label for="m-close">Expected close</label><input id="m-close" type="date"></div>
+          <div class="field"><label for="m-expclose">Expected close</label><input id="m-expclose" type="date"></div>
         </div>
         <div class="field full" style="margin-top:12px"><label for="m-next">Next action</label><input id="m-next" placeholder="One concrete step, with a date if you have one"></div>
         <div class="field full" style="margin-top:12px"><label for="m-comments">Notes</label><textarea id="m-comments"></textarea></div>
@@ -582,6 +582,7 @@ let SEED = {};
 /* ---------------- segments ---------------- */
 const SEGMENTS = {
   luca:      {name:"Luca's leads",        blurb:"Corridor and introducer deals Luca is running"},
+  stephen:   {name:"Stephen's leads",     blurb:"Leads Stephen is running"},
   film:      {name:"Film & TV",           blurb:"Production companies from the film and TV prospect research — ranked by research score, with the researched flow band in each lead's notes"},
   uae:       {name:"UAE introducers",     blurb:"Abu Dhabi and Dubai CSPs and introducers"},
   mauritius: {name:"Mauritius ManCos",    blurb:"Management companies and CSPs licensed in Mauritius"},
@@ -603,7 +604,7 @@ const DEFAULTS = {
   owners: ["Aisha","Rajesh","Tasneem","Luca","Stephen","Keith"],
   probs: {"Not Contacted":0,"Contacted":5,"Follow-up Due":8,"Followed Up":12,"Meeting Booked":25,"Qualified":40,"Proposal / Terms Sent":60,"Referral agreement signed":75,"Onboarding":85,"Won":100,"Lost":0,"On Hold":5},
   seg: {
-    luca:{annual:20000}, existing:{annual:22000}, onboarding:{annual:19000}, film:{annual:25000},
+    luca:{annual:20000}, stephen:{annual:20000}, existing:{annual:22000}, onboarding:{annual:19000}, film:{annual:25000},
     uae:{annual:15000},  mauritius:{annual:10500}, uk:{annual:9600}, africa:{annual:17400}
   }
 };
@@ -819,7 +820,7 @@ function buildLadderMonths(){
     if(typeof d === "string" && d.length >= 7) keys.add(d.slice(0,7));
   });
   const months = Array.from(keys).sort().reverse();
-  sel.innerHTML = '<option value="">Current position</option>' + months.map(m => `<option value="${m}">${monthLabel(m)}</option>`).join("");
+  sel.innerHTML = '<option value="">Current position</option>' + months.map(m => `<option value="${esc(m)}">${esc(monthLabel(m))}</option>`).join("");
   sel.value = view.ladderMonth;   /* preserve selection; unknown month falls back to "" */
 }
 
@@ -1048,26 +1049,27 @@ function renderPipeline(){
   const ownerOpts = l => teamOpts.includes(l.owner) ? teamOpts : teamOpts.concat([l.owner]);
   document.getElementById("grid-body").innerHTML = slice.length ? slice.map(r => {
     const l = r.lead, late = overdue(l);
-    return `<tr class="${view.sel.has(l.id) ? "selected" : ""}" data-id="${l.id}">
-      <td class="cell"><input type="checkbox" data-pick="${l.id}" ${view.sel.has(l.id) ? "checked" : ""}></td>
+    const eid = esc(l.id);
+    return `<tr class="${view.sel.has(l.id) ? "selected" : ""}" data-id="${eid}">
+      <td class="cell"><input type="checkbox" data-pick="${eid}" ${view.sel.has(l.id) ? "checked" : ""}></td>
       <td><span class="co">${esc(l.company) || "Untitled"}</span>${l.score ? ` <span class="pill">${esc(l.score)}</span>` : ""}${l.industry ? `<div class="sub">${esc(l.industry)}</div>` : ""}</td>
       <td>${esc(l.contact)}${l.email ? `<div class="sub"><a href="mailto:${esc(l.email)}">${esc(l.email)}</a></div>` : ""}</td>
       <td>${esc(l.country)}</td>
       <td class="sub">${esc(SEGMENTS[r.seg].name)}${l.origin && SEGMENTS[l.origin] ? `<div style="opacity:.75">from ${esc(SEGMENTS[l.origin].name)}</div>` : ""}</td>
-      <td class="cell"><select class="inp" data-f="priority" data-id="${l.id}">${opt(["High","Medium","Low"], l.priority)}</select></td>
-      <td class="cell"><select class="inp" data-f="owner" data-id="${l.id}">${opt(ownerOpts(l), l.owner)}</select></td>
-      <td class="cell"><select class="inp" data-f="status" data-id="${l.id}">${opt(STAGES, l.status)}</select></td>
-      <td class="cell"><input class="inp" type="date" data-f="onboardingDate" data-id="${l.id}" value="${esc(l.onboardingDate)}" title="Actual date this prospect became a paying client"></td>
+      <td class="cell"><select class="inp" data-f="priority" data-id="${eid}">${opt(["High","Medium","Low"], l.priority)}</select></td>
+      <td class="cell"><select class="inp" data-f="owner" data-id="${eid}">${opt(ownerOpts(l), l.owner)}</select></td>
+      <td class="cell"><select class="inp" data-f="status" data-id="${eid}">${opt(STAGES, l.status)}</select></td>
+      <td class="cell"><input class="inp" type="date" data-f="onboardingDate" data-id="${eid}" value="${esc(l.onboardingDate)}" title="Actual date this prospect became a paying client"></td>
       <td class="num">${Math.round(r.p * 100)}%${l.prob !== "" ? '<div class="sub">set</div>' : ""}</td>
       ${priceSeg(l, r.seg) === "luca"
-        ? `<td class="cell"><input class="inp" type="number" min="0" step="500" data-f="value" data-id="${l.id}" value="${esc(l.value)}" placeholder="${usd(r.gross)}" title="Luca lead — edit annual value directly" style="width:112px;text-align:right"></td>`
+        ? `<td class="cell"><input class="inp" type="number" min="0" step="500" data-f="value" data-id="${eid}" value="${esc(l.value)}" placeholder="${usd(r.gross)}" title="Luca lead — edit annual value directly" style="width:112px;text-align:right"></td>`
         : `<td class="num ${r.assumed ? "assumed" : ""}" ${r.assumed ? `title="Assumed annual revenue for ${esc(SEGMENTS[r.from].name)} — open the lead to price it"` : ""}>${usd(r.gross)}</td>`}
       <td class="num wtd-cell">${usd(r.weighted)}</td>
-      <td class="cell"><input class="inp" type="date" data-f="lastContact" data-id="${l.id}" value="${esc(l.lastContact)}"></td>
-      <td class="cell"><input class="inp ${late ? "late" : ""}" type="date" data-f="followUp" data-id="${l.id}" value="${esc(l.followUp)}"></td>
-      <td class="cell"><input class="inp" style="min-width:170px" data-f="nextAction" data-id="${l.id}" value="${esc(l.nextAction)}" placeholder="Next action"></td>
-      <td class="cell"><input class="inp" style="min-width:180px" data-f="comments" data-id="${l.id}" value="${esc(l.comments)}" placeholder="Notes"></td>
-      <td class="cell"><button class="btn" data-open="${l.id}" style="padding:5px 9px;font-size:12px">Open</button></td></tr>`;
+      <td class="cell"><input class="inp" type="date" data-f="lastContact" data-id="${eid}" value="${esc(l.lastContact)}"></td>
+      <td class="cell"><input class="inp ${late ? "late" : ""}" type="date" data-f="followUp" data-id="${eid}" value="${esc(l.followUp)}"></td>
+      <td class="cell"><input class="inp" style="min-width:170px" data-f="nextAction" data-id="${eid}" value="${esc(l.nextAction)}" placeholder="Next action"></td>
+      <td class="cell"><input class="inp" style="min-width:180px" data-f="comments" data-id="${eid}" value="${esc(l.comments)}" placeholder="Notes"></td>
+      <td class="cell"><button class="btn" data-open="${eid}" style="padding:5px 9px;font-size:12px">Open</button></td></tr>`;
   }).join("") : `<tr><td colspan="${COLS.length}" class="empty">Nothing matches these filters.<br><button class="btn" id="empty-clear" style="margin-top:12px">Clear filters</button></td></tr>`;
 
   document.getElementById("pager-info").textContent = rows.length
@@ -1125,7 +1127,7 @@ function fillSheet(){
   document.getElementById("m-stage").innerHTML = opt(STAGES, l.status);
   const teamList = ["", ...SET.owners];
   document.getElementById("m-owner").innerHTML = opt(teamList.includes(l.owner) ? teamList : teamList.concat([l.owner]), l.owner);
-  v("m-prio", l.priority); v("m-last", l.lastContact); v("m-follow", l.followUp); v("m-close", l.expClose);
+  v("m-prio", l.priority); v("m-last", l.lastContact); v("m-follow", l.followUp); v("m-expclose", l.expClose);
   v("m-next", l.nextAction); v("m-comments", l.comments);
   v("m-vol", l.vol); v("m-bps", l.bps); v("m-feem", l.feeM); v("m-value", l.value); v("m-prob", l.prob);
   document.getElementById("m-delete").style.display = creating ? "none" : "";
@@ -1138,7 +1140,7 @@ function readSheet(){
   Object.assign(editing, {
     company:g("m-company").trim(), contact:g("m-contact").trim(), email:g("m-email").trim(), phone:g("m-phone").trim(),
     country:g("m-country").trim(), industry:g("m-industry").trim(), status:g("m-stage"), owner:g("m-owner"),
-    priority:g("m-prio"), lastContact:g("m-last"), followUp:g("m-follow"), expClose:g("m-close"),
+    priority:g("m-prio"), lastContact:g("m-last"), followUp:g("m-follow"), expClose:g("m-expclose"),
     nextAction:g("m-next").trim(), comments:g("m-comments"), vol:g("m-vol"), bps:g("m-bps"),
     feeM:g("m-feem"), value:g("m-value"), prob:g("m-prob")
   });

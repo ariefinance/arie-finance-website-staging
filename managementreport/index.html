@@ -1558,18 +1558,37 @@ function wizStageReview(){
     </div>`);
   }
 
-  // Distribution mismatch acknowledgement (still requires the operator to edit
-  // the lists themselves in Detailed setup for now; a follow-up commit brings
-  // the list editors inline).
+  // Distribution list editors — inline. Reuses the same data-list/data-add/data-del
+  // attributes as the legacy Client mix tab so the global handlers work unchanged.
   const dmm=isNum(c.clients)&&c.jurTot>0&&c.jurTot!==c.clients;
   const imm=isNum(c.clients)&&c.indTot>0&&c.indTot!==c.clients;
   const distBlockers = (c.jurTot===0) || (c.indTot===0) || ((dmm||imm) && !S.rec.confirm.dist);
   if(distBlockers){
+    const listRows = key => (S.rec[key]||[]).map((x,i)=>`
+      <tr>
+        <td><input data-list="${key}" data-i="${i}" data-k="name" value="${esc(x.name)}" aria-label="Name"></td>
+        <td class="n"><input data-list="${key}" data-i="${i}" data-k="count" type="number" min="0" value="${esc(x.count)}" aria-label="Count"></td>
+        <td class="x"><button data-del="${key}" data-i="${i}" aria-label="Remove">×</button></td>
+      </tr>`).join('');
+    const jurBlock = c.jurTot===0 || dmm ? `
+      <div style="margin-top:14px">
+        <div style="font-family:var(--serif);font-weight:500;font-size:15px;margin-bottom:4px">Jurisdictions</div>
+        <p class="h">${c.jurTot} listed across ${c.jurNamed} jurisdictions${dmm?`. <b>Headline client count is ${c.clients}.</b>`:''}</p>
+        <table class="listed">${listRows('juris')}</table>
+        <button class="linkbtn" data-add="juris">Add jurisdiction</button>
+      </div>`:'';
+    const indBlock = c.indTot===0 || imm ? `
+      <div style="margin-top:14px">
+        <div style="font-family:var(--serif);font-weight:500;font-size:15px;margin-bottom:4px">Industries</div>
+        <p class="h">${c.indTot} listed across ${c.indNamed} industries${imm?`. <b>Headline client count is ${c.clients}.</b>`:''}</p>
+        <table class="listed">${listRows('industries')}</table>
+        <button class="linkbtn" data-add="industries">Add industry</button>
+      </div>`:'';
     cards.push(`<div class="wiz-card">
       <h4>Client distributions</h4>
-      <p class="h">${c.jurTot===0?'No jurisdiction counts entered for this month. ':''}${c.indTot===0?'No industry counts entered for this month. ':''}${dmm||imm?`Headline clients ${c.clients}; jurisdiction total ${c.jurTot}; industry total ${c.indTot}. Review the source, then acknowledge below.`:''}
-        Category rows carry over from last month; counts start blank each month. Edit the lists in <button class="linkbtn" id="wizOpenDist" type="button" style="display:inline;padding:0;font-size:12.5px">Detailed setup → Client mix</button>.</p>
-      ${(dmm||imm)?`<label class="ack" style="margin-top:8px"><input type="checkbox" data-ck="confirm.dist" ${S.rec.confirm.dist?'checked':''}><span>I have reviewed the source data and confirm the report should be produced with these figures.</span></label>`:''}
+      <p class="h">Category rows carry over from last month; counts start blank each month and must be entered from this month’s client reporting. Totals are never auto-adjusted to match the headline client count.</p>
+      ${jurBlock}${indBlock}
+      ${(dmm||imm)?`<label class="ack" style="margin-top:12px"><input type="checkbox" data-ck="confirm.dist" ${S.rec.confirm.dist?'checked':''}><span>Headline clients ${c.clients}; jurisdiction total ${c.jurTot}; industry total ${c.indTot}. Reviewed and confirmed for ${esc(longLbl(S.key))}.</span></label>`:''}
     </div>`);
   }
 
@@ -1627,24 +1646,90 @@ function wizStageGenerate(){
   const R=readiness();
   const blocked=R.errors>0;
   const finalised = !!finalSnapshot;
+
+  // §16 — View report details: collapsed, read-only projection.
+  const seededMonths = Object.entries(S.hist||{}).filter(([k,r])=>r&&r.seed&&k!==S.key).map(([k])=>k).sort();
+  const inc=incomeLines(), opx=opexLines();
+  const mappings = [...inc.map(l=>({name:l.name,cat:revCat(l.name),group:REV_CATS})), ...opx.map(l=>({name:l.name,cat:expCat(l.name),group:EXP_CATS})) ].map(m=>{
+    const lbl=(m.group.find(([k])=>k===m.cat)||[])[1]||m.cat;
+    return `${esc(m.name)} → ${esc(lbl)}`;
+  });
+  const commentaryState = TEXTS.map(([k,label])=>{
+    const cur=(S.rec.text[k]||'').trim(); const nu=(S.rec.noUpdate||{})[k]; const rev=!!S.rec.review[k];
+    const state = nu&&!cur? 'no update' : (cur? (rev?'reviewed':'unreviewed') : 'empty');
+    return `${esc(label)}: ${state}${cur?` (${cur.length} chars)`:''}`;
+  });
+  const details = `
+    <details class="wiz-card" style="cursor:pointer">
+      <summary style="font-family:var(--serif);font-weight:500;font-size:16px;list-style:none">View report details <span style="color:var(--muted);font-size:12px;font-weight:400">(read-only)</span></summary>
+      <div style="margin-top:12px;display:grid;grid-template-columns:1fr 1fr;gap:14px;font-size:12.5px;color:var(--muted)">
+        <div>
+          <div style="font-weight:600;color:var(--text);margin-bottom:4px">Sources</div>
+          <div>P&amp;L: ${S.files.pl?esc(S.files.pl):'—'} (${S.pl?esc(longLbl(S.pl.key)):'?'})</div>
+          <div>Transactions: ${S.files.txn?esc(S.files.txn):'—'}${S.txn?` (${Object.keys(S.txn.months).length} months)`:''}</div>
+          <div>Balance sheet: ${S.files.bs?esc(S.files.bs):'—'}</div>
+          <div>Previous Month File: ${S.contMonth?esc(longLbl(S.contMonth)):'—'}</div>
+          ${seededMonths.length?`<div style="margin-top:4px">Auto-seeded this session: ${seededMonths.map(x=>esc(shortLbl(x))).join(', ')}</div>`:''}
+        </div>
+        <div>
+          <div style="font-weight:600;color:var(--text);margin-bottom:4px">Comparative</div>
+          <div>Basis: ${esc(c.compSrc)} (${esc(shortLbl(c.prevKey))})</div>
+          <div style="font-weight:600;color:var(--text);margin:8px 0 4px">Adjustments</div>
+          <div>Month reclass to advisory: ${money(+S.rec.adj.reclassMonth||0)}</div>
+          <div>YTD reclass: ${money(+S.rec.adj.reclassYtd||0)}</div>
+          <div>YTD other: ${money(+S.rec.adj.ytdOther||0)}${S.rec.adj.ytdOtherLabel?` (${esc(S.rec.adj.ytdOtherLabel)})`:''}</div>
+          <div style="font-weight:600;color:var(--text);margin:8px 0 4px">Overrides</div>
+          <div>${Object.keys(S.rec.ov||{}).length? Object.entries(S.rec.ov).map(([k,v])=>`${esc(k)}: ${esc(String(v))}`).join('; ') : 'none'}</div>
+        </div>
+        <div>
+          <div style="font-weight:600;color:var(--text);margin-bottom:4px">Computed KPIs</div>
+          <div>Clients: ${isNum(c.clients)?c.clients:'—'} · Denominator: ${isNum(c.active)?c.active:'—'}</div>
+          <div>Accounts: ${isNum(S.rec.kpi.accountsActive)?S.rec.kpi.accountsActive:'—'} active / ${isNum(S.rec.kpi.accountsHeld)?S.rec.kpi.accountsHeld:'—'} held</div>
+          <div>Jurisdictions: ${isNum(c.jurisdictions)?c.jurisdictions:'—'} · International: ${isNum(c.intlPct)?c.intlPct+'%':'—'}</div>
+          <div>Volume this month: ${isNum(c.metrics.volMonth)?mUSD(c.metrics.volMonth):'—'} · YTD: ${isNum(c.metrics.volYtd)?mUSD(c.metrics.volYtd):'—'} · Since inc: ${isNum(c.metrics.volSinceInc)?mUSD(c.metrics.volSinceInc):'—'}</div>
+          <div>Txn: ${isNum(c.metrics.inCount)?c.metrics.inCount:'—'} in / ${isNum(c.metrics.outCount)?c.metrics.outCount:'—'} out · ${isNum(c.metrics.inUsd)?money(c.metrics.inUsd):'—'} in / ${isNum(c.metrics.outUsd)?money(c.metrics.outUsd):'—'} out</div>
+        </div>
+        <div>
+          <div style="font-weight:600;color:var(--text);margin-bottom:4px">Commentary state</div>
+          ${commentaryState.map(s=>`<div>${s}</div>`).join('')}
+        </div>
+        <div style="grid-column:1/-1">
+          <div style="font-weight:600;color:var(--text);margin:4px 0">Line mapping applied (${mappings.length})</div>
+          <div style="max-height:160px;overflow-y:auto;padding:6px 8px;border:1px solid var(--border-soft);border-radius:6px;background:var(--field)">${mappings.map(m=>`<div>${m}</div>`).join('')}</div>
+        </div>
+      </div>
+    </details>`;
+
+  const finalActions = finalised ? `
+    <div class="wiz-card" style="border-color:#B7D6C1;background:rgba(47,122,74,.05)">
+      <h4 style="color:#2F7A4A">✓ Report finalised for ${esc(longLbl(S.key))}</h4>
+      <p class="h">Download all three files and store the Next Month File in an approved secure Finance location.</p>
+      <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:10px">
+        <button class="btn btn-gold" id="wizDlPdf">Download PDF</button>
+        <button class="btn btn-gold" id="wizDlPptx">Download PowerPoint</button>
+        <button class="btn btn-gold" id="wizDlData">Download Next Month File</button>
+        <button class="btn" id="wizMakeChanges" style="margin-left:auto">Make changes</button>
+      </div>
+    </div>` : '';
+
   return `
     <div class="wiz-card">
       <h4>Headline figures for ${esc(longLbl(S.key))}</h4>
-      <p class="h">Review the headline movements before generating. This is a summary — the full 11-page report renders in the detail view below the button.</p>
+      <p class="h">Review the headline movements. When you generate, the 11 pages render once and the PDF, PowerPoint and Next Month File come from that same render.</p>
       <table class="maptbl" style="font-size:13px">
         <thead><tr><th style="text-align:left;padding:6px 4px;border-bottom:1px solid var(--border)">Metric</th><th style="text-align:right;padding:6px 4px;border-bottom:1px solid var(--border)">${esc(cur)}</th><th style="text-align:right;padding:6px 4px;border-bottom:1px solid var(--border)">${esc(pl)}</th><th style="text-align:right;padding:6px 4px;border-bottom:1px solid var(--border)">Change</th></tr></thead>
         <tbody>${rows.map(([l,a,b,d])=>`<tr><td style="padding:6px 4px">${esc(l)}</td><td style="text-align:right;padding:6px 4px">${a}</td><td style="text-align:right;padding:6px 4px;color:var(--muted)">${b}</td><td style="text-align:right;padding:6px 4px">${d}</td></tr>`).join('')}</tbody>
       </table>
     </div>
+    ${finalActions}
+    ${details}
     <div class="wiz-actions">
       <div class="left">
         <button class="wiz-legacy" id="wizBack" type="button">← Back to Complete &amp; Review</button>
-        <button class="wiz-legacy" id="wizLegacy" type="button">View report details (advanced)</button>
+        <button class="wiz-legacy" id="wizLegacy" type="button">Detailed setup (advanced)</button>
       </div>
       <div class="right">
-        ${finalised
-          ? `<span style="color:#2F7A4A;font-weight:600;font-size:13px;margin-right:8px">✓ Finalised — use the header buttons to download.</span>`
-          : `<button class="btn btn-cont" id="wizGenerate" ${blocked?'disabled':''}>Generate report</button>`}
+        ${finalised ? '' : `<button class="btn btn-cont" id="wizGenerate" ${blocked?'disabled':''}>Generate report</button>`}
       </div>
     </div>`;
 }
@@ -1682,6 +1767,10 @@ document.addEventListener('click',e=>{
   if(t.id==='wizContinue'){ wizSetStage(WIZ.stage+1); return; }
   if(t.id==='wizBack'){ wizSetStage(Math.max(1,WIZ.stage-1)); return; }
   if(t.id==='wizGenerate'){ const b=$('#btnPdf'); if(b && !b.disabled) b.click(); return; }
+  if(t.id==='wizDlPdf'){  downloadFinal('pdf');  return; }
+  if(t.id==='wizDlPptx'){ downloadFinal('pptx'); return; }
+  if(t.id==='wizDlData'){ downloadFinal('data'); return; }
+  if(t.id==='wizMakeChanges'){ invalidateFinal(); WIZ.stage=2; renderAll(); return; }
   if(t.id==='wizLegacy'){ document.body.classList.remove('mr-wizard-mode'); return; }
   if(t.id==='wizOpenAccountsMap'){ S.tab='figures'; document.body.classList.remove('mr-wizard-mode'); renderPanes(); return; }
   if(t.id==='wizOpenDist'){ S.tab='clients'; document.body.classList.remove('mr-wizard-mode'); renderPanes(); return; }

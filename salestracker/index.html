@@ -1387,15 +1387,17 @@ function renderReport(){
        <div class="rp-donut-legend">${legendRows}</div>
      </div>`);
 
-  /* Commercial progression strip — selected-period counts through the sales
-     funnel. Onboarding uses the current point-in-time count, clearly labelled
-     "as at <date>" so it is not misread as a period event. NOT a strict cohort
-     funnel, and no conversion percentages are shown. */
+  /* Commercial progression strip — every step is a SELECTED-PERIOD activity
+     count so the values are comparable. "Entered Onboarding" is the number of
+     unique leads whose onboardingStartedAt milestone falls in the reporting
+     period; the current point-in-time stock stays on the KPI card only.
+     NOT a strict cohort funnel, and no conversion percentages are shown. */
+  const enteredOnb = countMilestoneIn("onboardingStartedAt", rng);
   const steps = [
-    {n:cur.contacted, lb:"Contacted",  sub:""},
-    {n:cur.meetings,  lb:"Meetings",   sub:""},
-    {n:cur.proposals, lb:"Proposals",  sub:""},
-    {n:ongoingOnb,    lb:"Onboarding", sub:"as at " + rpFormatDate(gen)},
+    {n:cur.contacted, lb:"Contacted",         sub:""},
+    {n:cur.meetings,  lb:"Meetings",          sub:""},
+    {n:cur.proposals, lb:"Proposals",         sub:""},
+    {n:enteredOnb,    lb:"Entered Onboarding", sub:""},
     {n:cur.won,       lb:"Won",        sub:""}
   ];
   set("rp-progress",
@@ -1418,10 +1420,10 @@ function renderReport(){
   if(activeFrom){
     const nice = rpFormatDate(activeFrom);
     footer = partial
-      ? `Activity milestone history is complete from ${esc(nice)}; earlier Contacted, Meeting and Proposal figures may under-count.`
+      ? `Activity milestone history is complete from ${esc(nice)}; earlier Contacted, Meeting, Proposal and Entered-Onboarding figures may under-count.`
       : `Activity milestone history is complete from ${esc(nice)}.`;
   } else {
-    footer = "Milestone capture starts today; earlier Contacted, Meeting and Proposal activity is not available.";
+    footer = "Milestone capture starts today; earlier Contacted, Meeting, Proposal and Entered-Onboarding activity is not available.";
   }
   set("rp-completeness", footer);
 }

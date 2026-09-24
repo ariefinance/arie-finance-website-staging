@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<title>ARIE Finance — Staff sign-in</title>
+<link rel="icon" href="data:,">
+<link rel="stylesheet" href="/internal/pricing/gate.css">
+</head>
+<body>
+<main class="card" role="main">
+  <h1>ARIE Finance</h1>
+  <p class="sub">Staff-only tool. Enter the access passcode to continue.</p>
+  <form id="gateForm" autocomplete="off" novalidate>
+    <label for="pass">Access passcode</label>
+    <input id="pass" name="passcode" type="password" autocomplete="off" autocapitalize="off"
+           spellcheck="false" required placeholder="Enter passcode">
+    <button type="submit" id="submit">Sign in</button>
+    <p id="err" class="err" role="alert" aria-live="polite"></p>
+  </form>
+</main>
+<script src="/internal/pricing/gate.js" defer></script>
+</body>
+</html>

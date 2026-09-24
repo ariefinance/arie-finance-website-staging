@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<base href="/internal/pricing/">
+<meta name="robots" content="noindex, nofollow">
+<title>ARIE Document Builder</title>
+<link rel="icon" href="data:,">
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+<div id="browser-warn" class="browser-warn no-print" hidden>This browser is not supported for PDF export. Open this page in Google Chrome or Microsoft Edge.</div>
+<div class="app">
+  <aside class="controls">
+    <div class="brandbar">
+      <h1>ARIE Document Builder <span id="app-version"></span></h1>
+      <p id="brand-sub">Edit any field, add or remove sections, then download.</p>
+      <div class="modes">
+        <button data-mode="indicative">Indicative Fee Schedule</button>
+        <button data-mode="client">Client Fee Schedule</button>
+        <button data-mode="welcome">Welcome Pack</button>
+      </div>
+      <div class="actions">
+        <button class="btn-gold" data-act="pdf" id="btn-pdf">Save as PDF</button>
+        <button class="btn-navy" data-act="word" id="btn-word">Download Word</button>
+        <button class="btn-ghost" data-act="reset" id="btn-reset">Reset</button>
+        <button class="btn-new" data-act="newClient" id="btn-new" style="flex-basis:100%">Start New Client · clears everything</button>
+      </div>
+      <p class="export-note">PDF is the client-ready output. Word is fully editable and may paginate slightly differently from the PDF.</p>
+    </div>
+    <div class="pane" id="pane"></div>
+  </aside>
+  <main class="desk" id="desk"></main>
+</div>
+<div id="overflow-toast" class="toast no-print" hidden>A page exceeds A4 (outlined in red) — shorten text or remove rows. Export is blocked until fixed.</div>
+<div id="toast" class="toast no-print" hidden></div>
+
+<script src="vendor/pdf.min.js"></script>
+<script src="vendor/docx.iife.js"></script>
+<script src="assets.js"></script>
+<script src="defaults.js"></script>
+<script src="docxio.js"></script>
+<script src="wiring.js"></script>
+<script src="render.js"></script>
+<script src="exports.js"></script>
+<script src="app.js"></script>
+</body>
+</html>

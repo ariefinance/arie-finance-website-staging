@@ -1,15 +1,15 @@
 {
-  "capturedAt": "2026-09-24T09:01:54.018Z",
+  "capturedAt": "2026-09-24T09:23:26.124Z",
   "mode": "capture",
+  "external": false,
   "chromium": "141.0.7390.37",
   "playwright": "1.55.0",
   "viewport": "1280x720",
   "deviceScaleFactor": 1,
   "fontPack": "fontsource@5.1.0 (Hanken Grotesk + Newsreader), per-weight WOFF2 served from local static server",
-  "fixtures": {
+  "inputs": {
     "pl": 19678,
     "txn": 19930,
-    "bs": 17056,
-    "prev": 9327
+    "prev": 11007
   }
 }

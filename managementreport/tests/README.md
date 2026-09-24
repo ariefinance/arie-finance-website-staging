@@ -77,6 +77,27 @@ identical business snapshots.
 
 Each script exits non-zero on failure.
 
+### External mode (real August reconciliation)
+
+To run the same harness against a REAL pack held outside this repository:
+
+    node harness/render-baseline.js --external \
+      --pl       /secure/local/pl.xlsx \
+      --txn      /secure/local/transactions.xlsx \
+      --previous /secure/local/previous.data \
+      --input-config /secure/local/august-fill.json \
+      --output   /secure/local/output/august-regression
+
+Rules enforced by the harness:
+
+- `--output` MUST resolve outside this git repository. Any path inside the
+  repository fails immediately with a clear error before Chromium launches.
+- Input paths may be anywhere; the harness never copies them into the repo.
+- The config file may be `.json` (what a real operator would author) or
+  `.js` (what the synthetic pack ships as); both are supported.
+- No confidential inputs or outputs ever end up on disk inside this
+  repository or in git history.
+
 ---
 
 ## What passes today

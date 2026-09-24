@@ -23,6 +23,22 @@
      "gpPerClient": 0.3,
      "volPerClient": 0.5,
      "txnPerClient": 5
+    },
+    "fig": {
+     "acc": 1900,
+     "subTxn": 1200,
+     "fxOther": 0,
+     "maint": 0,
+     "advisory": 0,
+     "rev": 3100,
+     "staff": 1200,
+     "prof": 100,
+     "other": 200,
+     "intro": 0,
+     "opex": 1500,
+     "nonop": 0,
+     "ebitda": 1600,
+     "gp": 3100
     }
    },
    "kpi": {
@@ -107,6 +123,22 @@
      "gpPerClient": 0.3,
      "volPerClient": 0.5,
      "txnPerClient": 5
+    },
+    "fig": {
+     "acc": 1900,
+     "subTxn": 1200,
+     "fxOther": 0,
+     "maint": 0,
+     "advisory": 0,
+     "rev": 3100,
+     "staff": 1200,
+     "prof": 100,
+     "other": 200,
+     "intro": 0,
+     "opex": 1500,
+     "nonop": 0,
+     "ebitda": 1600,
+     "gp": 3100
     }
    },
    "kpi": {
@@ -191,6 +223,22 @@
      "gpPerClient": 0.3,
      "volPerClient": 0.5,
      "txnPerClient": 5
+    },
+    "fig": {
+     "acc": 1900,
+     "subTxn": 1200,
+     "fxOther": 0,
+     "maint": 0,
+     "advisory": 0,
+     "rev": 3100,
+     "staff": 1200,
+     "prof": 100,
+     "other": 200,
+     "intro": 0,
+     "opex": 1500,
+     "nonop": 0,
+     "ebitda": 1600,
+     "gp": 3100
     }
    },
    "kpi": {
@@ -275,6 +323,22 @@
      "gpPerClient": 0.3,
      "volPerClient": 0.5,
      "txnPerClient": 5
+    },
+    "fig": {
+     "acc": 1900,
+     "subTxn": 1200,
+     "fxOther": 0,
+     "maint": 0,
+     "advisory": 0,
+     "rev": 3100,
+     "staff": 1200,
+     "prof": 100,
+     "other": 200,
+     "intro": 0,
+     "opex": 1500,
+     "nonop": 0,
+     "ebitda": 1600,
+     "gp": 3100
     }
    },
    "kpi": {
@@ -359,6 +423,22 @@
      "gpPerClient": 0.3,
      "volPerClient": 0.5,
      "txnPerClient": 5
+    },
+    "fig": {
+     "acc": 1900,
+     "subTxn": 1200,
+     "fxOther": 0,
+     "maint": 0,
+     "advisory": 0,
+     "rev": 3100,
+     "staff": 1200,
+     "prof": 100,
+     "other": 200,
+     "intro": 0,
+     "opex": 1500,
+     "nonop": 0,
+     "ebitda": 1600,
+     "gp": 3100
     }
    },
    "kpi": {
@@ -443,6 +523,22 @@
      "gpPerClient": 0.3,
      "volPerClient": 0.5,
      "txnPerClient": 5
+    },
+    "fig": {
+     "acc": 1900,
+     "subTxn": 1200,
+     "fxOther": 0,
+     "maint": 0,
+     "advisory": 0,
+     "rev": 3100,
+     "staff": 1200,
+     "prof": 100,
+     "other": 200,
+     "intro": 0,
+     "opex": 1500,
+     "nonop": 0,
+     "ebitda": 1600,
+     "gp": 3100
     }
    },
    "kpi": {
@@ -520,5 +616,5 @@
   "domestic": "Mauritius",
   "knownAccounts": null
  },
- "checksum": "0d93bf30"
+ "checksum": "ff69ac96"
 }

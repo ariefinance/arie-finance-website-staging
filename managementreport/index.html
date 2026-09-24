@@ -291,6 +291,18 @@ body.locked{overflow:hidden}
    the design width — fitText's shrink-to-fit reads scrollHeight/clientHeight
    on real DOM inputs, so any layout collapse would break slide typography. */
 body.mr-wizard-mode .main{position:absolute;left:-99999px;top:0;width:1280px;visibility:hidden;pointer-events:none}
+/* §10 — legacy workflow buttons are hidden while the guided flow is on;
+   the wizard supplies its own upload / generate / download surface. They
+   stay in the DOM so programmatic .click() (harness, "Generate report"
+   button in Stage 3) still works. Sign out, the wizard-mode toggle, and
+   the status text remain visible. */
+body.mr-wizard-mode .bar #btnUpload,
+body.mr-wizard-mode .bar #btnPrint,
+body.mr-wizard-mode .bar #btnImport,
+body.mr-wizard-mode .bar #btnPdf,
+body.mr-wizard-mode .bar #btnDlPdf,
+body.mr-wizard-mode .bar #btnDlPptx,
+body.mr-wizard-mode .bar #btnDlData{display:none !important}
 body:not(.mr-wizard-mode) .wizard{display:none}
 .wizard{overflow-y:auto;padding:30px 28px 60px;background:var(--canvas)}
 .wiz-inner{max-width:920px;margin:0 auto}
@@ -369,6 +381,11 @@ body:not(.mr-wizard-mode) .wizard{display:none}
   <input type="file" id="contFile" accept=".data,application/json,.json" hidden>
   <div class="mrnote" id="mrnote">Your work is not stored by the website. Download the report files (PDF, PowerPoint and Save for Next Month) before leaving or refreshing this page.</div>
   <section class="wizard" id="wizard" aria-label="Management report — guided flow"></section>
+  <!-- §4 — dedicated file input for the wizard drop zone. Accepts .xlsx / .xls
+       for the workbooks AND .data / .json for the Previous Month File. The
+       legacy #file input keeps its .xlsx-only accept and is only reached from
+       the legacy header "Upload Excel" button. -->
+  <input type="file" id="wizFile" accept=".xlsx,.xls,.data,.json,application/json" multiple hidden>
   <div class="main">
     <aside class="panel">
       <div class="tabs" role="tablist">
@@ -715,7 +732,14 @@ function readiness(){
       if(onSlide) add('e',label,'Empty. Either write this month\u2019s update, or tick “No update this month”.');
       return;
     }
-    if(!rec.review[k]) add('e',label,cur&&prev&&cur===prev?`Unchanged from ${longLbl(c.prevKey)} and not yet reviewed.`:'Not yet reviewed for this month.');
+    // §9 — a genuine current-month edit (cur !== prev) satisfies the
+    // "updated for this month" requirement on its own; only carried text
+    // that has NOT been edited needs an explicit "Reviewed / updated"
+    // click. Editing still clears the old review tick (in commentaryEdited)
+    // so a subsequent revert to the carried text correctly re-blocks.
+    const changedThisMonth = !!cur && prev !== cur;
+    if(!rec.review[k] && !changedThisMonth) add('e',label,cur&&prev&&cur===prev?`Unchanged from ${longLbl(c.prevKey)} and not yet reviewed.`:'Not yet reviewed for this month.');
+    else if(changedThisMonth) add('o',label,'Updated for this month.');
     else add('o',label, cur===prev&&prev?`Reviewed — intentionally unchanged from ${shortLbl(c.prevKey)}.`:'Reviewed for this month.');
   });
   // 9. history for the six-month charts
@@ -753,8 +777,20 @@ const FIGKEYS=['acc','subTxn','fxOther','maint','advisory','rev','staff','prof',
    used as "previously reported" by a later month. */
 function publishMonth(){
   const c=compute();
+  // §8 — also persist the KPI values that Stage 3's next-month comparative
+  // table reads (Clients, Active accounts, Jurisdictions). Does not affect
+  // the current month's rendered output; the report engine reads from
+  // S.rec.kpi / compute() directly. Purely for the following month's
+  // Review & Generate previous-column.
+  const kpiSnap = {
+    clients:        isNum(c.clients)                 ? c.clients                 : null,
+    accountsActive: isNum(S.rec.kpi.accountsActive)  ? S.rec.kpi.accountsActive  : null,
+    accountsHeld:   isNum(S.rec.kpi.accountsHeld)    ? S.rec.kpi.accountsHeld    : null,
+    jurisdictions:  isNum(c.jurisdictions)           ? c.jurisdictions           : null,
+    intlPct:        isNum(c.intlPct)                 ? c.intlPct                 : null,
+  };
   S.rec.published={ key:S.key, at:new Date().toISOString(),
-    fig:pick(c.cur,FIGKEYS), metrics:c.metrics };
+    fig:pick(c.cur,FIGKEYS), metrics:c.metrics, kpi:kpiSnap };
   S.rec.status='published';
   if(S.rec.confirm) S.rec.confirm.republish=false;
   return saveNow();
@@ -827,9 +863,15 @@ function initCaps(){
   renderAll();
 }
 
+/* Phase A finalisation lock: after a successful finalisation the report
+   is frozen until the operator explicitly clicks "Make changes". This is
+   distinct from isFinalizing (which is only true DURING the render pass).
+   Every mutation entry point below routes through this predicate. */
+function mutationLocked(){ return isFinalizing || !!finalSnapshot; }
+
 /* ================= uploads ================= */
 async function handleFiles(list){
-  if(isFinalizing) return;              // locked during finalisation
+  if(mutationLocked()) return;          // frozen while finalising, and after finalisation until "Make changes"
   invalidateFinal();                    // new source files change the report -> old outputs no longer valid
   for(const f of list){
     try{
@@ -868,12 +910,12 @@ async function handleFiles(list){
       S.rec.txn={inCount:tm.inCount, outCount:tm.outCount, inUsd:tm.inUsd, outUsd:tm.outUsd};
       if(S.txn.ytd && S.txn.ytd.key===S.key && !isNum(S.rec.kpi.volYtd)) S.rec.kpi.volYtd=S.txn.ytd.usd/1e6;
     }
-    /* Phase A §8 — strict auto-seed: fill hist[x] ONLY when the entry is
-       entirely absent. A month with any published or draft record is never
-       overwritten, so operator-created history, seeded history and prior
-       tool output all remain untouched. */
+    /* Phase A §8 — strict auto-seed: fill hist[x] ONLY when there is no own
+       property for that key at all. If S.hist has ANY object for that
+       month (published, draft, partial, seeded, or anything else), it stays
+       untouched. This is stricter than checking for specific markers. */
     last6().slice(0,-1).forEach(x=>{
-      if(S.hist[x] && (S.hist[x].adj || S.hist[x].published || S.hist[x].reported)) return;
+      if(Object.prototype.hasOwnProperty.call(S.hist||{}, x)) return;
       const mm=S.txn.months[x]; if(!mm) return;
       const r=S.hist[x]={};
       r.published={metrics:{inUsd:mm.inUsd, outUsd:mm.outUsd, inCount:mm.inCount, outCount:mm.outCount, volMonth:(mm.inUsd+mm.outUsd)/1e6}};
@@ -1279,7 +1321,7 @@ function setHist(key,f,val){
 /* Seeds transaction history for months that were NOT produced in this tool.
    A month with its own saved record is published history and is never overwritten. */
 function txnBackfill(){
-  if(isFinalizing) return;              // locked during finalisation
+  if(mutationLocked()) return;          // locked during finalisation, and after finalisation until "Make changes"
   invalidateFinal();                    // seeding history changes the report -> old outputs no longer valid
   if(!S.txn) return; let n=0, skipped=0;
   last6().slice(0,-1).forEach(x=>{
@@ -1363,30 +1405,104 @@ function wizSetStage(n){
   WIZ.stage=n; renderWizard();
   const w=$('#wizard'); if(w) w.scrollTop=0;
 }
+/* Track whether the last file processed by handleFiles was recognised, so
+   the wizard router can surface an "unclassified" card for xlsx files that
+   the auto-detector rejected. */
+let __wizLastFileHandled = null;
 async function wizRouteFile(f){
+  if(mutationLocked()) return;
   const nm=(f.name||'').toLowerCase();
   if(/\.data$/.test(nm) || /application\/json/.test(f.type||'') || /\.json$/.test(nm)){ importContinuation(f); return; }
-  if(/\.(xlsx|xls)$/.test(nm)){ await handleFiles([f]); return; }
+  if(/\.(xlsx|xls)$/.test(nm)){
+    const plBefore=!!S.pl, txnBefore=!!S.txn, bsBefore=!!S.bs;
+    __wizLastFileHandled = f.name;
+    await handleFiles([f]);
+    // If handleFiles could not identify the workbook, none of the three
+    // slots will have changed AND its filename will not appear in S.files.
+    const recognised = (S.files.pl===f.name) || (S.files.txn===f.name) || (S.files.bs===f.name)
+                       || (!plBefore && S.pl && S.files.pl) || (!txnBefore && S.txn && S.files.txn) || (!bsBefore && S.bs && S.files.bs);
+    if(!recognised){
+      WIZ.unclassified.push({name:f.name, blob:f});
+      renderWizard();
+    }
+    return;
+  }
   WIZ.unclassified.push({name:f.name, blob:f}); renderWizard();
   toast(`${f.name}: not recognised. Identify the file type in Stage 1.`,6000);
 }
 async function wizHandleDrop(list){
   const arr=[...list]; for(const f of arr){ await wizRouteFile(f); }
 }
-function wizClassifyManual(idx, kind){
-  const entry=WIZ.unclassified[idx]; if(!entry) return;
-  if(kind==='previous'){ importContinuation(entry.blob); }
-  else if(kind==='pl'||kind==='txn'||kind==='bs'){ handleFiles([entry.blob]); }
-  else if(kind==='other'){ toast(`${entry.name}: kept aside — not included in the report.`,4000); }
-  WIZ.unclassified.splice(idx,1); renderWizard();
+/* §6 — manual classification must call the specific parser directly and
+   surface a precise error when the file does not have the shape the operator
+   claimed. Never falls back to generic detection. */
+async function wizClassifyManual(idx, kind){
+  const entry=WIZ.unclassified[idx]; if(!entry || mutationLocked()) return;
+  if(kind==='previous'){ importContinuation(entry.blob); WIZ.unclassified.splice(idx,1); renderWizard(); return; }
+  if(kind==='other'){ toast(`${entry.name}: kept aside — not included in the report.`,4000); WIZ.unclassified.splice(idx,1); renderWizard(); return; }
+  if(kind!=='pl' && kind!=='txn' && kind!=='bs'){ WIZ.unclassified.splice(idx,1); renderWizard(); return; }
+  try{
+    const buf = await entry.blob.arrayBuffer();
+    const wb = XLSX.read(buf, {type:'array'});
+    const rows = sheetRows(wb);
+    invalidateFinal();
+    if(kind==='pl'){
+      const parsed = parsePL(rows);
+      S.pl = parsed; S.files.pl = entry.name;
+      S.key = parsed.key; if(!S.cfg.entity) S.cfg.entity = parsed.entity;
+      S.rec = null; ensureRec();
+    } else if(kind==='bs'){
+      const parsed = parseBS(rows);
+      S.bs = parsed; S.files.bs = entry.name;
+    } else if(kind==='txn'){
+      const parsed = parseTxnSummary(wb);
+      if(!parsed) throw new Error('The workbook does not contain an "In / Out / row labels" transaction block for any month.');
+      S.txn = parsed; S.files.txn = entry.name;
+    }
+    WIZ.unclassified.splice(idx,1);
+    // Run auto-application + strict auto-seed the same way handleFiles does,
+    // so a manually-classified Transaction Summary still yields the current-
+    // month figures and six-month history.
+    if(S.txn && S.key && S.rec){
+      const tm = S.txn.months[S.key];
+      if(tm){
+        S.rec.txn = { inCount:tm.inCount, outCount:tm.outCount, inUsd:tm.inUsd, outUsd:tm.outUsd };
+        if(S.txn.ytd && S.txn.ytd.key===S.key && !isNum(S.rec.kpi.volYtd)) S.rec.kpi.volYtd = S.txn.ytd.usd/1e6;
+      }
+      last6().slice(0,-1).forEach(x=>{
+        if(Object.prototype.hasOwnProperty.call(S.hist||{}, x)) return;
+        const mm = S.txn.months[x]; if(!mm) return;
+        const r = S.hist[x] = {};
+        r.published = { metrics: { inUsd:mm.inUsd, outUsd:mm.outUsd, inCount:mm.inCount, outCount:mm.outCount, volMonth:(mm.inUsd+mm.outUsd)/1e6 } };
+        r.reported = r.published; r.seed = true;
+      });
+    }
+    scheduleSave(); renderAll();
+    toast(`${entry.name}: accepted as ${({pl:'Profit & Loss', txn:'Transaction Summary', bs:'Balance Sheet'})[kind]}.`, 4500);
+  } catch(err){
+    // Do NOT remove the file from unclassified: the operator can try a
+    // different classification.
+    toast(`${entry.name}: could not be read as ${({pl:'Profit & Loss', txn:'Transaction Summary', bs:'Balance Sheet'})[kind]} — ${err.message||err}`, 8000);
+    renderWizard();
+  }
 }
 function wizRemoveSource(kind){
-  if(isFinalizing) return;
+  if(mutationLocked()) return;
   invalidateFinal();
   if(kind==='pl'){
     S.pl=null; S.files.pl=null; S.key=null; S.rec=null;
     // Removing the P&L invalidates the period; drop derived state without touching history/config.
-  } else if(kind==='txn'){ S.txn=null; S.files.txn=null; }
+  } else if(kind==='txn'){
+    S.txn=null; S.files.txn=null;
+    // §3 — clear the current-month transaction values that were auto-applied
+    // from this workbook, and the YTD volume auto-set from its YTD block.
+    // Anything the operator typed manually stays, but auto-applied values
+    // must not persist after their source is removed.
+    if(S.rec){
+      S.rec.txn = { inCount:null, outCount:null, inUsd:null, outUsd:null };
+      if(S.rec.kpi) S.rec.kpi.volYtd = null;
+    }
+  }
   else if(kind==='bs'){ S.bs=null; S.files.bs=null; }
   else if(kind==='previous'){ S.hist={}; S.cfg=defaultCfg(); S.contMonth=null; if(S.key){ S.rec=null; ensureRec(); } }
   scheduleSave(); renderAll();
@@ -1483,6 +1599,10 @@ function wizStageReview(){
   const c=compute();
   const R=readiness();
   const attention = R.items.filter(x=>x.lvl==='e'||x.lvl==='w');
+  // Continue is gated on BLOCKERS only. Warnings remain visibly surfaced
+  // but the operator is allowed to proceed with them (§10 / independent
+  // review finding #1: real August has 0 blockers + 2 expected warnings).
+  const canContinue = R.errors===0;
   const zero = attention.length===0;
 
   /* --- surface exception controls only when they are actually needed. --- */
@@ -1535,14 +1655,17 @@ function wizStageReview(){
     </div>`);
   }
 
-  // Commentary blocks that are unreviewed or missing
+  // Commentary blocks that are unreviewed or missing. A block whose current
+  // text differs from prev is treated as updated for this month (§9); it
+  // does not need a separate "Reviewed" click to clear the blocker.
   const commentaryNeedsAttention = TEXTS.filter(([k])=>{
     const cur=(S.rec.text[k]||'').trim();
+    const prev=((S.rec.prevText||{})[k]||'').trim();
     const nu=(S.rec.noUpdate||{})[k];
     const rev=!!S.rec.review[k];
     const onSlide=(k==='pipeline'||k==='regulatory'||k==='tech');
-    if(!cur && onSlide && !nu) return true;         // required and empty
-    if(cur && !rev) return true;                     // typed but unreviewed
+    if(!cur && onSlide && !nu) return true;          // required and empty
+    if(cur && !rev && cur===prev) return true;       // carried-forward text still needs an explicit review click
     return false;
   });
   if(commentaryNeedsAttention.length){
@@ -1612,15 +1735,25 @@ function wizStageReview(){
   ]);
   const remaining = attention.filter(x=>!surfacedLabels.has(x.label));
 
+  // Headline copy tracks the actual gate: blockers stop progress; warnings
+  // stay visible but do not.
   const header = zero
     ? `<div class="wiz-card"><h4>Nothing needs your attention</h4><p class="h">All required reporting inputs are complete for ${esc(longLbl(S.key))}. You can continue to Review &amp; Generate.</p></div>`
-    : `<div class="wiz-card">
-        <h4>${attention.length} item${attention.length===1?'':'s'} need${attention.length===1?'s':''} your attention</h4>
-        <p class="h">Resolve each item below. Only blockers and warnings are shown; passed checks are hidden.</p>
-        ${remaining.length? `<ul style="list-style:none;padding:0;margin:0;display:grid;gap:6px">
-          ${remaining.map(x=>`<li style="padding:8px 12px;border:1px solid ${x.lvl==='e'?'#E5B7B1':'#E1C88B'};border-radius:8px;background:${x.lvl==='e'?'#FDECE9':'var(--warn-bg)'};color:${x.lvl==='e'?'#9B2C2C':'var(--warn)'};font-size:12.5px"><b>${esc(x.label)}</b>${x.detail?` — <span style="color:var(--text)">${x.detail}</span>`:''}</li>`).join('')}
-        </ul>`:''}
-       </div>`;
+    : canContinue
+      ? `<div class="wiz-card">
+          <h4>Ready to continue — ${R.warns} warning${R.warns===1?'':'s'} to review</h4>
+          <p class="h">No blockers. The warnings below are surfaced for your review; you can continue when you have taken them into account.</p>
+          ${remaining.length? `<ul style="list-style:none;padding:0;margin:0;display:grid;gap:6px">
+            ${remaining.map(x=>`<li style="padding:8px 12px;border:1px solid ${x.lvl==='e'?'#E5B7B1':'#E1C88B'};border-radius:8px;background:${x.lvl==='e'?'#FDECE9':'var(--warn-bg)'};color:${x.lvl==='e'?'#9B2C2C':'var(--warn)'};font-size:12.5px"><b>${esc(x.label)}</b>${x.detail?` — <span style="color:var(--text)">${x.detail}</span>`:''}</li>`).join('')}
+          </ul>`:''}
+         </div>`
+      : `<div class="wiz-card">
+          <h4>${R.errors} blocker${R.errors===1?'':'s'}${R.warns?` and ${R.warns} warning${R.warns===1?'':'s'}`:''} to resolve</h4>
+          <p class="h">Resolve each blocker below to continue. Warnings are shown for review but do not block progression.</p>
+          ${remaining.length? `<ul style="list-style:none;padding:0;margin:0;display:grid;gap:6px">
+            ${remaining.map(x=>`<li style="padding:8px 12px;border:1px solid ${x.lvl==='e'?'#E5B7B1':'#E1C88B'};border-radius:8px;background:${x.lvl==='e'?'#FDECE9':'var(--warn-bg)'};color:${x.lvl==='e'?'#9B2C2C':'var(--warn)'};font-size:12.5px"><b>${esc(x.label)}</b>${x.detail?` — <span style="color:var(--text)">${x.detail}</span>`:''}</li>`).join('')}
+          </ul>`:''}
+         </div>`;
 
   return header + cards.join('') + `
     <div class="wiz-actions">
@@ -1629,20 +1762,42 @@ function wizStageReview(){
         <button class="wiz-legacy" id="wizLegacy" type="button">Detailed setup (advanced)</button>
       </div>
       <div class="right">
-        <button class="btn btn-cont" id="wizContinue" ${zero?'':'disabled'}>Continue to Review &amp; Generate →</button>
+        <button class="btn btn-cont" id="wizContinue" ${canContinue?'':'disabled'}>Continue to Review &amp; Generate →</button>
       </div>
     </div>`;
 }
 function wizStageGenerate(){
   if(!S.pl) return `<div class="wiz-placeholder">Upload the Profit &amp; Loss first.</div>`;
   const c=compute();
+  // §8 — the comparative table uses frozen prior-month published values from
+  // hist[prevKey]. Never recalculated. Blank em-dash where a published value
+  // does not exist for a metric.
+  const prevHist = S.hist && S.hist[c.prevKey];
+  const pm = (prevHist && prevHist.published && prevHist.published.metrics) || {};
+  const pk = (prevHist && prevHist.published && prevHist.published.kpi) || {};
+  const pFig = (prevHist && prevHist.published && prevHist.published.fig) || null;
+  const prevClients      = isNum(pk.clients) ? pk.clients : null;
+  const prevAccActive    = isNum(pk.accountsActive) ? pk.accountsActive : null;
+  const prevVolMonth     = isNum(pm.volMonth) ? pm.volMonth : null;
+  const prevJurisdictions= isNum(pk.jurisdictions) ? pk.jurisdictions : null;
+  const dash = '—';
+  const compare = (cur, prev, fmt) => {
+    if(!isNum(cur) || !isNum(prev)) return { c: isNum(cur)?fmt(cur):dash, p: isNum(prev)?fmt(prev):dash, d: dash };
+    return { c: fmt(cur), p: fmt(prev), d: fmt(cur-prev) };
+  };
+  const cRev = compare(c.cur.rev,       pFig?pFig.rev:null,       money);
+  const cEbi = compare(c.cur.ebitda,    pFig?pFig.ebitda:null,    money);
+  const cCli = compare(c.clients,       prevClients,              v=>String(v));
+  const cAcc = compare(S.rec.kpi.accountsActive, prevAccActive,   v=>String(v));
+  const cVol = compare(c.metrics.volMonth, prevVolMonth,          mUSD);
+  const cJur = compare(c.jurisdictions, prevJurisdictions,        v=>String(v));
   const rows=[
-    ['Revenue',           money(c.cur.rev),        c.prev?money(c.prev.rev):'—',    c.prev?money(c.cur.rev-c.prev.rev):'—'],
-    ['EBITDA',            money(c.cur.ebitda),     c.prev?money(c.prev.ebitda):'—', c.prev?money(c.cur.ebitda-c.prev.ebitda):'—'],
-    ['Clients',           isNum(c.clients)?c.clients:'—',  '—','—'],
-    ['Active accounts',   isNum(S.rec.kpi.accountsActive)?S.rec.kpi.accountsActive:'—','—','—'],
-    ['Transaction volume',isNum(c.metrics.volMonth)?mUSD(c.metrics.volMonth):'—','—','—'],
-    ['Jurisdictions',     isNum(c.jurisdictions)?c.jurisdictions:'—','—','—'],
+    ['Revenue',            cRev.c, cRev.p, cRev.d],
+    ['EBITDA',             cEbi.c, cEbi.p, cEbi.d],
+    ['Clients',            cCli.c, cCli.p, cCli.d],
+    ['Active accounts',    cAcc.c, cAcc.p, cAcc.d],
+    ['Transaction volume', cVol.c, cVol.p, cVol.d],
+    ['Jurisdictions',      cJur.c, cJur.p, cJur.d],
   ];
   const cur=shortLbl(S.key), pl=c.prev?shortLbl(c.prevKey):'Prior';
   const R=readiness();
@@ -1753,15 +1908,23 @@ function renderWizard(){
       <ol class="wiz-stepper">${stepper}</ol>
       ${body}
     </div>`;
-  // Wire the drop zone.
+  // Wire the drop zone. The wizard opens its own dedicated picker (§4) so
+  // .data files are actually selectable; the legacy #file picker keeps its
+  // .xlsx-only accept. Drop events stopPropagation (§5) so the global
+  // fallback drop handler cannot process the same drop twice.
   const d=$('#wizDrop');
   if(d){
-    d.onclick=()=>$('#file').click();
-    ['dragover','dragenter'].forEach(e=>d.addEventListener(e,ev=>{ev.preventDefault();d.classList.add('over');}));
-    ['dragleave','drop'].forEach(e=>d.addEventListener(e,ev=>{ev.preventDefault();d.classList.remove('over');}));
-    d.addEventListener('drop',ev=>{ if(ev.dataTransfer.files.length) wizHandleDrop(ev.dataTransfer.files); });
+    d.onclick=()=>$('#wizFile').click();
+    ['dragover','dragenter'].forEach(e=>d.addEventListener(e,ev=>{ev.preventDefault();ev.stopPropagation();d.classList.add('over');}));
+    ['dragleave','drop'].forEach(e=>d.addEventListener(e,ev=>{ev.preventDefault();ev.stopPropagation();d.classList.remove('over');}));
+    d.addEventListener('drop',ev=>{ ev.stopPropagation(); if(ev.dataTransfer.files.length) wizHandleDrop(ev.dataTransfer.files); });
   }
 }
+/* Bind the wizard file picker once. */
+(function bindWizFile(){
+  const wf=$('#wizFile');
+  if(wf) wf.addEventListener('change', ev=>{ if(ev.target.files && ev.target.files.length) wizHandleDrop(ev.target.files); ev.target.value=''; });
+})();
 /* Wizard event delegation (kept separate from the legacy input/click handlers). */
 document.addEventListener('click',e=>{
   if(isFinalizing) return;
@@ -1815,7 +1978,7 @@ function changed(refreshPanel){
 
 /* ================= events ================= */
 document.addEventListener('input',e=>{
-  if(isFinalizing) return;                                 // no state mutation while finalising (before any write)
+  if(mutationLocked()) return;                             // no state mutation while finalising, and after finalisation until "Make changes"
   const t=e.target;
   if(t.dataset.bind){ const v=t.dataset.str||t.type==='text'?t.value:(t.value===''?null:num(t.value)); setPath(t.dataset.cfg?S.cfg:S.rec,t.dataset.bind,v);
     const tm=/^text\.(\w+)$/.exec(t.dataset.bind);
@@ -1826,7 +1989,7 @@ document.addEventListener('input',e=>{
   if(t.dataset.hist){ setHist(t.dataset.hist,t.dataset.hk,t.value); changed(false); return; }
 });
 document.addEventListener('change',e=>{
-  if(isFinalizing) return;                                 // no state mutation while finalising (before any write)
+  if(mutationLocked()) return;                             // no state mutation while finalising, and after finalisation until "Make changes"
   const t=e.target;
   if(t.dataset.map){ S.cfg.map[t.dataset.map]=t.value; changed(true); }
   if(t.dataset.dc!=null){ const n=t.dataset.dc; S.cfg.directCosts=S.cfg.directCosts.filter(x=>x!==n); if(t.checked) S.cfg.directCosts.push(n); changed(true); }
@@ -1839,7 +2002,7 @@ document.addEventListener('change',e=>{
   }
 });
 document.addEventListener('click',e=>{
-  if(isFinalizing) return;                                 // no state mutation while finalising (before any write)
+  if(mutationLocked()) return;                             // no state mutation while finalising, and after finalisation until "Make changes"
   const t=e.target.closest('button'); if(!t) return;
   if(t.dataset.tab){ S.tab=t.dataset.tab; renderPanes(); return; }
   if(t.dataset.mode){ S.rec.compMode=t.dataset.mode; changed(true); renderPanes(); return; }
@@ -1866,7 +2029,15 @@ window.addEventListener('beforeunload',function(e){
   if(!finalSnapshot || pendingDownloads().length){ e.preventDefault(); e.returnValue=''; return ''; }
 });
 document.addEventListener('dragover',e=>e.preventDefault());
-document.addEventListener('drop',e=>{ if(!e.target.closest('#drop')){ e.preventDefault(); if(e.dataTransfer.files.length) handleFiles([...e.dataTransfer.files]); } });
+document.addEventListener('drop',e=>{
+  // §5 — a drop on the wizard's own zone is handled by wizHandleDrop (which
+  // stops propagation); this global fallback covers the legacy .stage / .drop
+  // surface only. Never processes the same drop twice.
+  if(e.target.closest('#drop') || e.target.closest('#wizDrop')) return;
+  e.preventDefault();
+  if(mutationLocked()) return;
+  if(e.dataTransfer.files.length) handleFiles([...e.dataTransfer.files]);
+});
 
 /* ================= PDF export ================= */
 async function svgToImages(root){
@@ -2058,7 +2229,7 @@ function validateContinuation(obj){
   return {ok:true};
 }
 function applyContinuation(obj){
-  if(isFinalizing) return;              // locked during finalisation
+  if(mutationLocked()) return;          // frozen while finalising, and after finalisation until "Make changes"
   invalidateFinal();                    // importing prior-month state changes the report -> old outputs no longer valid
   S.hist=clone(obj.hist);
   S.cfg=Object.assign(defaultCfg(),clone(obj.cfg));
@@ -2069,11 +2240,12 @@ function applyContinuation(obj){
 }
 function importContinuation(file){
   if(!file) return;
+  if(mutationLocked()) return;          // frozen while finalising, and after finalisation until "Make changes"
   if(file.size>CONT_MAX_BYTES){ toast('That continuation file is too large to be valid.',6000); return; }
   const reader=new FileReader();
   reader.onerror=function(){ toast('Could not read that file.',6000); };
   reader.onload=function(){
-    if(isFinalizing) return;            // finalisation started while the file was being read: ignore this import
+    if(mutationLocked()) return;        // finalisation started while the file was being read: ignore this import
     let obj; try{ obj=JSON.parse(reader.result); }catch(e){ toast('That file is not valid JSON and was not loaded.',6000); return; }
     const v=validateContinuation(obj); if(!v.ok){ toast(v.msg,7000); return; }
     if(S.key){ const need=shiftKey(S.key,-1); if(obj.reportingMonth!==need){ toast('This continuation file is for '+longLbl(obj.reportingMonth)+', but the report month is '+longLbl(S.key)+'. Load the '+longLbl(need)+' file instead.',9000); return; } }

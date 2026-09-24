@@ -637,7 +637,10 @@ const KEY = "arie-board-v1", OLD_KEY = "arie-sales-v6";
 /* ---------------- data ---------------- */
 function blankLead(){return {id:"", company:"", contact:"", email:"", phone:"", country:"", industry:"",
   priority:"Medium", owner:"", status:"Not Contacted", lastContact:"", followUp:"", expClose:"",
-  nextAction:"", comments:"", score:"", vol:"", bps:"", feeM:"", value:"", prob:"", onboardingDate:"", logs:[]};}
+  nextAction:"", comments:"", score:"", vol:"", bps:"", feeM:"", value:"", prob:"", onboardingDate:"",
+  /* Stage-transition milestones — first occurrence only. See applyStageMilestones. */
+  contactedAt:"", meetingBookedAt:"", proposalSentAt:"", onboardingStartedAt:"", wonAt:"",
+  logs:[]};}
 
 function normLead(raw, seg, i){
   const x = Object.assign(blankLead(), raw);
@@ -648,6 +651,14 @@ function normLead(raw, seg, i){
   if(!["High","Medium","Low"].includes(x.priority)) x.priority = "Medium";
   if(!STAGES.includes(x.status)) x.status = "Not Contacted";
   if(!Array.isArray(x.logs)) x.logs = [];
+  /* Backwards-compatibility backfill: existing Won records already use
+     onboardingDate as the conversion date, so seed wonAt from it. NO equivalent
+     backfill for contactedAt/meetings/proposals/onboardingStarted — lastContact
+     is the LATEST interaction, not necessarily first contact, and inferring
+     milestone dates from current stage manufactures history we do not have.
+     Historical reporting on those three metrics is only complete from the
+     date milestone capture began (SET.milestonesActiveFrom). */
+  if(x.status === "Won" && !x.wonAt && x.onboardingDate) x.wonAt = x.onboardingDate;
   return x;
 }
 function freshData(){
@@ -1255,7 +1266,35 @@ function download(name, text, type){
   const b = new Blob([text], {type:type || "text/plain"}), u = URL.createObjectURL(b), a = document.createElement("a");
   a.href = u; a.download = name; a.click(); URL.revokeObjectURL(u);
 }
-const stamp = () => new Date().toISOString().slice(0,10);
+/* Mauritius-local YYYY-MM-DD. ARIE operates from Mauritius; reporting/event
+   dates must use the ARIE calendar boundary regardless of the viewer's browser
+   timezone. Falls back to the browser's local calendar date only if Intl is
+   unavailable (never seen in modern browsers). */
+const stamp = () => {
+  try{
+    let y="", m="", d="";
+    new Intl.DateTimeFormat("en-CA",{timeZone:"Indian/Mauritius",year:"numeric",month:"2-digit",day:"2-digit"})
+      .formatToParts(new Date()).forEach(function(p){ if(p.type==="year")y=p.value; else if(p.type==="month")m=p.value; else if(p.type==="day")d=p.value; });
+    if(y && m && d) return y + "-" + m + "-" + d;
+  }catch(e){}
+  const t = new Date();
+  return t.getFullYear() + "-" + String(t.getMonth()+1).padStart(2,"0") + "-" + String(t.getDate()).padStart(2,"0");
+};
+
+/* Stage-transition milestones — set once, never overwritten. Called BEFORE
+   routeLead on every path that changes status (inline edit, bulk edit, modal
+   save) so the milestone is stamped onto the lead object regardless of any
+   segment move that follows. Stage reversal and re-entry both leave a
+   previously recorded milestone intact. mergeOnto handles the conflict-merge
+   case field-by-field, so once written a milestone survives concurrent edits. */
+function applyStageMilestones(lead, newStatus){
+  if(!lead || !newStatus) return;
+  if(newStatus !== "Not Contacted" && !lead.contactedAt) lead.contactedAt = stamp();
+  if(newStatus === "Meeting Booked" && !lead.meetingBookedAt) lead.meetingBookedAt = stamp();
+  if(newStatus === "Proposal / Terms Sent" && !lead.proposalSentAt) lead.proposalSentAt = stamp();
+  if(newStatus === "Onboarding" && !lead.onboardingStartedAt) lead.onboardingStartedAt = stamp();
+  if(newStatus === "Won" && !lead.wonAt) lead.wonAt = stamp();
+}
 
 /* ---------------- wiring ---------------- */
 function renderAll(){ renderDashboard(); renderPipeline(); renderSettings(); }
@@ -1316,6 +1355,7 @@ body.addEventListener("change", e => {
   hit.lead[f] = el.value;
   if(f === "status"){
     if(el.value !== "Not Contacted" && !hit.lead.lastContact) hit.lead.lastContact = stamp();
+    applyStageMilestones(hit.lead, el.value);
     const mv = routeLead(id);
     if(mv) toast((mv.lead.company || "Lead") + " moved to " + SEGMENTS[mv.to].name);
   }
@@ -1344,7 +1384,10 @@ $("bulk-delete").onclick = () => {
     const val = e.target.value, n = view.sel.size;
     view.sel.forEach(id2 => { const h = findLead(id2); if(h) h.lead[f] = val; });
     let moved = 0;
-    if(f === "status") view.sel.forEach(id2 => { if(routeLead(id2)) moved++; });
+    if(f === "status"){
+      view.sel.forEach(id2 => { const h = findLead(id2); if(h) applyStageMilestones(h.lead, val); });
+      view.sel.forEach(id2 => { if(routeLead(id2)) moved++; });
+    }
     save(); e.target.selectedIndex = 0; renderPipeline(); renderDashboard();
     toast(n + " lead" + (n === 1 ? "" : "s") + " updated" + (moved ? " · " + moved + " moved to " + SEGMENTS[ROUTE[val]].name : ""));
   };
@@ -1386,6 +1429,7 @@ $("m-save").onclick = () => {
   readSheet();
   if(!editing.company){ toast("Give the lead a company name first."); return; }
   if(creating){ DATA[editingSeg].unshift(editing); creating = false; }
+  applyStageMilestones(editing, editing.status);
   const mv = routeLead(editing.id);
   if(mv) editingSeg = mv.to;
   save(); document.getElementById("modal").classList.remove("open"); renderAll();
@@ -1519,12 +1563,16 @@ $("btn-theme").onclick = () => {
 themeLabel();
 
 function startApp(){
+  /* Cutover marker: milestone capture is complete only from the date it was
+     introduced. Setting this once, on the first sign-in after deploy, makes
+     the reporting layer honest about which metrics have historical coverage. */
+  if(!SET.milestonesActiveFrom) SET.milestonesActiveFrom = stamp();
   const swept = sweepRoutes();
   renderAll();
   const parts = [];
   if(swept.moved) parts.push(swept.moved + " lead" + (swept.moved === 1 ? "" : "s") + " filed into Onboarding or Existing clients");
   if(swept.anomalies) parts.push(swept.anomalies + " in Onboarding/Existing need routing review (missing origin)");
-  if(swept.moved) scheduleSync();
+  if(swept.moved || hasLocalDiff()) scheduleSync();
   if(parts.length) toast(parts.join(" · "));
 }
 

@@ -292,6 +292,13 @@ select.inp{min-width:104px}
   .rp-ledger{grid-template-columns:repeat(5,minmax(0,1fr))!important}
   /* Report-only compression: single A4 landscape page, no clipping. */
   #page-report{page:rp-landscape}
+  /* Hide the site's sticky header when the Sales Report is being printed —
+     otherwise it consumes the top of page 1 and Chrome pushes the whole
+     report (whose panels are break-inside:avoid) onto page 2. The report
+     carries its own <h1>Sales Analytics Report</h1> inside .pagehead so
+     nothing is lost. Scoped via :has(#page-report.on) so Dashboard and
+     Pipeline prints keep the header. */
+  body:has(#page-report.on) header{display:none!important}
   #page-report .pagehead{margin-bottom:6px}
   #page-report .pagehead h1{font-size:18px;margin:0}
   #page-report .rp-meta{font-size:10.5px}

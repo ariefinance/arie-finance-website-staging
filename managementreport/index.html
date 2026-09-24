@@ -287,7 +287,10 @@ body.locked{overflow:hidden}
 .mrbusy-card{background:var(--surface);color:var(--text);padding:18px 28px;border-radius:12px;font-weight:600;font-size:15px;box-shadow:0 24px 70px -22px rgba(0,0,0,.55)}
 
 /* ---------- Phase A: three-stage wizard shell ---------- */
-body.mr-wizard-mode .main{display:none}
+/* In wizard mode .main is taken out of the visible flow but kept LAID OUT at
+   the design width — fitText's shrink-to-fit reads scrollHeight/clientHeight
+   on real DOM inputs, so any layout collapse would break slide typography. */
+body.mr-wizard-mode .main{position:absolute;left:-99999px;top:0;width:1280px;visibility:hidden;pointer-events:none}
 body:not(.mr-wizard-mode) .wizard{display:none}
 .wizard{overflow-y:auto;padding:30px 28px 60px;background:var(--canvas)}
 .wiz-inner{max-width:920px;margin:0 auto}
@@ -847,8 +850,33 @@ async function handleFiles(list){
     if(S.contMonth && S.contMonth!==shiftKey(S.key,-1)){
       const need=shiftKey(S.key,-1), wrong=S.contMonth;
       S.hist={}; S.cfg=defaultCfg(); S.contMonth=null; S.rec=null; ensureRec();
-      toast(`Rejected: the loaded continuation is for ${longLbl(wrong)}, but this report is for ${longLbl(S.key)}. Its history was cleared — load the ${longLbl(need)} continuation file, then re-upload the source files.`,11000);
+      toast(`Rejected: the loaded Previous Month File is for ${longLbl(wrong)}, but this report is for ${longLbl(S.key)}. Its history was cleared — load the ${longLbl(need)} Previous Month File, then re-upload the source files.`,11000);
     }
+    scheduleSave();
+  }
+  /* Phase A §7 — auto-apply the current-month transaction figures once a
+     valid Transaction Summary and the current reporting month are both known.
+     Same values as the legacy #txnApply click; user manual overrides survive
+     (volYtd is only auto-set when unset). Safeguards from readiness() still
+     apply: a workbook without a matching month leaves S.rec.txn as-is and the
+     Transaction data blocker fires. */
+  if(S.txn && S.key && S.rec){
+    const tm=S.txn.months[S.key];
+    if(tm){
+      S.rec.txn={inCount:tm.inCount, outCount:tm.outCount, inUsd:tm.inUsd, outUsd:tm.outUsd};
+      if(S.txn.ytd && S.txn.ytd.key===S.key && !isNum(S.rec.kpi.volYtd)) S.rec.kpi.volYtd=S.txn.ytd.usd/1e6;
+    }
+    /* Phase A §8 — strict auto-seed: fill hist[x] ONLY when the entry is
+       entirely absent. A month with any published or draft record is never
+       overwritten, so operator-created history, seeded history and prior
+       tool output all remain untouched. */
+    last6().slice(0,-1).forEach(x=>{
+      if(S.hist[x] && (S.hist[x].adj || S.hist[x].published || S.hist[x].reported)) return;
+      const mm=S.txn.months[x]; if(!mm) return;
+      const r=S.hist[x]={};
+      r.published={metrics:{inUsd:mm.inUsd, outUsd:mm.outUsd, inCount:mm.inCount, outCount:mm.outCount, volMonth:(mm.inUsd+mm.outUsd)/1e6}};
+      r.reported=r.published; r.seed=true;
+    });
     scheduleSave();
   }
   renderAll();

@@ -1,17 +1,15 @@
 // ============================================================================
 //  ARIE Finance — Document Builder Access API  (Vercel serverless)
 //  Route:  /api/internal/pricing
-//  Purpose: LOGIN / LOGOUT ONLY for the staff Document Builder served at
-//           /internal/pricing/. Session verification lives in the Edge
-//           middleware (middleware.js) — the cookie's Path=/internal/pricing
-//           means it is not sent to /api/internal/pricing, so verification
-//           here would be impossible even if it were wanted. Middleware is
-//           the sole session verifier.
+//  Purpose: LOGIN / LOGOUT ONLY. The Edge middleware (/middleware.js) is the
+//           sole session verifier — the cookie's Path=/internal/pricing means
+//           it is never sent to /api/internal/pricing, so verification here
+//           is impossible even if wanted.
 //
 //  Redis keys (throttle infrastructure ONLY — no document/customer data):
 //    ip:loginfail:<hashed-ip>   STR  failed-login throttle counter (TTL)
 //
-//  ENV (production Vercel project):
+//  ENV (Vercel project):
 //    INTERNAL_PRICING_PASSCODE            staff passcode (secret; never in source)
 //    INTERNAL_PRICING_SIGN_KEY            64 hex chars = 32 raw bytes; identical
 //                                         bytes are used by /middleware.js to
@@ -21,9 +19,6 @@
 //  Actions:
 //    POST {action:"login", passcode}   -> sets HttpOnly ip_sess cookie
 //    POST {action:"logout"}            -> clears ip_sess cookie
-//
-//  There is deliberately NO session action. The middleware verifies every
-//  request under /internal/pricing/*.
 // ============================================================================
 
 const crypto = require('crypto');
@@ -50,9 +45,8 @@ const REST_URL = _creds.url;
 const REST_TOKEN = _creds.token;
 
 function passcodeRaw() { return process.env.INTERNAL_PRICING_PASSCODE || ''; }
-function signKeyRaw() { return process.env.INTERNAL_PRICING_SIGN_KEY || ''; }
 function signKeyBytes() {
-  const raw = signKeyRaw();
+  const raw = process.env.INTERNAL_PRICING_SIGN_KEY || '';
   if (!HEX_KEY_RE.test(raw)) return null;
   return Buffer.from(raw, 'hex');
 }
@@ -70,8 +64,9 @@ async function redis(cmd) {
 }
 
 function clientIp(req) {
-  const xff = String(req.headers['x-forwarded-for'] || '').split(',')[0].trim();
-  return xff || String(req.headers['x-real-ip'] || '') || (req.socket && req.socket.remoteAddress) || '0.0.0.0';
+  const x = req.headers['x-forwarded-for'];
+  if (x) return String(x).split(',')[0].trim();
+  return (req.socket && req.socket.remoteAddress) || 'unknown';
 }
 function hashedIp(ip) {
   return crypto.createHash('sha256').update(String(ip)).digest('hex').slice(0, 24);
@@ -80,39 +75,33 @@ function hashedIp(ip) {
 function b64url(bytes) {
   return Buffer.from(bytes).toString('base64').replace(/=+$/, '').replace(/\+/g, '-').replace(/\//g, '_');
 }
-
 function mintToken(keyBytes) {
   const payloadStr = b64url(JSON.stringify({ exp: Date.now() + TOKEN_TTL_MS }));
   const sig = crypto.createHmac('sha256', keyBytes).update(payloadStr).digest();
   return payloadStr + '.' + b64url(sig);
 }
 
-function constantTimeEqStrings(a, b) {
+function constEq(a, b) {
   const ab = Buffer.from(String(a));
   const bb = Buffer.from(String(b));
-  if (ab.length !== bb.length) {
-    // still do a compare to keep timing stable
-    crypto.timingSafeEqual(ab, ab);
-    return false;
-  }
+  if (ab.length !== bb.length) { crypto.timingSafeEqual(ab, ab); return false; }
   return crypto.timingSafeEqual(ab, bb);
 }
 
-async function readBody(req) {
-  return await new Promise((resolve, reject) => {
-    let size = 0;
-    const chunks = [];
-    req.on('data', (c) => {
-      size += c.length;
-      if (size > MAX_BODY_BYTES) { req.destroy(); reject(new Error('too_large')); return; }
-      chunks.push(c);
-    });
-    req.on('end', () => {
-      try { resolve(chunks.length ? JSON.parse(Buffer.concat(chunks).toString('utf8')) : {}); }
-      catch (_) { resolve({}); }
-    });
-    req.on('error', reject);
-  });
+// Same shape as api/managementreport.js — reads req.body when Vercel has
+// already parsed it (object) or delivered it as a raw string. Never falls
+// back to consuming the stream, so the body-parse contract matches the
+// other proven tools in this repo.
+function readBody(req) {
+  if (req.body && typeof req.body === 'object') {
+    if (Buffer.byteLength(JSON.stringify(req.body)) > MAX_BODY_BYTES) return { tooLarge: true };
+    return { body: req.body };
+  }
+  if (typeof req.body === 'string') {
+    if (Buffer.byteLength(req.body) > MAX_BODY_BYTES) return { tooLarge: true };
+    try { return { body: JSON.parse(req.body) }; } catch (_) { return { body: null }; }
+  }
+  return { body: {} };
 }
 
 function setCookie(res, value, maxAgeSec) {
@@ -127,70 +116,53 @@ function setCookie(res, value, maxAgeSec) {
   res.setHeader('Set-Cookie', parts.join('; '));
 }
 
-function json(res, status, body) {
-  res.statusCode = status;
-  res.setHeader('Content-Type', 'application/json; charset=utf-8');
-  res.setHeader('Cache-Control', 'no-store, max-age=0');
-  res.end(JSON.stringify(body));
-}
-
-async function throttleCheck(ip) {
-  const key = 'ip:loginfail:' + hashedIp(ip);
-  const cur = parseInt((await redis(['GET', key])) || '0', 10) || 0;
-  return cur >= LOGIN_MAX_FAIL;
-}
-async function throttleBump(ip) {
-  const key = 'ip:loginfail:' + hashedIp(ip);
-  await redis(['INCR', key]);
-  await redis(['EXPIRE', key, String(LOGIN_WINDOW_S)]);
-}
-async function throttleClear(ip) {
-  const key = 'ip:loginfail:' + hashedIp(ip);
-  try { await redis(['DEL', key]); } catch (_) { /* ignore */ }
-}
-
 module.exports = async function handler(req, res) {
-  try {
-    if (req.method === 'POST') {
-      const body = await readBody(req).catch(() => ({}));
-      const action = String(body.action || '').toLowerCase();
+  res.setHeader('Cache-Control', 'private, no-store, max-age=0');
+  res.setHeader('X-Content-Type-Options', 'nosniff');
+  res.setHeader('Referrer-Policy', 'no-referrer');
+  res.setHeader('X-Robots-Tag', 'noindex, nofollow');
 
-      if (action === 'logout') {
-        // Cookie is scoped to /internal/pricing, so it is not sent here.
-        // Simply expire it unconditionally.
-        setCookie(res, '', 0);
-        return json(res, 200, { ok: true });
-      }
-
-      if (action === 'login') {
-        const passcode = String(body.passcode || '');
-        const keyBytes = signKeyBytes();
-        const truth = passcodeRaw();
-        if (!keyBytes || !truth) return json(res, 500, { ok: false, code: 'not_configured' });
-
-        const ip = clientIp(req);
-        try {
-          if (await throttleCheck(ip)) return json(res, 429, { ok: false, code: 'throttled' });
-        } catch (_) {
-          return json(res, 500, { ok: false, code: 'storage_unconfigured' });
-        }
-
-        if (!passcode || !constantTimeEqStrings(passcode, truth)) {
-          try { await throttleBump(ip); } catch (_) { /* ignore */ }
-          return json(res, 401, { ok: false, code: 'invalid_passcode' });
-        }
-
-        try { await throttleClear(ip); } catch (_) { /* ignore */ }
-        setCookie(res, mintToken(keyBytes), Math.floor(TOKEN_TTL_MS / 1000));
-        return json(res, 200, { ok: true });
-      }
-
-      return json(res, 400, { ok: false, code: 'bad_action' });
-    }
-
+  if (req.method !== 'POST') {
     res.setHeader('Allow', 'POST');
-    return json(res, 405, { ok: false, code: 'method_not_allowed' });
-  } catch (err) {
-    return json(res, 500, { ok: false, code: 'internal_error' });
+    return res.status(405).json({ ok: false, error: 'method' });
   }
+
+  const parsed = readBody(req);
+  if (parsed.tooLarge) return res.status(413).json({ ok: false, error: 'too_large' });
+  const body = parsed.body || {};
+  const action = String(body.action || '').toLowerCase();
+
+  if (action === 'logout') {
+    // The cookie's Path scopes it away from this endpoint anyway; expire it
+    // unconditionally so clients that reach here always get a clean state.
+    setCookie(res, '', 0);
+    return res.status(200).json({ ok: true });
+  }
+
+  if (action !== 'login') return res.status(400).json({ ok: false, error: 'bad_action' });
+
+  const truth = passcodeRaw();
+  const keyBytes = signKeyBytes();
+  if (!truth) return res.status(503).json({ ok: false, error: 'passcode_unconfigured' });
+  if (!keyBytes) return res.status(503).json({ ok: false, error: 'sign_key_unconfigured' });
+
+  const ip = clientIp(req);
+  const failKey = 'ip:loginfail:' + hashedIp(ip);
+  let fails = 0;
+  try { fails = parseInt((await redis(['GET', failKey])) || '0', 10) || 0; }
+  catch (_) { return res.status(503).json({ ok: false, error: 'storage_unconfigured' }); }
+  if (fails >= LOGIN_MAX_FAIL) return res.status(429).json({ ok: false, error: 'too_many_attempts' });
+
+  const supplied = typeof body.passcode === 'string' ? body.passcode : '';
+  if (!supplied || !constEq(supplied, truth)) {
+    try {
+      const n = await redis(['INCR', failKey]);
+      if (n === 1) await redis(['EXPIRE', failKey, LOGIN_WINDOW_S]);
+    } catch (_) { /* ignore */ }
+    return res.status(401).json({ ok: false, error: 'invalid_passcode' });
+  }
+
+  try { await redis(['DEL', failKey]); } catch (_) { /* ignore */ }
+  setCookie(res, mintToken(keyBytes), Math.floor(TOKEN_TTL_MS / 1000));
+  return res.status(200).json({ ok: true, exp: Date.now() + TOKEN_TTL_MS });
 };

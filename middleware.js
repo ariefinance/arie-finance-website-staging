@@ -3,19 +3,21 @@
 //  Enforces staff-only access at the request level for /internal/pricing/*
 //  (the ARIE Document Builder). Runs on Vercel's Edge Runtime, before the
 //  static CDN serves any file, so unauthenticated GETs to app.js, wiring.js,
-//  render.js, exports.js, vendor/*, assets/*, styles.css, index.html and
-//  MANIFEST.txt all return 401. The tool cannot be downloaded and
-//  reassembled off-site without a valid session cookie.
+//  render.js, exports.js, docxio.js, defaults.js, assets.js, styles.css,
+//  vendor/*, assets/*, MANIFEST.txt and auth-shell.js all return 401. The
+//  tool cannot be downloaded and reassembled off-site without a valid
+//  session cookie.
 //
 //  Not authentication of the whole site — matcher is scoped to
-//  /internal/pricing and /internal/pricing/:path* only. The rest of the
-//  ARIE marketing site is untouched.
+//  /internal/pricing and /internal/pricing/:path* only.
 //
 //  Verification only. Token minting lives in /api/internal/pricing.
-//  Both sides HMAC-SHA-256 the same bytes: env INTERNAL_PRICING_SIGN_KEY is
-//  64 hex characters representing 32 bytes; API side calls
-//  Buffer.from(env,'hex'); middleware decodes hex → Uint8Array here.
+//  Both sides HMAC-SHA-256 the same 32 bytes: env INTERNAL_PRICING_SIGN_KEY
+//  is 64 hex characters; the API calls Buffer.from(env,'hex'); the
+//  middleware decodes the hex here.
 // ============================================================================
+
+import { next } from '@vercel/functions';
 
 export const config = {
   matcher: ['/internal/pricing', '/internal/pricing/:path*'],
@@ -113,10 +115,10 @@ export default async function middleware(request) {
   const url = new URL(request.url);
   const pathname = url.pathname;
 
-  // Login shell is always reachable — nothing sensitive lives here.
-  if (ALLOW_UNAUTH.has(pathname)) return; // pass through to static CDN
+  // Login shell — always reachable, contains no Builder code.
+  if (ALLOW_UNAUTH.has(pathname)) return next();
 
-  // Fail closed if signing key is missing/malformed.
+  // Fail closed if signing key is missing or malformed.
   const key = await loadKey();
   if (!key) {
     if (APP_ROOTS.has(pathname)) {
@@ -136,10 +138,10 @@ export default async function middleware(request) {
 
   const token = readCookie(request, COOKIE_NAME);
   const ok = await tokenValid(token, key);
-  if (ok) return; // pass through to static CDN
+  if (ok) return next();
 
-  // Unauthenticated: navigations to the app root land on the gate; every
-  // other protected asset is a hard 401 with no body.
+  // Unauthenticated: navigations to the app root land on the gate;
+  // every other protected asset is a hard 401 with no body.
   if (APP_ROOTS.has(pathname)) return toGate(request);
   return deny(401);
 }

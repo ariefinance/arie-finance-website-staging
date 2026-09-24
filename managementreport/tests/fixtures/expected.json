@@ -1,0 +1,99 @@
+{
+ "entity": "Acme Holdings Ltd",
+ "reportMonthKey": "2026-09",
+ "plMonthKeys": [
+  "2026-09",
+  "2026-08",
+  "2026-07",
+  "2026-06",
+  "2026-05",
+  "2026-04",
+  "2026-03",
+  "2026-02",
+  "2026-01"
+ ],
+ "clientsPerMonth": [
+  3,
+  3,
+  3,
+  3,
+  3,
+  3,
+  3,
+  3,
+  3
+ ],
+ "txnMonthKeys": [
+  "2026-01",
+  "2026-02",
+  "2026-03",
+  "2026-04",
+  "2026-05",
+  "2026-06",
+  "2026-07",
+  "2026-08",
+  "2026-09"
+ ],
+ "txnPerMonth": {
+  "2026-01": {
+   "inUsd": 100000,
+   "outUsd": 90000,
+   "inCount": 10,
+   "outCount": 9
+  },
+  "2026-02": {
+   "inUsd": 105000,
+   "outUsd": 94500,
+   "inCount": 11,
+   "outCount": 10
+  },
+  "2026-03": {
+   "inUsd": 110000,
+   "outUsd": 99000,
+   "inCount": 12,
+   "outCount": 11
+  },
+  "2026-04": {
+   "inUsd": 115000,
+   "outUsd": 103500,
+   "inCount": 13,
+   "outCount": 12
+  },
+  "2026-05": {
+   "inUsd": 120000,
+   "outUsd": 108000,
+   "inCount": 14,
+   "outCount": 13
+  },
+  "2026-06": {
+   "inUsd": 125000,
+   "outUsd": 112500,
+   "inCount": 15,
+   "outCount": 14
+  },
+  "2026-07": {
+   "inUsd": 130000,
+   "outUsd": 117000,
+   "inCount": 16,
+   "outCount": 15
+  },
+  "2026-08": {
+   "inUsd": 135000,
+   "outUsd": 121500,
+   "inCount": 17,
+   "outCount": 16
+  },
+  "2026-09": {
+   "inUsd": 140000,
+   "outUsd": 126000,
+   "inCount": 18,
+   "outCount": 17
+  }
+ },
+ "ytd": {
+  "key": "2026-09",
+  "usd": 2052000,
+  "count": 243
+ },
+ "previousMonthKey": "2026-08"
+}

@@ -1,16 +1,15 @@
 {
-  "capturedAt": "2026-09-24T08:46:54.402Z",
+  "capturedAt": "2026-09-24T09:01:54.018Z",
   "mode": "capture",
   "chromium": "141.0.7390.37",
   "playwright": "1.55.0",
   "viewport": "1280x720",
   "deviceScaleFactor": 1,
-  "fontPack": "fontsource@5.1.0 (hanken-grotesk, newsreader, latin subset, 400 regular used for all weights)",
+  "fontPack": "fontsource@5.1.0 (Hanken Grotesk + Newsreader), per-weight WOFF2 served from local static server",
   "fixtures": {
     "pl": 19678,
     "txn": 19930,
     "bs": 17056,
-    "prev": 675
-  },
-  "gate1Note": "Baseline captures the tool state after synthetic-pack upload. Full 11-slide finalise capture is Gate 2 scope — requires the simplified Stage 2 flow that drives readiness to 0 blockers automatically. See baseline/manifest.json.gate1Note."
+    "prev": 9327
+  }
 }

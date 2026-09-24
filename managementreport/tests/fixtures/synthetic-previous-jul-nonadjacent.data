@@ -1,15 +1,15 @@
 {
  "formatId": "arie-management-report-continuation",
  "schemaVersion": 1,
- "reportingMonth": "2026-08",
+ "reportingMonth": "2026-07",
  "generatedAt": "2026-09-01T00:00:00.000Z",
  "builderVersion": "2026-09-stateless-1",
  "hist": {
-  "2026-03": {
-   "key": "2026-03",
+  "2026-02": {
+   "key": "2026-02",
    "status": "published",
    "published": {
-    "at": "2026-03-15T09:00:00Z",
+    "at": "2026-02-15T09:00:00Z",
     "metrics": {
      "inUsd": 125000,
      "outUsd": 112500,
@@ -89,11 +89,11 @@
     }
    ]
   },
-  "2026-04": {
-   "key": "2026-04",
+  "2026-03": {
+   "key": "2026-03",
    "status": "published",
    "published": {
-    "at": "2026-04-15T09:00:00Z",
+    "at": "2026-03-15T09:00:00Z",
     "metrics": {
      "inUsd": 120000,
      "outUsd": 108000,
@@ -173,11 +173,11 @@
     }
    ]
   },
-  "2026-05": {
-   "key": "2026-05",
+  "2026-04": {
+   "key": "2026-04",
    "status": "published",
    "published": {
-    "at": "2026-05-15T09:00:00Z",
+    "at": "2026-04-15T09:00:00Z",
     "metrics": {
      "inUsd": 115000,
      "outUsd": 103500,
@@ -257,11 +257,11 @@
     }
    ]
   },
-  "2026-06": {
-   "key": "2026-06",
+  "2026-05": {
+   "key": "2026-05",
    "status": "published",
    "published": {
-    "at": "2026-06-15T09:00:00Z",
+    "at": "2026-05-15T09:00:00Z",
     "metrics": {
      "inUsd": 110000,
      "outUsd": 99000,
@@ -341,11 +341,11 @@
     }
    ]
   },
-  "2026-07": {
-   "key": "2026-07",
+  "2026-06": {
+   "key": "2026-06",
    "status": "published",
    "published": {
-    "at": "2026-07-15T09:00:00Z",
+    "at": "2026-06-15T09:00:00Z",
     "metrics": {
      "inUsd": 105000,
      "outUsd": 94500,
@@ -425,11 +425,11 @@
     }
    ]
   },
-  "2026-08": {
-   "key": "2026-08",
+  "2026-07": {
+   "key": "2026-07",
    "status": "published",
    "published": {
-    "at": "2026-08-15T09:00:00Z",
+    "at": "2026-07-15T09:00:00Z",
     "metrics": {
      "inUsd": 100000,
      "outUsd": 90000,
@@ -520,5 +520,5 @@
   "domestic": "Mauritius",
   "knownAccounts": null
  },
- "checksum": "0d93bf30"
+ "checksum": "c019a49e"
 }

@@ -285,9 +285,55 @@ body.locked{overflow:hidden}
 .mrbusy{position:fixed;inset:0;z-index:1200;background:rgba(6,17,58,.45);display:none;align-items:center;justify-content:center}
 .mrbusy.on{display:flex}
 .mrbusy-card{background:var(--surface);color:var(--text);padding:18px 28px;border-radius:12px;font-weight:600;font-size:15px;box-shadow:0 24px 70px -22px rgba(0,0,0,.55)}
+
+/* ---------- Phase A: three-stage wizard shell ---------- */
+body.mr-wizard-mode .main{display:none}
+body:not(.mr-wizard-mode) .wizard{display:none}
+.wizard{overflow-y:auto;padding:30px 28px 60px;background:var(--canvas)}
+.wiz-inner{max-width:920px;margin:0 auto}
+.wiz-head{font-family:var(--serif);font-weight:500;font-size:28px;line-height:1.15;margin:0 0 4px}
+.wiz-sub{color:var(--muted);font-size:13.5px;margin:0 0 22px}
+.wiz-stepper{display:flex;gap:14px;margin:0 0 26px;padding:0;list-style:none;flex-wrap:wrap}
+.wiz-stepper li{flex:1;min-width:180px;display:flex;align-items:center;gap:10px;padding:12px 14px;background:var(--surface);border:1px solid var(--border-soft);border-radius:10px;font-size:12.5px;color:var(--muted)}
+.wiz-stepper li b{display:inline-flex;width:24px;height:24px;border-radius:50%;background:var(--border-soft);color:var(--muted);align-items:center;justify-content:center;font-size:12px;font-weight:700;flex:none}
+.wiz-stepper li[data-state="current"]{border-color:var(--gold);background:var(--surface);color:var(--text)}
+.wiz-stepper li[data-state="current"] b{background:var(--gold);color:#06113A}
+.wiz-stepper li[data-state="done"] b{background:#2F7A4A;color:#fff}
+.wiz-stepper li[data-state="done"]{color:var(--text)}
+.wiz-card{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:22px 24px;margin:0 0 16px}
+.wiz-card h4{margin:0 0 6px;font-family:var(--serif);font-weight:500;font-size:17px}
+.wiz-card .h{color:var(--muted);font-size:12.5px;margin:0 0 14px}
+.wiz-drop{border:1.5px dashed var(--border);border-radius:12px;padding:26px 18px;text-align:center;cursor:pointer;transition:border-color .15s,background .15s}
+.wiz-drop.over,.wiz-drop:hover{border-color:var(--gold);background:rgba(201,155,63,.06)}
+.wiz-drop strong{display:block;font-size:15px;margin-bottom:4px}
+.wiz-drop .h{margin:0}
+.wiz-sources{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:10px;margin-top:16px}
+.wiz-source{border:1px solid var(--border-soft);border-radius:10px;padding:12px 14px;background:var(--surface);display:flex;flex-direction:column;gap:4px;position:relative}
+.wiz-source[data-state="ok"]{border-color:#B7D6C1}
+.wiz-source[data-state="empty"]{opacity:.72;border-style:dashed}
+.wiz-source[data-state="warn"]{border-color:#E1C88B;background:var(--warn-bg)}
+.wiz-source .kind{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--muted)}
+.wiz-source .kind .req{color:#9B2C2C;margin-left:5px;font-weight:700}
+.wiz-source .kind .opt{color:var(--muted);margin-left:5px;font-weight:600}
+.wiz-source .fn{font-size:13.5px;font-weight:600;word-break:break-word}
+.wiz-source .meta{font-size:12px;color:var(--muted)}
+.wiz-source .rm{position:absolute;top:8px;right:10px;border:0;background:transparent;color:var(--muted);font-size:16px;cursor:pointer;line-height:1;padding:2px 4px}
+.wiz-source .rm:hover{color:#9B2C2C}
+.wiz-missing{margin:14px 0 0;padding:10px 12px;background:var(--warn-bg);color:var(--warn);border-radius:8px;font-size:12.5px}
+.wiz-actions{display:flex;gap:10px;align-items:center;justify-content:space-between;margin:24px 0 0;flex-wrap:wrap}
+.wiz-actions .left{display:flex;gap:8px;flex-wrap:wrap}
+.wiz-actions .right{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.wiz-actions .btn-cont{background:var(--gold);border-color:var(--gold);color:#06113A;padding:10px 22px;font-size:14px}
+.wiz-actions .btn-cont[disabled]{background:var(--border-soft);border-color:var(--border-soft);color:var(--muted);cursor:not-allowed}
+.wiz-actions .btn-cont:not([disabled]):hover{background:#D6A949;border-color:#D6A949}
+.wiz-legacy{background:none;border:0;color:var(--muted);cursor:pointer;font-size:12.5px;text-decoration:underline;padding:6px}
+.wiz-classify{margin:14px 0 0;padding:12px 14px;background:var(--warn-bg);color:var(--warn);border-radius:8px;font-size:12.5px}
+.wiz-classify select{margin-top:6px;padding:5px 8px;border:1px solid var(--border);border-radius:6px;background:var(--field);color:var(--text)}
+.wiz-placeholder{padding:22px 24px;text-align:center;color:var(--muted);font-size:13px;background:var(--surface);border:1px dashed var(--border);border-radius:12px}
+.wiz-placeholder b{color:var(--text)}
 </style>
 </head>
-<body>
+<body class="mr-wizard-mode">
 <div class="mrgate" id="mrgate">
   <div class="mrgate-card">
     <h1>ARIE Management Report</h1>
@@ -319,6 +365,7 @@ body.locked{overflow:hidden}
   </div>
   <input type="file" id="contFile" accept=".data,application/json,.json" hidden>
   <div class="mrnote" id="mrnote">Your work is not stored by the website. Download the report files (PDF, PowerPoint and Save for Next Month) before leaving or refreshing this page.</div>
+  <section class="wizard" id="wizard" aria-label="Management report — guided flow"></section>
   <div class="main">
     <aside class="panel">
       <div class="tabs" role="tablist">
@@ -1256,7 +1303,241 @@ function renderPanes(){
   document.querySelectorAll('.tab').forEach(t=>t.setAttribute('aria-selected',t.dataset.tab===S.tab));
   const d=$('#drop'); if(d){ d.onclick=()=>$('#file').click(); ['dragover','dragenter'].forEach(e=>d.addEventListener(e,ev=>{ev.preventDefault();d.classList.add('over');})); ['dragleave','drop'].forEach(e=>d.addEventListener(e,ev=>{ev.preventDefault();d.classList.remove('over');})); d.addEventListener('drop',ev=>handleFiles([...ev.dataTransfer.files])); }
 }
-function renderAll(){ renderPanes(); renderSlides(); }
+function renderAll(){ renderPanes(); renderSlides(); if(typeof renderWizard==='function') renderWizard(); }
+
+/* ================= Phase A: three-stage operator wizard =================
+   This is the normal operator view. It writes state through the exact same
+   paths the legacy tabs use (handleFiles, importContinuation, S.rec fields),
+   so the render/finalise path and the regression harness contract are
+   unchanged. Legacy tabs remain in the DOM behind "Detailed setup (advanced)"
+   and are the fallback for exception controls. */
+const WIZ={ stage:1, unclassified:[] };
+const WIZ_STAGES=[
+  {n:1, key:'upload',   title:'Upload',              short:'Upload this month’s reporting files.'},
+  {n:2, key:'review',   title:'Complete & Review',   short:'Confirm the details the system cannot determine on its own.'},
+  {n:3, key:'generate', title:'Review & Generate',   short:'Check the headline figures, then generate the report.'},
+];
+function wizStageDone(n){
+  if(n===1) return !!S.pl && (!!S.contMonth || WIZ.stage>1); // p&l uploaded + previous file loaded (or user chose to skip)
+  if(n===2) return !!S.pl && readiness().errors===0;
+  return false;
+}
+function wizStageAvailable(n){
+  if(n===1) return true;
+  if(n===2) return !!S.pl;
+  if(n===3) return !!S.pl && readiness().errors===0;
+  return false;
+}
+function wizSetStage(n){
+  if(!wizStageAvailable(n)) return;
+  WIZ.stage=n; renderWizard();
+  const w=$('#wizard'); if(w) w.scrollTop=0;
+}
+async function wizRouteFile(f){
+  const nm=(f.name||'').toLowerCase();
+  if(/\.data$/.test(nm) || /application\/json/.test(f.type||'') || /\.json$/.test(nm)){ importContinuation(f); return; }
+  if(/\.(xlsx|xls)$/.test(nm)){ await handleFiles([f]); return; }
+  WIZ.unclassified.push({name:f.name, blob:f}); renderWizard();
+  toast(`${f.name}: not recognised. Identify the file type in Stage 1.`,6000);
+}
+async function wizHandleDrop(list){
+  const arr=[...list]; for(const f of arr){ await wizRouteFile(f); }
+}
+function wizClassifyManual(idx, kind){
+  const entry=WIZ.unclassified[idx]; if(!entry) return;
+  if(kind==='previous'){ importContinuation(entry.blob); }
+  else if(kind==='pl'||kind==='txn'||kind==='bs'){ handleFiles([entry.blob]); }
+  else if(kind==='other'){ toast(`${entry.name}: kept aside — not included in the report.`,4000); }
+  WIZ.unclassified.splice(idx,1); renderWizard();
+}
+function wizRemoveSource(kind){
+  if(isFinalizing) return;
+  invalidateFinal();
+  if(kind==='pl'){
+    S.pl=null; S.files.pl=null; S.key=null; S.rec=null;
+    // Removing the P&L invalidates the period; drop derived state without touching history/config.
+  } else if(kind==='txn'){ S.txn=null; S.files.txn=null; }
+  else if(kind==='bs'){ S.bs=null; S.files.bs=null; }
+  else if(kind==='previous'){ S.hist={}; S.cfg=defaultCfg(); S.contMonth=null; if(S.key){ S.rec=null; ensureRec(); } }
+  scheduleSave(); renderAll();
+}
+function wizSourceCard(kind, req, label, filename, meta, warn){
+  const state = warn ? 'warn' : (filename ? 'ok' : 'empty');
+  const badge = req ? '<span class="req">Required</span>' : '<span class="opt">Optional</span>';
+  const rm = filename ? `<button class="rm" data-wiz-rm="${kind}" aria-label="Remove ${esc(label)}">×</button>` : '';
+  return `<div class="wiz-source" data-state="${state}">
+    <div class="kind">${esc(label)}${badge}</div>
+    <div class="fn">${filename? esc(filename) : '<span style="color:var(--muted);font-weight:500">Not loaded yet</span>'}</div>
+    ${meta?`<div class="meta">${esc(meta)}</div>`:''}
+    ${rm}
+  </div>`;
+}
+function wizUnclassifiedList(){
+  if(!WIZ.unclassified.length) return '';
+  return WIZ.unclassified.map((f,i)=>`
+    <div class="wiz-classify">
+      <div><b>File not recognised:</b> ${esc(f.name)}</div>
+      <div>Identify this file:
+        <select data-wiz-classify="${i}">
+          <option value="">— choose —</option>
+          <option value="pl">Profit &amp; Loss</option>
+          <option value="txn">Transaction Summary</option>
+          <option value="bs">Balance Sheet</option>
+          <option value="previous">Previous Month File</option>
+          <option value="other">Other (do not include)</option>
+        </select>
+      </div>
+    </div>`).join('');
+}
+function wizStageUpload(){
+  const pl  = wizSourceCard('pl',      true,  'Profit & Loss',       S.files.pl,  S.pl?  `Reporting month: ${longLbl(S.pl.key)}` : '', false);
+  const txn = wizSourceCard('txn',     false, 'Transaction Summary', S.files.txn, S.txn? `${Object.keys(S.txn.months).length} months of transaction data`:'', false);
+  const bs  = wizSourceCard('bs',      false, 'Balance Sheet',       S.files.bs,  S.bs?  `As at ${longLbl(S.bs.key)}` : '', S.bs&&S.pl&&S.bs.key!==S.pl.key);
+  const prv = wizSourceCard('previous',false, 'Previous Month File', S.contMonth? `${longLbl(S.contMonth)} continuation` : '', S.contMonth&&S.key&&S.contMonth!==shiftKey(S.key,-1)? `Expected ${longLbl(shiftKey(S.key,-1))} — reload the correct file` : (S.key? '' : 'Month will be verified once the current reporting month is identified.'), S.contMonth&&S.key&&S.contMonth!==shiftKey(S.key,-1));
+  const missing=[];
+  if(!S.pl) missing.push('Profit & Loss (required)');
+  const canContinue = !!S.pl;
+  const info = S.contMonth && S.key && S.contMonth!==shiftKey(S.key,-1)
+    ? `<div class="wiz-missing">The loaded Previous Month File is for ${esc(longLbl(S.contMonth))}, but this report is for ${esc(longLbl(S.key))}. Remove it and load the ${esc(longLbl(shiftKey(S.key,-1)))} file.</div>`
+    : '';
+  return `
+    <div class="wiz-card">
+      <h4>Upload this month’s reporting files</h4>
+      <p class="h">Drop the Xero exports and, if this is a continuing month, the previous month’s <b>Previous Month File</b>. The system identifies each file automatically.</p>
+      <div class="wiz-drop" id="wizDrop">
+        <strong>Drop files here</strong>
+        <div class="h">or click to choose — accepts .xlsx, .xls, .data</div>
+      </div>
+      <div class="wiz-sources">${pl}${txn}${bs}${prv}</div>
+      ${wizUnclassifiedList()}
+      ${missing.length?`<div class="wiz-missing">Still needed: ${missing.join(', ')}.</div>`:''}
+      ${info}
+    </div>
+    <div class="wiz-actions">
+      <div class="left"><button class="wiz-legacy" id="wizLegacy" type="button">Detailed setup (advanced)</button></div>
+      <div class="right">
+        <button class="btn btn-cont" id="wizContinue" ${canContinue?'':'disabled'}>Continue to Complete &amp; Review →</button>
+      </div>
+    </div>`;
+}
+function wizStageReview(){
+  if(!S.pl) return `<div class="wiz-placeholder">Upload the Profit &amp; Loss first.</div>`;
+  const R=readiness();
+  const attention = R.items.filter(x=>x.lvl==='e'||x.lvl==='w');
+  const zero = attention.length===0;
+  const list = zero
+    ? `<div class="wiz-card"><h4>Nothing needs your attention</h4><p class="h">All required reporting inputs are complete.</p></div>`
+    : `<div class="wiz-card">
+        <h4>${attention.length} item${attention.length===1?'':'s'} need${attention.length===1?'s':''} your attention</h4>
+        <p class="h">Resolve each item below — the specific control opens in the detailed view.</p>
+        <ul style="list-style:none;padding:0;margin:0;display:grid;gap:8px">
+          ${attention.map(x=>`<li style="padding:10px 12px;border:1px solid ${x.lvl==='e'?'#E5B7B1':'#E1C88B'};border-radius:8px;background:${x.lvl==='e'?'#FDECE9':'var(--warn-bg)'};color:${x.lvl==='e'?'#9B2C2C':'var(--warn)'}"><b>${esc(x.label)}</b>${x.detail?` — <span style="color:var(--text)">${x.detail}</span>`:''}</li>`).join('')}
+        </ul>
+        <p class="h" style="margin-top:14px">In this commit the detailed controls remain in the legacy tabs (Detailed setup). Stage 2 gets its own inline exception controls in the next commit.</p>
+       </div>`;
+  return list + `
+    <div class="wiz-actions">
+      <div class="left">
+        <button class="wiz-legacy" id="wizBack" type="button">← Back to Upload</button>
+        <button class="wiz-legacy" id="wizLegacy" type="button">Detailed setup (advanced)</button>
+      </div>
+      <div class="right">
+        <button class="btn btn-cont" id="wizContinue" ${zero?'':'disabled'}>Continue to Review &amp; Generate →</button>
+      </div>
+    </div>`;
+}
+function wizStageGenerate(){
+  if(!S.pl) return `<div class="wiz-placeholder">Upload the Profit &amp; Loss first.</div>`;
+  const c=compute();
+  const rows=[
+    ['Revenue',           money(c.cur.rev),        c.prev?money(c.prev.rev):'—',    c.prev?money(c.cur.rev-c.prev.rev):'—'],
+    ['EBITDA',            money(c.cur.ebitda),     c.prev?money(c.prev.ebitda):'—', c.prev?money(c.cur.ebitda-c.prev.ebitda):'—'],
+    ['Clients',           isNum(c.clients)?c.clients:'—',  '—','—'],
+    ['Active accounts',   isNum(S.rec.kpi.accountsActive)?S.rec.kpi.accountsActive:'—','—','—'],
+    ['Transaction volume',isNum(c.metrics.volMonth)?mUSD(c.metrics.volMonth):'—','—','—'],
+    ['Jurisdictions',     isNum(c.jurisdictions)?c.jurisdictions:'—','—','—'],
+  ];
+  const cur=shortLbl(S.key), pl=c.prev?shortLbl(c.prevKey):'Prior';
+  const R=readiness();
+  const blocked=R.errors>0;
+  const finalised = !!finalSnapshot;
+  return `
+    <div class="wiz-card">
+      <h4>Headline figures for ${esc(longLbl(S.key))}</h4>
+      <p class="h">Review the headline movements before generating. This is a summary — the full 11-page report renders in the detail view below the button.</p>
+      <table class="maptbl" style="font-size:13px">
+        <thead><tr><th style="text-align:left;padding:6px 4px;border-bottom:1px solid var(--border)">Metric</th><th style="text-align:right;padding:6px 4px;border-bottom:1px solid var(--border)">${esc(cur)}</th><th style="text-align:right;padding:6px 4px;border-bottom:1px solid var(--border)">${esc(pl)}</th><th style="text-align:right;padding:6px 4px;border-bottom:1px solid var(--border)">Change</th></tr></thead>
+        <tbody>${rows.map(([l,a,b,d])=>`<tr><td style="padding:6px 4px">${esc(l)}</td><td style="text-align:right;padding:6px 4px">${a}</td><td style="text-align:right;padding:6px 4px;color:var(--muted)">${b}</td><td style="text-align:right;padding:6px 4px">${d}</td></tr>`).join('')}</tbody>
+      </table>
+    </div>
+    <div class="wiz-actions">
+      <div class="left">
+        <button class="wiz-legacy" id="wizBack" type="button">← Back to Complete &amp; Review</button>
+        <button class="wiz-legacy" id="wizLegacy" type="button">View report details (advanced)</button>
+      </div>
+      <div class="right">
+        ${finalised
+          ? `<span style="color:#2F7A4A;font-weight:600;font-size:13px;margin-right:8px">✓ Finalised — use the header buttons to download.</span>`
+          : `<button class="btn btn-cont" id="wizGenerate" ${blocked?'disabled':''}>Generate report</button>`}
+      </div>
+    </div>`;
+}
+function renderWizard(){
+  const host=$('#wizard'); if(!host) return;
+  // Auto-advance rules that respect existing state without racing:
+  if(WIZ.stage>1 && !S.pl) WIZ.stage=1;
+  if(WIZ.stage===3 && readiness().errors>0) WIZ.stage=2;
+  const stepper = WIZ_STAGES.map(s=>{
+    const state = s.n<WIZ.stage && wizStageDone(s.n) ? 'done' : (s.n===WIZ.stage ? 'current' : 'ahead');
+    return `<li data-state="${state}"><b>${s.n}</b><span>${esc(s.title)}</span></li>`;
+  }).join('');
+  const cur = WIZ_STAGES[WIZ.stage-1];
+  const body = WIZ.stage===1 ? wizStageUpload() : WIZ.stage===2 ? wizStageReview() : wizStageGenerate();
+  host.innerHTML = `
+    <div class="wiz-inner">
+      <h2 class="wiz-head">Management report for ${esc(S.key?longLbl(S.key):'the current month')}</h2>
+      <p class="wiz-sub">${esc(cur.short)}</p>
+      <ol class="wiz-stepper">${stepper}</ol>
+      ${body}
+    </div>`;
+  // Wire the drop zone.
+  const d=$('#wizDrop');
+  if(d){
+    d.onclick=()=>$('#file').click();
+    ['dragover','dragenter'].forEach(e=>d.addEventListener(e,ev=>{ev.preventDefault();d.classList.add('over');}));
+    ['dragleave','drop'].forEach(e=>d.addEventListener(e,ev=>{ev.preventDefault();d.classList.remove('over');}));
+    d.addEventListener('drop',ev=>{ if(ev.dataTransfer.files.length) wizHandleDrop(ev.dataTransfer.files); });
+  }
+}
+/* Wizard event delegation (kept separate from the legacy input/click handlers). */
+document.addEventListener('click',e=>{
+  if(isFinalizing) return;
+  const t=e.target.closest('button'); if(!t) return;
+  if(t.id==='wizContinue'){ wizSetStage(WIZ.stage+1); return; }
+  if(t.id==='wizBack'){ wizSetStage(Math.max(1,WIZ.stage-1)); return; }
+  if(t.id==='wizGenerate'){ const b=$('#btnPdf'); if(b && !b.disabled) b.click(); return; }
+  if(t.id==='wizLegacy'){ document.body.classList.remove('mr-wizard-mode'); return; }
+  if(t.dataset.wizRm){ wizRemoveSource(t.dataset.wizRm); return; }
+});
+document.addEventListener('change',e=>{
+  if(isFinalizing) return;
+  const t=e.target; if(t.dataset && t.dataset.wizClassify!=null){ wizClassifyManual(+t.dataset.wizClassify, t.value); }
+});
+/* Header: add a small "Guided view" toggle back into wizard mode from legacy. */
+(function addGuidedToggle(){
+  const bar=document.querySelector('.bar'); if(!bar) return;
+  const btn=document.createElement('button');
+  btn.type='button'; btn.className='btn btn-ghost'; btn.id='btnGuided';
+  btn.title='Return to the guided three-stage view';
+  btn.textContent='Guided view';
+  btn.style.display='none';
+  btn.addEventListener('click',()=>{ document.body.classList.add('mr-wizard-mode'); renderWizard(); });
+  const status=bar.querySelector('#status');
+  if(status && status.nextSibling) bar.insertBefore(btn, status.nextSibling); else bar.appendChild(btn);
+  const sync=()=>{ btn.style.display = document.body.classList.contains('mr-wizard-mode') ? 'none' : ''; };
+  new MutationObserver(sync).observe(document.body,{attributes:true,attributeFilter:['class']});
+  sync();
+})();
 function changed(refreshPanel){
   if(isFinalizing) return;   // inputs are locked while a report is being finalised
   invalidateFinal();   // any edit invalidates a finalised snapshot; require Finalize again

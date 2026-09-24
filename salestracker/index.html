@@ -241,11 +241,19 @@ select.inp{min-width:104px}
 .startup .acts{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}
 .warnbar{background:var(--gold-wash);border:1px solid var(--gold-line);border-radius:8px;padding:10px 13px;font-size:12.5px;color:var(--ink);margin-top:14px}
 
+/* Sales Report — 5-column KPI grid overrides the 6-column dashboard ledger. */
+.rp-ledger{grid-template-columns:repeat(5,minmax(0,1fr))}
+.rp-ledger .fig.small{font-size:22px}
+@media (max-width:1100px){ .rp-ledger{grid-template-columns:repeat(2,1fr)} }
+@media (max-width:680px){ .rp-ledger{grid-template-columns:1fr} }
+
 @media print{
   header nav,.top .right,.pagehead .asof,#page-pipeline,#page-settings,.noprint{display:none!important}
   body{background:#fff}
   .panel{break-inside:avoid;box-shadow:none}
   main{padding:0}
+  .ledger,.rp-ledger{box-shadow:none;border-color:#ccc}
+  .rp-ledger{grid-template-columns:repeat(5,minmax(0,1fr))!important}
 }
 @media (max-width:1100px){
   .ledger{grid-template-columns:1fr 1fr}
@@ -331,6 +339,7 @@ select.inp{min-width:104px}
   </div>
   <nav>
     <button data-page="dashboard" aria-current="true">Management dashboard</button>
+    <button data-page="report">Sales Report</button>
     <button data-page="pipeline">Pipeline</button>
     <button data-page="settings">Assumptions</button>
   </nav>
@@ -435,6 +444,51 @@ select.inp{min-width:104px}
   </div>
 
   <p class="hint noprint">Revenue figures use each lead's own numbers where they exist, and the segment assumptions on the Assumptions tab everywhere else. Assumed values are marked with a dotted underline.</p>
+</section>
+
+<!-- ============ SALES ANALYTICS REPORT ============ -->
+<section class="page" id="page-report">
+  <div class="pagehead">
+    <div>
+      <h1>Sales Analytics Report</h1>
+      <p>Concise snapshot of client-acquisition activity, driven by recorded milestones — not inferred from current stage.</p>
+    </div>
+    <div class="asof noprint" style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
+      <select id="rp-period" style="border:1px solid var(--rule);background:var(--surface);color:var(--ink);border-radius:7px;padding:6px 9px;font-size:12.5px">
+        <option value="cur">Current month</option>
+        <option value="prev">Previous month</option>
+        <option value="custom">Custom range</option>
+      </select>
+      <span id="rp-custom-wrap" style="display:none;gap:6px;align-items:center">
+        <input type="date" id="rp-from" style="border:1px solid var(--rule);background:var(--surface);color:var(--ink);border-radius:7px;padding:6px 9px;font-size:12.5px">
+        <span style="color:var(--mute);font-size:12px">→</span>
+        <input type="date" id="rp-to" style="border:1px solid var(--rule);background:var(--surface);color:var(--ink);border-radius:7px;padding:6px 9px;font-size:12.5px">
+      </span>
+      <button class="gbtn primary" id="rp-print" style="background:var(--gold);border-color:var(--gold);color:#fff">Print / Save PDF</button>
+    </div>
+  </div>
+
+  <div class="panel" style="padding:12px 16px;margin-top:0">
+    <div style="display:flex;gap:16px;flex-wrap:wrap;align-items:baseline">
+      <div style="font:600 15px var(--serif);color:var(--ink)">Reporting period: <span id="rp-period-label">—</span></div>
+      <div style="color:var(--mute);font-size:12px">Generated <span id="rp-generated">—</span> · ARIE Finance</div>
+    </div>
+  </div>
+
+  <div class="ledger rp-ledger" id="rp-kpis" style="margin-top:16px"></div>
+
+  <div class="cols" style="margin-top:18px">
+    <div class="panel">
+      <h2>Current pipeline by Stage <small>Point-in-time as at <span id="rp-asat">—</span></small></h2>
+      <div class="pbody" id="rp-pipeline"></div>
+    </div>
+    <div class="panel">
+      <h2>Needs attention <small>Same definitions as the dashboard</small></h2>
+      <div class="pbody" id="rp-attention"></div>
+    </div>
+  </div>
+
+  <p class="hint" id="rp-completeness" style="margin-top:14px"></p>
 </section>
 
 <!-- ============ PIPELINE ============ -->
@@ -1062,6 +1116,152 @@ function renderDashboard(){
 }
 function set(id, html){ const el = document.getElementById(id); if(el) el.innerHTML = html; }
 
+/* ---------------- Sales Analytics Report ----------------
+   Read-only reporting layer over the existing tracker data. KPIs come from
+   recorded milestones (contactedAt / meetingBookedAt / proposalSentAt / wonAt);
+   Ongoing Onboardings is a point-in-time count of the current Onboarding
+   stage. Period boundaries use the Mauritius calendar so month rollovers
+   agree with ARIE's reporting day. Prior-period comparison is suppressed
+   for any metric whose prior period falls outside the milestone-capture
+   completeness window — an honest "no prior-period comparison" beats a
+   misleading zero. */
+function mauMonthLabel(ym){
+  if(!ym) return "—";
+  const y = parseInt(ym.slice(0,4),10), m = parseInt(ym.slice(5,7),10);
+  return new Date(y, m-1, 1).toLocaleDateString("en-GB", {month:"long", year:"numeric"});
+}
+function monthYMDRange(ym){
+  const y = parseInt(ym.slice(0,4),10), m = parseInt(ym.slice(5,7),10);
+  const last = new Date(y, m, 0).getDate();   // JS Date: day 0 of next month = last day of ym
+  return [ym+"-01", ym+"-"+String(last).padStart(2,"0")];
+}
+function prevMonthKey(ym){
+  let y = parseInt(ym.slice(0,4),10), m = parseInt(ym.slice(5,7),10) - 1;
+  if(m < 1){ m = 12; y--; }
+  return String(y) + "-" + String(m).padStart(2,"0");
+}
+function reportRange(){
+  const modeEl = document.getElementById("rp-period");
+  const mode = (modeEl && modeEl.value) || "cur";
+  const nowYm = stamp().slice(0,7);
+  if(mode === "cur"){ const [a,b] = monthYMDRange(nowYm); return {mode, label:mauMonthLabel(nowYm), from:a, to:b, ym:nowYm}; }
+  if(mode === "prev"){ const p = prevMonthKey(nowYm); const [a,b] = monthYMDRange(p); return {mode, label:mauMonthLabel(p), from:a, to:b, ym:p}; }
+  const a = (document.getElementById("rp-from")||{}).value || "";
+  const b = (document.getElementById("rp-to")||{}).value || "";
+  if(!a || !b || a > b) return null;
+  return {mode, label:a + " → " + b, from:a, to:b, ym:null};
+}
+function countMilestoneIn(field, rng){
+  return allLeads().filter(({lead}) => {
+    const v = lead[field];
+    if(!v || typeof v !== "string") return false;
+    const s = v.slice(0,10);
+    return s >= rng.from && s <= rng.to;
+  }).length;
+}
+function countWonIn(rng){
+  return allLeads().filter(({lead}) => {
+    if(lead.status !== "Won") return false;
+    const v = lead.wonAt || lead.onboardingDate;   // wonAt is authoritative; onboardingDate is the legacy conversion date, retained for continuity
+    if(!v || typeof v !== "string") return false;
+    const s = v.slice(0,10);
+    return s >= rng.from && s <= rng.to;
+  }).length;
+}
+function renderReport(){
+  const gen = stamp();
+  set("rp-generated", esc(gen));
+  set("rp-asat", esc(gen));
+  const rng = reportRange();
+  if(!rng){
+    set("rp-period-label", "Choose a period");
+    set("rp-kpis", ""); set("rp-pipeline", ""); set("rp-attention", ""); set("rp-completeness", "");
+    return;
+  }
+  set("rp-period-label", esc(rng.label));
+
+  const activeFrom = SET.milestonesActiveFrom || "";
+  const partial = !activeFrom || activeFrom > rng.from;
+
+  const cur = {
+    contacted: countMilestoneIn("contactedAt", rng),
+    meetings:  countMilestoneIn("meetingBookedAt", rng),
+    proposals: countMilestoneIn("proposalSentAt", rng),
+    won:       countWonIn(rng)
+  };
+  const ongoingOnb = allLeads().filter(({lead}) => lead.status === "Onboarding").length;
+
+  let priorRng = null;
+  if(rng.ym){
+    const p = prevMonthKey(rng.ym);
+    const [a,b] = monthYMDRange(p);
+    priorRng = {from:a, to:b, label:mauMonthLabel(p)};
+  }
+  function priorFor(field, wonFallbackReliable){
+    if(!priorRng) return null;
+    // Won reuses onboardingDate as a historical fallback so it can compare
+    // pre-cutover periods; the other three cannot without manufacturing history.
+    if(!wonFallbackReliable && (!activeFrom || activeFrom > priorRng.from)) return null;
+    return {value: field === "won" ? countWonIn(priorRng) : countMilestoneIn(field, priorRng), label:priorRng.label};
+  }
+  const prior = {
+    contacted: priorFor("contactedAt", false),
+    meetings:  priorFor("meetingBookedAt", false),
+    proposals: priorFor("proposalSentAt", false),
+    won:       priorFor("won", true)
+  };
+  function delta(now, prev){
+    if(!prev) return '<div class="note">no prior-period comparison</div>';
+    const d = now - prev.value;
+    const sign = d > 0 ? "+" : d < 0 ? "−" : "±";
+    return `<div class="note">vs ${esc(prev.label)}: <b>${sign}${Math.abs(d)}</b> (was ${prev.value})</div>`;
+  }
+  const partialTag = partial ? ' <span style="font-size:10.5px;color:var(--amber);font-weight:600;letter-spacing:.02em;text-transform:uppercase;vertical-align:middle;margin-left:6px">partial history</span>' : "";
+
+  const kpis = [
+    {lab:"Prospects Contacted",                val:cur.contacted, note:delta(cur.contacted, prior.contacted), tag:partialTag},
+    {lab:"Meetings Booked",                    val:cur.meetings,  note:delta(cur.meetings,  prior.meetings),  tag:partialTag},
+    {lab:"Proposals Sent",                     val:cur.proposals, note:delta(cur.proposals, prior.proposals), tag:partialTag},
+    {lab:"Ongoing Onboardings — as at " + gen, val:ongoingOnb,    note:'<div class="note">Point-in-time snapshot</div>', tag:""},
+    {lab:"Clients Won",                        val:cur.won,       note:delta(cur.won, prior.won),             tag:""}
+  ];
+  set("rp-kpis", kpis.map(k =>
+    `<div>
+       <div class="lab">${esc(k.lab)}</div>
+       <div class="fig small">${k.val}${k.tag}</div>
+       ${k.note}
+     </div>`).join(""));
+
+  const dist = {}; STAGES.forEach(s => dist[s] = 0);
+  allLeads().forEach(({lead}) => { if(dist[lead.status] != null) dist[lead.status]++; });
+  const maxN = Math.max(1, ...STAGES.map(s => dist[s]));
+  set("rp-pipeline", STAGES.map(s =>
+    `<div style="display:grid;grid-template-columns:180px 1fr 48px;gap:12px;align-items:center;padding:6px 0;border-bottom:1px solid var(--rule-soft)">
+       <div style="font-size:12.5px;font-weight:600">${esc(s)}</div>
+       <div style="height:14px;background:var(--surface-2);border:1px solid var(--rule-soft);border-radius:3px;overflow:hidden"><div style="height:100%;background:var(--navy);width:${(dist[s]/maxN*100).toFixed(1)}%"></div></div>
+       <div class="num" style="font-size:12.5px">${dist[s]}</div>
+     </div>`).join(""));
+
+  const rowsAll = allLeads();
+  const overdueN = rowsAll.filter(({lead}) => overdue(lead)).length;
+  const staleN   = rowsAll.filter(({lead}) => stale(lead)).length;
+  set("rp-attention",
+    `<div style="display:grid;grid-template-columns:1fr 1fr;gap:16px">
+       <div><div class="lab">Overdue follow-ups</div><div class="fig small" style="color:var(--red)">${overdueN}</div></div>
+       <div><div class="lab">Quiet 30+ days</div><div class="fig small" style="color:var(--amber)">${staleN}</div></div>
+     </div>
+     <p class="hint" style="margin:12px 0 0">Same definitions as the dashboard's Needs-Attention panel — no competing metrics.</p>`);
+
+  const notes = [];
+  if(activeFrom){
+    notes.push("Activity milestone capture began <b>" + esc(activeFrom) + "</b> (Mauritius date). Prospects Contacted, Meetings Booked and Proposals Sent are complete only from that date; Clients Won uses recorded conversion dates and is complete historically.");
+  } else {
+    notes.push("Milestone capture starts today. Historical Prospects Contacted, Meetings Booked and Proposals Sent are unavailable until the next reporting period.");
+  }
+  if(partial) notes.push("This period predates full milestone capture — figures marked <b>PARTIAL HISTORY</b> may under-count.");
+  set("rp-completeness", notes.join(" "));
+}
+
 /* ---------------- pipeline ---------------- */
 let view = {seg:"luca", q:"", stage:"", owner:"", prio:"", ladderMonth:"", flags:{}, sort:"weighted", dir:-1, page:0, size:50, sel:new Set()};
 const COLS = [
@@ -1319,7 +1519,10 @@ function go(page){
   document.querySelectorAll(".page").forEach(s => s.classList.toggle("on", s.id === "page-" + page));
   window.scrollTo({top:0});
 }
-document.querySelectorAll("nav button").forEach(b => b.onclick = () => go(b.dataset.page));
+document.querySelectorAll("nav button").forEach(b => b.onclick = () => {
+  go(b.dataset.page);
+  if(b.dataset.page === "report") renderReport();
+});
 
 /* filters */
 const $ = id => document.getElementById(id);
@@ -1459,6 +1662,18 @@ $("m-delete").onclick = () => {
 };
 $("btn-add").onclick = newLead;
 $("btn-print").onclick = $("s-print").onclick = () => { go("dashboard"); setTimeout(() => window.print(), 150); };
+
+/* Sales Report controls */
+if($("rp-period")){
+  $("rp-period").onchange = e => {
+    const cw = document.getElementById("rp-custom-wrap");
+    if(cw) cw.style.display = e.target.value === "custom" ? "inline-flex" : "none";
+    renderReport();
+  };
+}
+if($("rp-from")) $("rp-from").onchange = renderReport;
+if($("rp-to"))   $("rp-to").onchange   = renderReport;
+if($("rp-print")) $("rp-print").onclick = () => { renderReport(); setTimeout(() => window.print(), 150); };
 
 /* settings inputs */
 document.getElementById("prob-table").addEventListener("change", e => {

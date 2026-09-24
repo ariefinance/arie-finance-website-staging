@@ -711,23 +711,55 @@ function save(){ scheduleSync(); }
 function allLeads(){ return VISIBLE_SEG_KEYS.flatMap(k => DATA[k].map(x => ({lead:x, seg:k}))); }
 function findLead(id){ for(const k of SEG_KEYS){ const x = DATA[k].find(z => z.id === id); if(x) return {lead:x, seg:k}; } return null; }
 
-/* ---------------- automatic routing between segments ---------------- */
+/* ---------------- automatic routing between segments ----------------
+   Forward routing (existing behaviour): Stage Onboarding -> onboarding segment;
+   Stage Won -> existing segment. First forward move stamps `origin` so the
+   record's home sales segment is remembered.
+
+   Reverse routing (new): when a lead currently sitting in a routed segment
+   (onboarding/existing) has its Stage changed back to an ordinary sales stage,
+   move it back to its stored `origin` — but ONLY if origin is set AND still
+   points at a valid, non-hidden, non-routed segment. If not, leave the record
+   in place and flag it (routeAnomaly) for manual review. Guessing a home
+   segment for an active client is worse than requiring a human decision. */
 const ROUTE = {"Onboarding":"onboarding", "Won":"existing"};
+const ROUTE_TARGETS = new Set(Object.values(ROUTE));
+function isValidReverseDest(dest){
+  return !!(dest && SEGMENTS[dest] && !SEGMENTS[dest].hidden && !ROUTE_TARGETS.has(dest));
+}
 function routeLead(id){
   const f = findLead(id); if(!f) return null;
   const dest = ROUTE[f.lead.status];
-  if(!dest || dest === f.seg) return null;
-  if(!f.lead.origin) f.lead.origin = f.seg;
+  if(dest){
+    if(dest === f.seg) return null;
+    if(!f.lead.origin) f.lead.origin = f.seg;
+    if(f.lead.routeAnomaly) delete f.lead.routeAnomaly;
+    DATA[f.seg] = DATA[f.seg].filter(l => l.id !== f.lead.id);
+    DATA[dest].unshift(f.lead);
+    return {from:f.seg, to:dest, lead:f.lead};
+  }
+  /* Reverse: lead is no longer Onboarding/Won but still sits in the routed
+     segment it was filed into. Move it back to origin — never guess. */
+  if(!ROUTE_TARGETS.has(f.seg)) return null;
+  const back = f.lead.origin;
+  if(!isValidReverseDest(back)){
+    if(!f.lead.routeAnomaly) f.lead.routeAnomaly = true;
+    return null;
+  }
+  if(f.lead.routeAnomaly) delete f.lead.routeAnomaly;
   DATA[f.seg] = DATA[f.seg].filter(l => l.id !== f.lead.id);
-  DATA[dest].unshift(f.lead);
-  return {from:f.seg, to:dest, lead:f.lead};
+  DATA[back].unshift(f.lead);
+  return {from:f.seg, to:back, lead:f.lead, reverse:true};
 }
 function sweepRoutes(){
   // Sweep ALL segments, including hidden ones, so a hidden lead that has since
   // moved to Won/Onboarding still gets auto-routed to Existing / Onboarding.
-  let n = 0;
-  SEG_KEYS.forEach(k => DATA[k].forEach(l => { if(routeLead(l.id)) n++; }));
-  return n;
+  let moved = 0, anomalies = 0;
+  SEG_KEYS.forEach(k => DATA[k].forEach(l => {
+    if(routeLead(l.id)) moved++;
+    else if(l.routeAnomaly) anomalies++;
+  }));
+  return {moved, anomalies};
 }
 
 /* ---------------- monthly wins (real onboarding date) ----------------
@@ -1083,7 +1115,7 @@ function renderPipeline(){
       <td><span class="co">${esc(l.company) || "Untitled"}</span>${l.score ? ` <span class="pill">${esc(l.score)}</span>` : ""}${l.industry ? `<div class="sub">${esc(l.industry)}</div>` : ""}</td>
       <td>${esc(l.contact)}${l.email ? `<div class="sub"><a href="mailto:${esc(l.email)}">${esc(l.email)}</a></div>` : ""}</td>
       <td>${esc(l.country)}</td>
-      <td class="sub">${esc(SEGMENTS[r.seg].name)}${l.origin && SEGMENTS[l.origin] ? `<div style="opacity:.75">from ${esc(SEGMENTS[l.origin].name)}</div>` : ""}</td>
+      <td class="sub">${esc(SEGMENTS[r.seg].name)}${l.origin && SEGMENTS[l.origin] ? `<div style="opacity:.75">from ${esc(SEGMENTS[l.origin].name)}</div>` : ""}${l.routeAnomaly ? `<div style="color:var(--amber);font-weight:600" title="Stage is no longer Onboarding/Won but this record has no valid origin to return to. Set an origin manually or move it to the correct segment.">routing needs review</div>` : ""}</td>
       <td class="cell"><select class="inp" data-f="priority" data-id="${eid}">${opt(["High","Medium","Low"], l.priority)}</select></td>
       <td class="cell"><select class="inp" data-f="owner" data-id="${eid}">${opt(ownerOpts(l), l.owner)}</select></td>
       <td class="cell"><select class="inp" data-f="status" data-id="${eid}">${opt(STAGES, l.status)}</select></td>
@@ -1487,9 +1519,13 @@ $("btn-theme").onclick = () => {
 themeLabel();
 
 function startApp(){
-  const sweptOnLoad = sweepRoutes();
+  const swept = sweepRoutes();
   renderAll();
-  if(sweptOnLoad){ scheduleSync(); toast(sweptOnLoad + " lead" + (sweptOnLoad === 1 ? "" : "s") + " filed into Onboarding or Existing clients"); }
+  const parts = [];
+  if(swept.moved) parts.push(swept.moved + " lead" + (swept.moved === 1 ? "" : "s") + " filed into Onboarding or Existing clients");
+  if(swept.anomalies) parts.push(swept.anomalies + " in Onboarding/Existing need routing review (missing origin)");
+  if(swept.moved) scheduleSync();
+  if(parts.length) toast(parts.join(" · "));
 }
 
 

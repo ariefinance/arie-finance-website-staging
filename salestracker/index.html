@@ -1143,13 +1143,37 @@ function prevMonthKey(ym){
 function reportRange(){
   const modeEl = document.getElementById("rp-period");
   const mode = (modeEl && modeEl.value) || "cur";
-  const nowYm = stamp().slice(0,7);
-  if(mode === "cur"){ const [a,b] = monthYMDRange(nowYm); return {mode, label:mauMonthLabel(nowYm), from:a, to:b, ym:nowYm}; }
-  if(mode === "prev"){ const p = prevMonthKey(nowYm); const [a,b] = monthYMDRange(p); return {mode, label:mauMonthLabel(p), from:a, to:b, ym:p}; }
+  const today = stamp();
+  const nowYm = today.slice(0,7);
+  if(mode === "cur"){
+    /* Current-month period is month-to-date, not the whole month. Comparing a
+       partial current month against the whole previous month misleads: a
+       report generated on the 10th otherwise pits 10 days against 30. */
+    const mtdDay = parseInt(today.slice(8,10), 10);
+    return {mode, label:mauMonthLabel(nowYm) + " (1–" + mtdDay + ")", from:nowYm+"-01", to:today, ym:nowYm, mtdDay};
+  }
+  if(mode === "prev"){
+    const p = prevMonthKey(nowYm);
+    const [a,b] = monthYMDRange(p);
+    return {mode, label:mauMonthLabel(p), from:a, to:b, ym:p};
+  }
   const a = (document.getElementById("rp-from")||{}).value || "";
   const b = (document.getElementById("rp-to")||{}).value || "";
   if(!a || !b || a > b) return null;
   return {mode, label:a + " → " + b, from:a, to:b, ym:null};
+}
+function priorRangeFor(rng){
+  if(!rng || !rng.ym) return null;   // custom ranges do not get automatic prior-period comparison in v1
+  const p = prevMonthKey(rng.ym);
+  const [pa, pbFull] = monthYMDRange(p);
+  if(rng.mode === "cur" && rng.mtdDay){
+    /* Compare month-to-date against the same elapsed period of the previous
+       month. Clamp to the previous month's length so e.g. Mar 31 → Feb 28. */
+    const prevLast = parseInt(pbFull.slice(8,10), 10);
+    const dayCap = Math.min(rng.mtdDay, prevLast);
+    return {from:pa, to:p + "-" + String(dayCap).padStart(2,"0"), label:mauMonthLabel(p) + " (1–" + dayCap + ")"};
+  }
+  return {from:pa, to:pbFull, label:mauMonthLabel(p)};
 }
 function countMilestoneIn(field, rng){
   return allLeads().filter(({lead}) => {
@@ -1159,10 +1183,14 @@ function countMilestoneIn(field, rng){
     return s >= rng.from && s <= rng.to;
   }).length;
 }
+/* Clients Won counts the historical Won EVENT, not the current Stage. wonAt
+   is preserved after Stage reversal, so a lead that was Won last month but is
+   now back at Onboarding still belongs in last month's Won count. Legacy
+   records fall back to onboardingDate, which has always been the manual
+   conversion date. */
 function countWonIn(rng){
   return allLeads().filter(({lead}) => {
-    if(lead.status !== "Won") return false;
-    const v = lead.wonAt || lead.onboardingDate;   // wonAt is authoritative; onboardingDate is the legacy conversion date, retained for continuity
+    const v = lead.wonAt || lead.onboardingDate;
     if(!v || typeof v !== "string") return false;
     const s = v.slice(0,10);
     return s >= rng.from && s <= rng.to;
@@ -1191,12 +1219,7 @@ function renderReport(){
   };
   const ongoingOnb = allLeads().filter(({lead}) => lead.status === "Onboarding").length;
 
-  let priorRng = null;
-  if(rng.ym){
-    const p = prevMonthKey(rng.ym);
-    const [a,b] = monthYMDRange(p);
-    priorRng = {from:a, to:b, label:mauMonthLabel(p)};
-  }
+  const priorRng = priorRangeFor(rng);   // null for custom range → no auto-comparison
   function priorFor(field, wonFallbackReliable){
     if(!priorRng) return null;
     // Won reuses onboardingDate as a historical fallback so it can compare
@@ -1497,15 +1520,26 @@ const stamp = () => {
   return t.getFullYear() + "-" + String(t.getMonth()+1).padStart(2,"0") + "-" + String(t.getDate()).padStart(2,"0");
 };
 
-/* Stage-transition milestones — set once, never overwritten. Called BEFORE
-   routeLead on every path that changes status (inline edit, bulk edit, modal
-   save) so the milestone is stamped onto the lead object regardless of any
-   segment move that follows. Stage reversal and re-entry both leave a
-   previously recorded milestone intact. mergeOnto handles the conflict-merge
-   case field-by-field, so once written a milestone survives concurrent edits. */
+/* Stages that genuinely imply the prospect has been contacted. Administrative
+   end states (Lost, On Hold) and the cold "Not Contacted" default are
+   deliberately excluded — moving a lead directly to Lost must not manufacture
+   a contact event that never happened. */
+const POST_CONTACT_STAGES = new Set([
+  "Contacted", "Follow-up Due", "Followed Up", "Meeting Booked", "Qualified",
+  "Proposal / Terms Sent", "Referral agreement signed", "Onboarding", "Won"
+]);
+
+/* Stage-transition milestones — set once, never overwritten. Callers MUST
+   only invoke this on a genuine status transition (old !== new); saving an
+   unrelated field on an existing record must never stamp today's date onto
+   a historical event. Called BEFORE routeLead on every transition path so
+   the milestone is written on the lead object regardless of any segment move
+   that follows. Stage reversal and re-entry both leave a previously recorded
+   milestone intact. mergeOnto handles the conflict-merge case field-by-field,
+   so once written a milestone survives concurrent edits. */
 function applyStageMilestones(lead, newStatus){
   if(!lead || !newStatus) return;
-  if(newStatus !== "Not Contacted" && !lead.contactedAt) lead.contactedAt = stamp();
+  if(POST_CONTACT_STAGES.has(newStatus) && !lead.contactedAt) lead.contactedAt = stamp();
   if(newStatus === "Meeting Booked" && !lead.meetingBookedAt) lead.meetingBookedAt = stamp();
   if(newStatus === "Proposal / Terms Sent" && !lead.proposalSentAt) lead.proposalSentAt = stamp();
   if(newStatus === "Onboarding" && !lead.onboardingStartedAt) lead.onboardingStartedAt = stamp();
@@ -1571,8 +1605,9 @@ body.addEventListener("change", e => {
   if(el.id === "selall"){ return; }
   const f = el.dataset.f, id = el.dataset.id; if(!f || !id) return;
   const hit = findLead(id); if(!hit) return;
+  const oldStatus = hit.lead.status;
   hit.lead[f] = el.value;
-  if(f === "status"){
+  if(f === "status" && el.value !== oldStatus){
     if(el.value !== "Not Contacted" && !hit.lead.lastContact) hit.lead.lastContact = stamp();
     applyStageMilestones(hit.lead, el.value);
     const mv = routeLead(id);
@@ -1601,11 +1636,22 @@ $("bulk-delete").onclick = () => {
   $(id).onchange = e => {
     if(e.target.selectedIndex === 0) return;
     const val = e.target.value, n = view.sel.size;
+    /* For status: identify records whose Stage would actually change BEFORE
+       writing, so milestone stamping and routing only run on genuine
+       transitions. Applying the bulk value to a record already at that value
+       must not stamp a milestone. */
+    const transitioned = [];
+    if(f === "status"){
+      view.sel.forEach(id2 => {
+        const h = findLead(id2);
+        if(h && h.lead.status !== val) transitioned.push(id2);
+      });
+    }
     view.sel.forEach(id2 => { const h = findLead(id2); if(h) h.lead[f] = val; });
     let moved = 0;
     if(f === "status"){
-      view.sel.forEach(id2 => { const h = findLead(id2); if(h) applyStageMilestones(h.lead, val); });
-      view.sel.forEach(id2 => { if(routeLead(id2)) moved++; });
+      transitioned.forEach(id2 => { const h = findLead(id2); if(h) applyStageMilestones(h.lead, val); });
+      transitioned.forEach(id2 => { if(routeLead(id2)) moved++; });
     }
     save(); e.target.selectedIndex = 0; renderPipeline(); renderDashboard();
     toast(n + " lead" + (n === 1 ? "" : "s") + " updated" + (moved ? " · " + moved + " moved to " + SEGMENTS[ROUTE[val]].name : ""));
@@ -1645,10 +1691,17 @@ $("m-logadd").onclick = () => {
   $("m-logtext").value = ""; $("m-last").value = stamp(); renderLogs();
 };
 $("m-save").onclick = () => {
+  /* Capture Stage BEFORE readSheet overwrites editing.status. Milestones are
+     stamped only when the modal represents a real transition — an unrelated
+     edit (owner, notes, value) on an existing record must never stamp today's
+     date onto a historical event. For a newly-created lead the initial status
+     is "Not Contacted", so any non-Not-Contacted choice on creation is a real
+     Not-Contacted -> X transition, which is exactly what we want. */
+  const oldStatus = editing ? editing.status : "";
   readSheet();
   if(!editing.company){ toast("Give the lead a company name first."); return; }
   if(creating){ DATA[editingSeg].unshift(editing); creating = false; }
-  applyStageMilestones(editing, editing.status);
+  if(editing.status !== oldStatus) applyStageMilestones(editing, editing.status);
   const mv = routeLead(editing.id);
   if(mv) editingSeg = mv.to;
   save(); document.getElementById("modal").classList.remove("open"); renderAll();

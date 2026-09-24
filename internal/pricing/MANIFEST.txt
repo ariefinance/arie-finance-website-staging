@@ -1,12 +1,5 @@
 ARIE Document Builder v0.6.0 — runtime files only. Host this folder behind ARIE staff-only access.
 
-Site-integration additions (not part of the Builder itself; loaded by index.html):
-  auth-shell.js
-Site-integration gate shell (unauthenticated, no Builder code):
-  gate.html
-  gate.js
-  gate.css
-
 app.js
 assets/hanken-latin-ext.woff2
 assets/hanken-latin.woff2

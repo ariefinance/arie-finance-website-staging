@@ -806,7 +806,11 @@ function findLead(id){ for(const k of SEG_KEYS){ const x = DATA[k].find(z => z.i
 const ROUTE = {"Onboarding":"onboarding", "Won":"existing"};
 const ROUTE_TARGETS = new Set(Object.values(ROUTE));
 function isValidReverseDest(dest){
-  return !!(dest && SEGMENTS[dest] && !SEGMENTS[dest].hidden && !ROUTE_TARGETS.has(dest));
+  /* Hidden means hidden from user-facing tabs/dashboard/reporting only — it is
+     NOT invalid as a data destination. A UK or Africa lead that was filed into
+     Onboarding/Existing must be able to return to its true home segment even
+     though that segment is currently not rendered in the tab bar. */
+  return !!(dest && SEGMENTS[dest] && !ROUTE_TARGETS.has(dest));
 }
 function routeLead(id){
   const f = findLead(id); if(!f) return null;
@@ -1825,7 +1829,12 @@ $("btn-csv").onclick = () => {
   download("ARIE_pipeline_" + (view.seg === "all" ? "all" : view.seg) + "_" + stamp() + ".csv", csvRows(rows), "text/csv");
 };
 $("s-csv-all").onclick = () => {
-  const rows = allLeads().map(r => ({...r, ...economics(r.lead, r.seg)}));
+  /* "Export every segment to CSV" must include hidden segments (UK, Africa)
+     so operators can reach that data. Iterates SEG_KEYS directly rather than
+     allLeads() (which is intentionally VISIBLE_SEG_KEYS only). Dashboard,
+     Sales Report, tabs, filters, search all continue to use allLeads(). */
+  const rows = SEG_KEYS.flatMap(k => DATA[k].map(l => ({lead:l, seg:k})))
+    .map(r => ({...r, ...economics(r.lead, r.seg)}));
   download("ARIE_pipeline_all_" + stamp() + ".csv", csvRows(rows), "text/csv");
 };
 

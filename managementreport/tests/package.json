@@ -1,0 +1,20 @@
+{
+  "name": "arie-managementreport-tests",
+  "private": true,
+  "version": "0.0.0",
+  "description": "Regression suite for the ARIE Management Report — NOT deployed. Never installed by production Vercel.",
+  "scripts": {
+    "build-fixtures": "node fixtures/build-fixtures.js",
+    "parser-check":  "node harness/parser-check.js",
+    "baseline":      "node harness/render-baseline.js --capture",
+    "regress":       "node harness/render-baseline.js --compare",
+    "postinstall":   "playwright install chromium --with-deps || true"
+  },
+  "devDependencies": {
+    "playwright": "1.55.0",
+    "@fontsource/hanken-grotesk": "5.1.0",
+    "@fontsource/newsreader": "5.1.0",
+    "pixelmatch": "5.3.0",
+    "pngjs": "7.0.0"
+  }
+}

@@ -157,13 +157,29 @@ tbody tr:last-child td{border-bottom:0}
 .tools input[type=search]{flex:1;min-width:210px}
 .chip{border:1px solid var(--rule);background:var(--surface);border-radius:99px;padding:5px 11px;font-size:12px;cursor:pointer;color:var(--mute)}
 .chip[aria-pressed="true"]{background:var(--gold-wash);border-color:var(--gold-line);color:var(--gold);font-weight:600}
-.tablewrap{background:var(--surface);border:1px solid var(--rule);border-radius:0 0 10px 10px;overflow:auto;max-height:70vh}
+/* Right-edge scroll-shadow (Roman Komarov trick): a "local" mask that scrolls
+   with the content covers the "scroll" shadow only when the user has reached
+   the right end, so the hint appears exactly when more columns are off-screen
+   and disappears when there is nothing more to reveal. */
+.tablewrap{border:1px solid var(--rule);border-radius:0 0 10px 10px;overflow:auto;max-height:70vh;
+  background:
+    linear-gradient(to left, var(--surface) 30%, transparent) right center/22px 100% no-repeat,
+    radial-gradient(farthest-side at right, rgba(11,27,80,.22), transparent) right center/14px 100% no-repeat,
+    var(--surface);
+  background-attachment: local, scroll;
+}
 #grid{min-width:1480px}
-#grid th{position:sticky;top:0;z-index:3}
+#grid th{position:sticky;top:0;z-index:3;background:var(--surface-2)}
+/* Sticky Company column so the row is still identifiable when the user
+   scrolls right to see the later columns. The header cell is sticky in
+   BOTH axes (top + left) so it sits above every other cell at the corner. */
+#grid td:nth-child(2),#grid th:nth-child(2){min-width:172px;position:sticky;left:0;background:var(--surface);z-index:2}
+#grid th:nth-child(2){z-index:4;background:var(--surface-2)}
+#grid tbody tr:hover td:nth-child(2){background:var(--surface-2)}
+#grid tbody tr.selected td:nth-child(2){background:var(--gold-wash)}
 #grid th.sortable{cursor:pointer}
 #grid th.sortable:hover{color:var(--ink)}
 #grid td.cell{padding:4px 6px}
-#grid td:nth-child(2),#grid th:nth-child(2){min-width:172px}
 #grid td:nth-child(3),#grid th:nth-child(3){min-width:180px}
 #grid td:nth-child(8){min-width:142px}
 #grid td:nth-child(8) select.inp{min-width:136px}

@@ -402,7 +402,9 @@ const DEFAULT_DIRECT = ['Payment to ACIB (on boarding & IT recharge)','Professio
 const PALETTE = ['#0B1437','#C19A3E','#9DB0D4','#7A6326','#3A5A9C','#E7DCC4','#2D3650','#C9A24E','#C5CAD8','#1A2444','#B0892E','#6F83B3','#DCCB9E','#3E475F','#8E7431','#DBE2EF','#565E78','#F1EADC'];
 
 /* ================= state ================= */
-const S = { recProvisional:false, dbPending:false, pl:null, bs:null, txn:null, files:{}, key:null, rec:null, cfg:null, hist:{}, db:null, dl:null, tab:'figures', lastSaved:{}, dbReady:false };
+// `var` so the state object is reachable as window.S from the access-gate
+// IIFE (Phase A §18 pending-download Sign out protection).
+var S = { recProvisional:false, dbPending:false, pl:null, bs:null, txn:null, files:{}, key:null, rec:null, cfg:null, hist:{}, db:null, dl:{}, tab:'figures', lastSaved:{}, dbReady:false };
 
 function defaultCfg(){ return { map:{}, directCosts:DEFAULT_DIRECT.slice(), yearVolumes:[], includeFinPos:false, company:'ARIE FINANCE', entity:'', domestic:'Mauritius', knownAccounts:null }; }
 S.cfg = defaultCfg();
@@ -1906,8 +1908,10 @@ function downloadBlob(blob,name){
    the PDF and the image-based PPTX from those same images (so they cannot
    diverge), and the continuation .data from the published state. Any later
    edit invalidates the snapshot and disables the three outputs. */
-let finalSnapshot=null;
-let isFinalizing=false;
+// `var` so window.finalSnapshot / window.isFinalizing are visible from the
+// access-gate IIFE (Phase A §18 pending-download Sign out protection).
+var finalSnapshot=null;
+var isFinalizing=false;
 function setBusy(on){
   isFinalizing=on;
   const b=$('#mrbusy'); if(b) b.classList.toggle('on',on);

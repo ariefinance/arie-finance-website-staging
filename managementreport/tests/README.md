@@ -153,3 +153,28 @@ immediately with a force-push and the affected pack rotated externally.
 
 These tests will be added alongside the corresponding Phase A implementation
 in Gate 2, not now.
+
+## Phase A synthetic tests
+
+`node harness/phase-a-tests.js` — 11 focused scenarios covering the
+Phase A-specific behaviour:
+
+1. Previous Month File adjacency rejects a non-adjacent file (July when
+   the current P&L is September).
+2. Source removal clears derived transaction state.
+3. Transaction figures auto-apply on upload.
+4. Strict auto-seed leaves published history untouched (adj marker).
+5. Post-finalisation source removal blocked while `isFinalizing`.
+6. "Make changes" invalidates the finalised snapshot and returns to
+   Stage 2.
+7. Download-start tracking + `pendingDownloads()`.
+8. Unload protection warns pre-finalise and clears once all downloads
+   have started.
+9. Sign out warns on an unfinalised or partially-downloaded report;
+   canceling the confirm() aborts sign-out.
+10. Stage 2 surfaces inline jurisdiction/industry editors when a
+    distribution blocker is present.
+11. Unrecognised files surface the classify UI in Stage 1.
+
+Explicit currency-mismatch tests remain deferred — the parser does not
+declare a currency, and Phase A does not add currency detection.

@@ -1,0 +1,18 @@
+ARIE Document Builder v0.6.0 — runtime files only. Host this folder behind ARIE staff-only access.
+
+app.js
+assets/hanken-latin-ext.woff2
+assets/hanken-latin.woff2
+assets/newsreader-latin-ext.woff2
+assets/newsreader-latin.woff2
+assets.js
+defaults.js
+docxio.js
+exports.js
+index.html
+render.js
+styles.css
+vendor/docx.iife.js
+vendor/pdf.min.js
+vendor/pdf.worker.min.js
+wiring.js

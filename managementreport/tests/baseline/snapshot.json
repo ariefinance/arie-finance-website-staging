@@ -1,56 +1,91 @@
 {
-  "reportMonth": "2026-01",
+  "reportMonth": "2026-09",
   "entity": "Acme Holdings Ltd",
   "currency": "USD",
-  "pl": {
-    "period": {
-      "n": 9,
-      "key": "2026-09",
-      "label": "September 2026"
+  "finalisedFor": "2026-09",
+  "outputs": {
+    "pdf": {
+      "pageCount": 11,
+      "md5": "2b8e04fd54a1ab03450206aaee9ecb38",
+      "bytes": 2275430,
+      "name": "ARIE_Finance_Management_Report_September_2026.pdf"
     },
-    "lineCount": 9,
-    "months": [
-      "2026-01",
-      "2026-02",
-      "2026-03",
-      "2026-04",
-      "2026-05",
-      "2026-06",
-      "2026-07",
-      "2026-08",
-      "2026-09"
-    ],
-    "clientsPerMonth": [
-      3,
-      3,
-      3,
-      3,
-      3,
-      3,
-      3,
-      3,
-      3
-    ]
-  },
-  "txn": {
-    "monthKeys": [
-      "2026-01",
-      "2026-02",
-      "2026-03",
-      "2026-04",
-      "2026-05",
-      "2026-06",
-      "2026-07",
-      "2026-08",
-      "2026-09"
-    ],
-    "ytd": {
-      "key": "2026-09",
-      "usd": 2052000,
-      "count": 243
+    "pptx": {
+      "slideCount": 11,
+      "md5": "786425963f376b044d4acc3cfad9bb68",
+      "bytes": 2362783,
+      "name": "ARIE_Finance_Management_Report_September_2026.pptx"
+    },
+    "continuation": {
+      "formatId": "arie-management-report-continuation",
+      "schemaVersion": 1,
+      "reportingMonth": "2026-09",
+      "checksum": "a950b0d7",
+      "histMonthCount": 7,
+      "histMonths": [
+        "2026-03",
+        "2026-04",
+        "2026-05",
+        "2026-06",
+        "2026-07",
+        "2026-08",
+        "2026-09"
+      ],
+      "name": "ARIE_Management_Report_September_2026.data"
     }
   },
-  "publishedHistoryKeys": [
-    "2026-01"
-  ]
+  "pageHashes": [
+    "18688b474682afa856e6bb424e31ae74",
+    "baad5bd4bdc0e10635d981eaa8a41f83",
+    "548b7149560d8fd6a2abddee41283b5d",
+    "abb060fb0eee5dd2b346dbe7a7f344c0",
+    "bf8395ebe3cdfa7fe2eaac9521473ea5",
+    "eaf300d3a8a31cf88f7a2fa9696883e7",
+    "bf49ec183d69626a6a822ec1488182df",
+    "eb032d6de56a7b01013ebc8ec4ea193e",
+    "418cf489a5b2e092e6af1c7723875939",
+    "277739d9c48e10ee2bdf1691e5ff7d3e",
+    "d1e316f6450e63e2e6114fa1ea7bed78"
+  ],
+  "pageCount": 11,
+  "publishedRecord": {
+    "kpi": {
+      "clients": 3,
+      "activeClients": 3,
+      "activeBasis": "Regression fixture (synthetic)",
+      "jurisdictions": 3,
+      "accountsActive": 5,
+      "accountsHeld": 5,
+      "intlPct": 66,
+      "volMonth": null,
+      "volYtd": 2.052,
+      "volSinceInc": 5
+    },
+    "juris": [
+      {
+        "name": "Mauritius",
+        "count": 1
+      },
+      {
+        "name": "United Kingdom",
+        "count": 1
+      },
+      {
+        "name": "United Arab Emirates",
+        "count": 1
+      }
+    ],
+    "industries": [
+      {
+        "name": "Financial Services",
+        "count": 2
+      },
+      {
+        "name": "Technology",
+        "count": 1
+      }
+    ],
+    "status": "published",
+    "published": true
+  }
 }

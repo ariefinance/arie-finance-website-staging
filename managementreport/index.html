@@ -1858,7 +1858,10 @@ $('#file').onchange=e=>{ handleFiles([...e.target.files]); e.target.value=''; };
 window.addEventListener('resize',()=>scaleFrames());
 window.addEventListener('beforeunload',function(e){
   if(window.__mrBypassUnload) return;            // intentional sign-out reload
-  if(S && S.pl && !finalSnapshot){ e.preventDefault(); e.returnValue=''; return ''; }
+  if(!S || !S.pl) return;
+  // §18 — warn until either the report has not been finalised, or a finalised
+  // report still has an untouched download (PDF / PowerPoint / Next Month File).
+  if(!finalSnapshot || pendingDownloads().length){ e.preventDefault(); e.returnValue=''; return ''; }
 });
 document.addEventListener('dragover',e=>e.preventDefault());
 document.addEventListener('drop',e=>{ if(!e.target.closest('#drop')){ e.preventDefault(); if(e.dataTransfer.files.length) handleFiles([...e.dataTransfer.files]); } });
@@ -1917,6 +1920,7 @@ function setOutputsEnabled(on){ outputBtns().forEach(b=>{ if(b) b.disabled=!on; 
 function invalidateFinal(){
   if(!finalSnapshot) return;
   finalSnapshot=null; setOutputsEnabled(false);
+  S.dl={};                              // reset download-start tracking for the next finalisation
   const b=$('#btnPdf'); if(b) b.textContent='Finalize Report';
 }
 async function renderSlidePngs(progress){
@@ -1988,7 +1992,27 @@ async function finalizeReport(){
   }
   finally{ setBusy(false); btn.disabled=false; }
 }
-function downloadFinal(which){ if(!finalSnapshot) return; const o=finalSnapshot[which]; if(o&&!downloadBlob(o.blob,o.name)) toast('The download could not be started.',6000); }
+/* Phase A §18 — track download-start intent (PDF, PPTX, Next Month File)
+   so the browser refresh/close warning and Sign out remain active until all
+   three have been initiated. Cleared automatically when a new snapshot is
+   built (invalidateFinal) so the next finalisation starts the count fresh. */
+function downloadFinal(which){
+  if(!finalSnapshot) return;
+  const o=finalSnapshot[which];
+  if(o && !downloadBlob(o.blob, o.name)) { toast('The download could not be started.',6000); return; }
+  S.dl = S.dl || {};
+  S.dl[which] = true;
+  if(document.body.classList.contains('mr-wizard-mode') && WIZ.stage===3) renderWizard();
+}
+function pendingDownloads(){
+  if(!finalSnapshot) return [];
+  const flags = S.dl || {};
+  const out=[];
+  if(!flags.pdf)  out.push('PDF');
+  if(!flags.pptx) out.push('PowerPoint');
+  if(!flags.data) out.push('Next Month File');
+  return out;
+}
 $('#btnPdf').onclick=finalizeReport;
 if($('#btnDlPdf'))  $('#btnDlPdf').onclick =()=>downloadFinal('pdf');
 if($('#btnDlPptx')) $('#btnDlPptx').onclick=()=>downloadFinal('pptx');
@@ -2083,7 +2107,23 @@ initCaps();
   var errEl=document.getElementById("mrgateErr");
   function showGate(msg){ if(gate) gate.classList.remove("hidden"); document.body.classList.add("locked"); if(msg!=null&&errEl) errEl.textContent=msg; var p=document.getElementById("mrgatePass"); if(p){ p.value=""; try{p.focus();}catch(e){} } }
   function hideGate(){ if(gate) gate.classList.add("hidden"); document.body.classList.remove("locked"); }
-  function signOut(){ window.__mrBypassUnload=true; api({method:"POST",body:{action:"logout"}}).catch(function(){}).then(function(){ location.reload(); }); }
+  function signOut(){
+    // §18 — pending-download Sign out protection. When the report has been
+    // finalised but a download has not been started, block the sign-out
+    // unless the operator explicitly confirms.
+    try {
+      if (window.S && window.S.pl) {
+        if (!window.finalSnapshot) {
+          if (!window.confirm('You have an unfinalised report. Signing out will discard all figures, mappings and commentary loaded in this session. Continue?')) return;
+        } else if (typeof window.pendingDownloads === 'function' && window.pendingDownloads().length) {
+          var pd = window.pendingDownloads().join(', ');
+          if (!window.confirm('The following download' + (window.pendingDownloads().length===1?' has':'s have') + ' not been started yet: ' + pd + '. Signing out will discard the report from browser memory. Continue?')) return;
+        }
+      }
+    } catch(e){}
+    window.__mrBypassUnload=true;
+    api({method:"POST",body:{action:"logout"}}).catch(function(){}).then(function(){ location.reload(); });
+  }
   var soBtn=document.getElementById("btnSignOut"); if(soBtn) soBtn.addEventListener("click",signOut);
   var form=document.getElementById("mrgateForm");
   if(form) form.addEventListener("submit",function(ev){

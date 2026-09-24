@@ -217,8 +217,21 @@ function synthHist(reportingMonthKey) {
       volPerClient: 0.5,
       txnPerClient: 5,
     };
+    // FIGKEYS in the production tool: acc, subTxn, fxOther, maint, advisory,
+    // rev, staff, prof, other, intro, opex, nonop, ebitda. Providing `fig`
+    // here lets compute() use the previously-reported comparative basis and
+    // eliminates the "no saved report for prior month" readiness warning.
+    const fig = {
+      acc: 1900, subTxn: 1200, fxOther: 0, maint: 0, advisory: 0,
+      rev: 3100,
+      staff: 1200, prof: 100, other: 200, intro: 0,
+      opex: 1500,
+      nonop: 0,
+      ebitda: 1600,
+      gp: 3100,
+    };
     hist[key] = {
-      key, status: 'published', published: { at: `${y}-${String(m+1).padStart(2,'0')}-15T09:00:00Z`, metrics },
+      key, status: 'published', published: { at: `${y}-${String(m+1).padStart(2,'0')}-15T09:00:00Z`, metrics, fig },
       kpi: { clients: 3, accountsActive: 5, accountsHeld: 5, jurisdictions: 3, intlPct: 66,
              volMonth: metrics.volMonth, volYtd: metrics.volYtd, volSinceInc: metrics.volSinceInc },
       adj: {}, txn: { inUsd: metrics.inUsd, outUsd: metrics.outUsd, inCount: metrics.inCount, outCount: metrics.outCount },

@@ -1,17 +1,26 @@
 #!/usr/bin/env node
 /*
  * render-baseline.js — Playwright harness that drives the CURRENT UNMODIFIED
- * Management Report tool through a full synthetic-pack finalisation, and
- * captures the artefacts the regression contract compares against:
+ * Management Report tool through a full finalisation on the synthetic pack
+ * (or, in `--external` mode, on a caller-supplied REAL pack held OUTSIDE the
+ * repository), and captures the regression contract's artefacts.
  *
- *   baseline/snapshot.json    normalised business snapshot
- *   baseline/manifest.json    environment + versions
- *   baseline/pages/page-01.png … page-11.png   the 11 rendered report pages
- *   baseline/outputs.json     PDF/PPTX/Next-Month structural summary
+ * Modes:
+ *   --capture              write/overwrite the SYNTHETIC baseline in tests/baseline/
+ *   --compare              run the SYNTHETIC pack three times and diff against baseline
+ *   --external             run against a caller-supplied external pack
  *
- * --capture      writes the artefacts into tests/baseline/, overwriting.
- * --compare      runs three fresh renders back-to-back and asserts each
- *                is byte-identical to the baseline. Exits non-zero on drift.
+ * --external requires:
+ *   --pl <path>            external Xero P&L .xlsx
+ *   --txn <path>           external Transaction Summary .xlsx
+ *   --previous <path>      external Previous Month File (.data)
+ *   --input-config <path>  external JSON with manual fill values (kpi, juris,
+ *                          industries, commentary, adjustments, overrides)
+ *   --output <dir>         external output directory (MUST be OUTSIDE this git
+ *                          repository — the harness refuses to write inside it)
+ *
+ * No external inputs or outputs are ever committed. See README §Deployment
+ * gate and env/ENVIRONMENT.md.
  *
  * Requires Chromium at /opt/pw-browsers/chromium and `npm install` in tests/.
  */
@@ -22,6 +31,7 @@ const path = require('path');
 const http = require('http');
 const url  = require('url');
 const crypto = require('crypto');
+const { execSync } = require('child_process');
 
 let chromium;
 try { chromium = require('playwright').chromium; }
@@ -32,15 +42,77 @@ const REPO = path.resolve(__dirname, '..', '..', '..');
 const TESTS = path.resolve(__dirname, '..');
 const FIXTURES = path.join(TESTS, 'fixtures');
 const BASELINE = path.join(TESTS, 'baseline');
-const PAGES_DIR = path.join(BASELINE, 'pages');
-
-const MODE = process.argv.includes('--capture') ? 'capture'
-           : process.argv.includes('--compare') ? 'compare'
-           : null;
-if (!MODE) { console.error('Usage: render-baseline.js --capture | --compare'); process.exit(2); }
 
 // -----------------------------------------------------------------------------
-// Static server. Serves repository files, plus fonts under /tests-fonts/.
+// CLI parsing.
+// -----------------------------------------------------------------------------
+function argVal(flag) {
+  const i = process.argv.indexOf(flag);
+  return i > 0 && i + 1 < process.argv.length ? process.argv[i + 1] : null;
+}
+const MODE = process.argv.includes('--external') ? 'external'
+           : process.argv.includes('--capture')  ? 'capture'
+           : process.argv.includes('--compare')  ? 'compare'
+           : null;
+if (!MODE) {
+  console.error('Usage:');
+  console.error('  render-baseline.js --capture       # write synthetic baseline');
+  console.error('  render-baseline.js --compare       # diff synthetic run vs baseline');
+  console.error('  render-baseline.js --external --pl <path> --txn <path> --previous <path> --input-config <path> --output <dir>');
+  process.exit(2);
+}
+
+let inputs = null;
+let externalConfig = null;
+let outputDir;
+
+// Repo containment check — refuses any path that resolves inside the tests
+// directory or the wider repository. Used both for the --output directory
+// and defensively for input paths (we accept inputs inside REPO in synthetic
+// mode where FIXTURES lives, but external mode must not.)
+function assertOutsideRepo(absPath, label) {
+  const abs = path.resolve(absPath);
+  if (abs === REPO || abs.startsWith(REPO + path.sep)) {
+    throw new Error(`${label} path must be OUTSIDE the repository (got ${abs} inside ${REPO}). ` +
+      `External regression artefacts must never be written into the public repo.`);
+  }
+}
+
+if (MODE === 'external') {
+  const p = { pl: argVal('--pl'), txn: argVal('--txn'), previous: argVal('--previous'),
+              cfg: argVal('--input-config'), out: argVal('--output') };
+  for (const k of ['pl','txn','previous','cfg','out']) {
+    if (!p[k]) { console.error('--external requires --pl, --txn, --previous, --input-config and --output'); process.exit(2); }
+  }
+  for (const k of ['pl','txn','previous','cfg']) {
+    if (!fs.existsSync(p[k])) { console.error(`missing ${k}: ${p[k]}`); process.exit(2); }
+  }
+  // Safety: refuse to write inside the repository.
+  assertOutsideRepo(p.out, '--output');
+  fs.mkdirSync(p.out, { recursive: true });
+  inputs = { pl: path.resolve(p.pl), txn: path.resolve(p.txn), previous: path.resolve(p.previous) };
+  // Config may be .json or .js (require) — the former is what a real external
+  // operator would edit; the latter is how the synthetic pack ships.
+  const cfgAbs = path.resolve(p.cfg);
+  externalConfig = cfgAbs.endsWith('.js')
+    ? require(cfgAbs)
+    : JSON.parse(fs.readFileSync(cfgAbs, 'utf8'));
+  outputDir = path.resolve(p.out);
+  console.log('EXTERNAL MODE — reading real files from outside repo, writing to:', outputDir);
+} else {
+  inputs = {
+    pl:       path.join(FIXTURES, 'synthetic-pl.xlsx'),
+    txn:      path.join(FIXTURES, 'synthetic-txn.xlsx'),
+    previous: path.join(FIXTURES, 'synthetic-previous.data'),
+  };
+  // Synthetic fill values — safe to have in source because they are fabricated.
+  externalConfig = require(path.join(__dirname, 'synthetic-input.js'));
+  outputDir = MODE === 'capture' ? BASELINE
+                                 : path.join(BASELINE, 'runs', new Date().toISOString().replace(/[:.]/g,'-'));
+}
+
+// -----------------------------------------------------------------------------
+// Static server — repository + local fonts.
 // -----------------------------------------------------------------------------
 function mime(f) {
   if (f.endsWith('.html')) return 'text/html; charset=utf-8';
@@ -48,20 +120,18 @@ function mime(f) {
   if (f.endsWith('.css'))  return 'text/css; charset=utf-8';
   if (f.endsWith('.json')) return 'application/json; charset=utf-8';
   if (f.endsWith('.woff2'))return 'font/woff2';
-  if (f.endsWith('.png'))  return 'image/png';
   return 'application/octet-stream';
 }
 const FONT_DIR = { hg: path.join(TESTS, 'node_modules', '@fontsource', 'hanken-grotesk', 'files'),
                    nr: path.join(TESTS, 'node_modules', '@fontsource', 'newsreader', 'files') };
 function serveTestFont(reqPath, res) {
-  // /tests-fonts/<family>-<weight>-<style>.woff2
   const m = reqPath.match(/^\/tests-fonts\/(hg|nr)-(\d{3})-(normal|italic)\.woff2$/);
   if (!m) { res.writeHead(404); return res.end('nf font'); }
   const dir = FONT_DIR[m[1]];
   const prefix = m[1] === 'hg' ? 'hanken-grotesk' : 'newsreader';
   const file = path.join(dir, `${prefix}-latin-${m[2]}-${m[3]}.woff2`);
   if (!fs.existsSync(file)) { res.writeHead(404); return res.end('nf specific'); }
-  res.writeHead(200, { 'Content-Type': 'font/woff2', 'Cache-Control': 'no-store' });
+  res.writeHead(200, { 'Content-Type': 'font/woff2' });
   res.end(fs.readFileSync(file));
 }
 function startServer(port) {
@@ -88,9 +158,7 @@ function startServer(port) {
 }
 
 // -----------------------------------------------------------------------------
-// Font interception. Return a CSS stylesheet that maps @font-face to
-// per-weight, per-style local WOFF2 URLs on our static server. NO gstatic
-// requests need to be honoured; the browser fetches directly from us.
+// Font interception — per-weight, per-style local WOFF2s.
 // -----------------------------------------------------------------------------
 const FONT_STYLESHEET = `
 @font-face { font-family:'Hanken Grotesk'; font-weight:400; font-style:normal; src:url('/tests-fonts/hg-400-normal.woff2') format('woff2'); font-display:block; }
@@ -102,77 +170,202 @@ const FONT_STYLESHEET = `
 @font-face { font-family:'Newsreader'; font-weight:600; font-style:normal; src:url('/tests-fonts/nr-600-normal.woff2') format('woff2'); font-display:block; }
 @font-face { font-family:'Newsreader'; font-weight:400; font-style:italic; src:url('/tests-fonts/nr-400-italic.woff2') format('woff2'); font-display:block; }
 `;
-
 async function setupFontInterception(page) {
-  // Intercept both the CSS and any residual gstatic fetches (defensive) and
-  // supply the local stylesheet / local WOFF2. Every declared weight/style
-  // is served from its matching WOFF2 file — no more "400 for everything".
-  await page.route(/fonts\.googleapis\.com/, (route) => {
-    route.fulfill({ status: 200, contentType: 'text/css; charset=utf-8', body: FONT_STYLESHEET });
-  });
-  await page.route(/fonts\.gstatic\.com/, (route) => {
-    route.abort(); // never reached; local stylesheet points at our own server.
-  });
+  await page.route(/fonts\.googleapis\.com/, (route) =>
+    route.fulfill({ status: 200, contentType: 'text/css; charset=utf-8', body: FONT_STYLESHEET }));
+  await page.route(/fonts\.gstatic\.com/, (route) => route.abort());
 }
 
 // -----------------------------------------------------------------------------
-// Fill the tool state to satisfy readiness() — synthetic values, no real data.
+// Expected readiness signature — the synthetic pack must always produce this
+// exact set of pass/warn/blocker labels. Any deviation (extra warning, extra
+// blocker) fails Gate 1. This is stronger than "0 blockers".
 // -----------------------------------------------------------------------------
-const FILL_STATE_FN = `(() => {
+const EXPECTED_READINESS_SIGNATURE = {
+  blockers: 0,
+  warnings: 0,
+  passLabels: [
+    'Reporting month','Line mapping','Comparative month','Financial data',
+    'Per-client denominator','Accounts','Transaction data','Year-to-date volume',
+    'Since-incorporation volume','Client count','Jurisdiction distribution',
+    'Industry distribution','Pipeline','Regulatory commentary','Technology commentary',
+    'EBITDA note','Metrics note','Transaction history','Unit-economics history',
+    'Status',
+  ],
+  warningLabels: [],
+  blockerLabels: [],
+};
+
+// -----------------------------------------------------------------------------
+// Business-snapshot projection — invoked in the browser after finalisation.
+// Bound to the report's business boundary; internal names may change without
+// changing the snapshot as long as the business output is the same.
+// -----------------------------------------------------------------------------
+const PROJECT_SNAPSHOT_FN = `(() => {
   try {
     if (typeof S === 'undefined' || !S.rec) return { error: 'no S.rec' };
-    // KPIs — denominator + basis, accounts, jurisdictions, intl %, since-inc.
-    S.rec.kpi.clients        = S.rec.kpi.clients        ?? 3;
-    S.rec.kpi.activeClients  = 3;
-    S.rec.kpi.activeBasis    = 'Regression fixture (synthetic)';
-    S.rec.kpi.accountsActive = 5;
-    S.rec.kpi.accountsHeld   = 5;
-    S.rec.kpi.jurisdictions  = 3;
-    S.rec.kpi.intlPct        = 66;
-    S.rec.kpi.volSinceInc    = 5.0; // millions USD
-    // Apply this month's transaction figures — replicates the tool's own
-    // #txnApply handler (which the user must click today).
-    const tm = S.txn && S.txn.months && S.txn.months[S.key];
-    if (tm) {
-      S.rec.txn = { inCount: tm.inCount, outCount: tm.outCount, inUsd: tm.inUsd, outUsd: tm.outUsd };
-      if (S.txn.ytd && S.txn.ytd.key === S.key) S.rec.kpi.volYtd = S.txn.ytd.usd / 1e6;
-    }
-    // Client mix — three named jurisdictions, two industries, totals match clients.
-    S.rec.juris = [
-      { name: 'Mauritius',             count: 1 },
-      { name: 'United Kingdom',        count: 1 },
-      { name: 'United Arab Emirates', count: 1 },
-    ];
-    S.rec.industries = [
-      { name: 'Financial Services', count: 2 },
-      { name: 'Technology',         count: 1 },
-    ];
-    // Commentary: mark every block as "no material update" (allowed by the tool)
-    // so review state is satisfied without inventing fake narrative.
-    S.rec.noUpdate = S.rec.noUpdate || {};
-    S.rec.review   = S.rec.review   || {};
-    S.rec.text     = S.rec.text     || {};
-    ['pipeline','regulatory','tech','ebitdaNote','metricsNote'].forEach(k => {
-      S.rec.text[k]     = '';
-      S.rec.noUpdate[k] = true;
-      S.rec.review[k]   = true;
+    // FIGKEYS from production tool. Emit rounded-to-2dp to avoid float noise.
+    const FIGKEYS = ['acc','subTxn','fxOther','maint','advisory','rev','staff','prof','other','intro','opex','nonop','ebitda','gp'];
+    const round2 = (v) => (typeof v === 'number' && isFinite(v)) ? Math.round(v * 100) / 100 : null;
+    const projFig = (o) => { if (!o) return null; const r = {}; for (const k of FIGKEYS) r[k] = round2(o[k]); return r; };
+    const c = (typeof compute === 'function') ? compute() : null;
+    if (!c) return { error: 'compute() unavailable' };
+    // Six-month unit-economics series (last6() slice minus current month, matching
+    // the readiness ue-history check surface).
+    const l6 = last6();
+    const UE = ['gpMargin','revPerClient','gpPerClient','volPerClient','txnPerClient'];
+    const ueSeries = l6.map(k => {
+      const row = { key: k };
+      for (const f of UE) row[f] = round2(metricFor(k, c, f));
+      return row;
     });
-    // Any confirmations (accounts / adjustments / distribution) — safe defaults.
-    S.rec.confirm = S.rec.confirm || {};
-    S.rec.confirm.accounts = true;
-    S.rec.confirm.adjYtd   = true;
-    S.rec.confirm.dist     = true;
-    S.rec.confirm.republish= true;
-    // Persist into hist so the tool considers this month recorded.
-    S.hist[S.key] = JSON.parse(JSON.stringify(S.rec));
-    // Repaint.
-    if (typeof renderAll === 'function') renderAll();
+    // Transaction 6-month series (in/out USD + counts).
+    const txnSeries = l6.map(k => {
+      const row = { key: k };
+      for (const f of ['inUsd','outUsd','inCount','outCount']) row[f] = round2(metricFor(k, c, f));
+      return row;
+    });
+    // Commentary state — capture (noUpdate flag, review flag, text) per section.
+    const TEXTS = ['pipeline','regulatory','tech','ebitdaNote','metricsNote'];
+    const commentary = {};
+    for (const k of TEXTS) {
+      commentary[k] = {
+        noUpdate: !!(S.rec.noUpdate || {})[k],
+        review:   !!(S.rec.review   || {})[k],
+        text:     String((S.rec.text || {})[k] || ''),
+      };
+    }
+    // Report-page structure — pull actual titles the tool prepared for the deck.
+    const slideEls = [...document.querySelectorAll('.sframe .slide')];
+    const pageOrder = slideEls.map((el, i) => {
+      const t = el.querySelector('h1, h2, .title, .slide-title');
+      return { index: i + 1, title: t ? String(t.textContent || '').trim().slice(0, 120) : '' };
+    });
+    // Assemble.
+    return {
+      reportMonth: S.key,
+      entity: S.pl && S.pl.entity || S.cfg && S.cfg.entity || null,
+      currency: 'USD',
+      financials: {
+        current:      projFig(c.cur),
+        ytd:          projFig(c.ytd),
+        comparative:  projFig(c.prev),
+        comparativeBasis: c.compSrc,
+        comparativeMonth: c.prevKey,
+      },
+      kpi: {
+        clients:        c.clients,
+        clientsFromPl:  c.clientsX,
+        active:         c.active,
+        activeBasis:    String((S.rec.kpi && S.rec.kpi.activeBasis) || ''),
+        accountsActive: S.rec.kpi.accountsActive,
+        accountsHeld:   S.rec.kpi.accountsHeld,
+        jurisdictions:  c.jurisdictions,
+        intlPct:        c.intlPct,
+        avgRevPerClient: round2(c.avgRevPerClient),
+      },
+      transactions: {
+        current: {
+          inUsd:  c.metrics.inUsd,   outUsd:  c.metrics.outUsd,
+          inCount: c.metrics.inCount, outCount: c.metrics.outCount,
+          volMonth: round2(c.metrics.volMonth),
+          volYtd:   round2(c.metrics.volYtd),
+          volSinceInc: round2(c.metrics.volSinceInc),
+        },
+        sixMonth: txnSeries,
+      },
+      unitEconomics: {
+        current: {
+          gpMargin:     round2(c.metrics.gpMargin),
+          revPerClient: round2(c.metrics.revPerClient),
+          gpPerClient:  round2(c.metrics.gpPerClient),
+          volPerClient: round2(c.metrics.volPerClient),
+          txnPerClient: round2(c.metrics.txnPerClient),
+        },
+        sixMonth: ueSeries,
+      },
+      distributions: {
+        juris:      (S.rec.juris      || []).map(x => ({ name: String(x.name || '').trim(), count: Number(x.count) || 0 })),
+        industries: (S.rec.industries || []).map(x => ({ name: String(x.name || '').trim(), count: Number(x.count) || 0 })),
+        jurTot: c.jurTot, indTot: c.indTot,
+      },
+      commentary,
+      adjustments: JSON.parse(JSON.stringify(S.rec.adj || {})),
+      overrides:   JSON.parse(JSON.stringify(S.rec.ov  || {})),
+      compMode:    S.rec.compMode || null,
+      confirmations: JSON.parse(JSON.stringify(S.rec.confirm || {})),
+      reportStructure: {
+        slideCount: slideEls.length,
+        pages: pageOrder,
+      },
+      publishedHistoryKeys: Object.keys(S.hist || {}).sort(),
+    };
+  } catch (e) { return { error: String(e && e.stack || e) }; }
+})()`;
+
+// -----------------------------------------------------------------------------
+// FILL_STATE_FN — populate manual fields from externalConfig. Does NOT write
+// directly into S.hist[S.key] — saveNow() at the start of finalizeReport()
+// handles that transition faithfully, matching the real operator flow.
+// -----------------------------------------------------------------------------
+function makeFillFn(cfg) {
+  return `(() => {
+    try {
+      if (typeof S === 'undefined' || !S.rec) return { error: 'no S.rec' };
+      const cfg = ${JSON.stringify(cfg)};
+      // KPIs
+      Object.assign(S.rec.kpi, cfg.kpi);
+      // Distributions
+      S.rec.juris      = JSON.parse(JSON.stringify(cfg.juris || []));
+      S.rec.industries = JSON.parse(JSON.stringify(cfg.industries || []));
+      // Commentary
+      S.rec.text     = S.rec.text     || {};
+      S.rec.noUpdate = S.rec.noUpdate || {};
+      S.rec.review   = S.rec.review   || {};
+      for (const [k, v] of Object.entries(cfg.commentary || {})) {
+        S.rec.text[k]     = String(v.text || '');
+        S.rec.noUpdate[k] = !!v.noUpdate;
+        S.rec.review[k]   = !!v.review;
+      }
+      // Confirmations
+      S.rec.confirm = Object.assign({}, S.rec.confirm || {}, cfg.confirmations || {});
+      // Optional adjustments / overrides
+      if (cfg.adjustments) Object.assign(S.rec.adj = S.rec.adj || {}, cfg.adjustments);
+      if (cfg.overrides)   Object.assign(S.rec.ov  = S.rec.ov  || {}, cfg.overrides);
+      // Apply this month's transaction figures — replicates the tool's own
+      // #txnApply button (a user click today). Not a state shortcut; a
+      // faithful proxy for that specific operator action.
+      const tm = S.txn && S.txn.months && S.txn.months[S.key];
+      if (tm) {
+        S.rec.txn = { inCount: tm.inCount, outCount: tm.outCount, inUsd: tm.inUsd, outUsd: tm.outUsd };
+        if (S.txn.ytd && S.txn.ytd.key === S.key) S.rec.kpi.volYtd = S.txn.ytd.usd / 1e6;
+      }
+      if (typeof renderAll === 'function') renderAll();
+      return { ok: true };
+    } catch (e) { return { error: String(e && e.stack || e) }; }
+  })()`;
+}
+
+// Wrap renderSlidePngs to capture the EXACT images finalizeReport uses.
+// Runs BEFORE finalisation is triggered.
+const WRAP_RENDER_FN = `(() => {
+  try {
+    if (typeof renderSlidePngs !== 'function') return { error: 'renderSlidePngs not in scope' };
+    if (window.__renderWrapped) return { ok: true, alreadyWrapped: true };
+    const original = renderSlidePngs;
+    // Redefine the global so finalizeReport() picks up the wrapper.
+    // eslint-disable-next-line no-global-assign
+    renderSlidePngs = async function(...args) {
+      const imgs = await original.apply(this, args);
+      window.__regressionFinalImages = imgs;
+      return imgs;
+    };
+    window.__renderWrapped = true;
     return { ok: true };
   } catch (e) { return { error: String(e && e.stack || e) }; }
 })()`;
 
-// Read finalSnapshot back as base64 blobs. Uses a Promise so we can await
-// FileReader from an IIFE returned to Playwright.
+// Extract finalSnapshot + intercepted images as base64.
 const EXTRACT_FINAL_FN = `(async () => {
   try {
     if (typeof finalSnapshot === 'undefined' || !finalSnapshot) return { error: 'no finalSnapshot' };
@@ -186,26 +379,20 @@ const EXTRACT_FINAL_FN = `(async () => {
       pdf:  { name: finalSnapshot.pdf.name,  b64: await asBase64(finalSnapshot.pdf.blob)  },
       pptx: { name: finalSnapshot.pptx.name, b64: await asBase64(finalSnapshot.pptx.blob) },
       data: { name: finalSnapshot.data.name, b64: await asBase64(finalSnapshot.data.blob) },
+      images: Array.isArray(window.__regressionFinalImages) ? window.__regressionFinalImages : null,
     };
   } catch (e) { return { error: String(e && e.stack || e) }; }
 })()`;
 
 // -----------------------------------------------------------------------------
-// PDF page-count: scan the raw PDF stream for /Type /Page (not /Pages) markers.
+// Byte inspectors — no external deps.
 // -----------------------------------------------------------------------------
 function countPdfPages(buf) {
   const s = buf.toString('binary');
-  // Match "/Type /Page" not followed by 's' (which would be /Pages).
   const re = /\/Type\s*\/Page(?!s)/g;
   return (s.match(re) || []).length;
 }
-
-// -----------------------------------------------------------------------------
-// PPTX slide count: PPTX is a ZIP; count entries under ppt/slides/slideN.xml.
-// Use a minimal ZIP central-directory reader (no external dep).
-// -----------------------------------------------------------------------------
 function countPptxSlides(buf) {
-  // Find End of Central Directory record.
   let i = buf.length - 22;
   const EOCD = Buffer.from([0x50, 0x4b, 0x05, 0x06]);
   for (; i >= 0 && i >= buf.length - 65557; i--) {
@@ -227,7 +414,6 @@ function countPptxSlides(buf) {
   }
   return slides;
 }
-
 function md5(buf) { return crypto.createHash('md5').update(buf).digest('hex'); }
 
 // -----------------------------------------------------------------------------
@@ -253,78 +439,97 @@ async function run() {
   await page.evaluate(() => { const g = document.getElementById('mrgate'); if (g) g.remove(); });
   await page.evaluate(() => document.fonts.ready);
 
-  // 1) Upload the August Previous Month File via #contFile.
+  // Upload flow.
   await page.waitForSelector('#contFile', { state: 'attached', timeout: 10000 });
-  await page.setInputFiles('#contFile', path.join(FIXTURES, 'synthetic-previous.data'));
-  // Wait for the tool to apply the continuation (hist populated).
+  await page.setInputFiles('#contFile', inputs.previous);
+  // For synthetic pack the previous is Aug; for external, whatever the caller supplied.
+  const previousMonthKey = MODE === 'external' ? (externalConfig.previousReportingMonth || null) : '2026-08';
+  if (previousMonthKey) {
+    await page.waitForFunction((k) =>
+      (typeof S !== 'undefined') && S.hist && !!S.hist[k], previousMonthKey, { timeout: 10000 });
+  }
+
+  await page.setInputFiles('#file', [inputs.pl, inputs.txn]);
   await page.waitForFunction(() =>
-    (typeof S !== 'undefined') && S.hist && !!S.hist['2026-08'], { timeout: 8000 });
+    (typeof S !== 'undefined') && !!S.pl && !!S.txn && S.pl.months && S.pl.months.length >= 1,
+    { timeout: 10000 });
 
-  // 2) Upload the P&L + Txn workbooks via #file.
-  await page.setInputFiles('#file', [
-    path.join(FIXTURES, 'synthetic-pl.xlsx'),
-    path.join(FIXTURES, 'synthetic-txn.xlsx'),
-  ]);
-  // Wait for parsers to populate S.pl and S.txn.
-  await page.waitForFunction(() =>
-    (typeof S !== 'undefined') && !!S.pl && !!S.txn && S.pl.months && S.pl.months.length === 9,
-    { timeout: 8000 });
+  const fill = await page.evaluate(makeFillFn(externalConfig));
+  if (!fill || fill.error) throw new Error('state fill failed: ' + (fill && fill.error));
 
-  // 3) Fill required KPI/commentary state and mark all commentary "no update".
-  const fill = await page.evaluate(FILL_STATE_FN);
-  if (fill.error) throw new Error('state fill failed: ' + fill.error);
-
-  // 4) Verify readiness is genuinely at zero blockers before finalising.
+  // Assert readiness signature — labels of each severity must match expectations exactly.
   const rdy = await page.evaluate(() => {
     try {
       if (typeof readiness !== 'function') return { error: 'readiness() not in scope' };
       const R = readiness();
-      // Sanitise detail: it can contain nested DOM strings we don't need here.
       return { errors: R.errors, warns: R.warns,
-               items: R.items.map(x => ({ lvl: x.lvl, label: x.label, detail: String(x.detail || '').slice(0, 200) })) };
+               items: R.items.map(x => ({ lvl: x.lvl, label: x.label })) };
     } catch (e) { return { error: String(e && e.stack || e) }; }
   });
   if (!rdy || rdy.error) throw new Error('readiness eval failed: ' + (rdy && rdy.error));
-  const blockers = rdy.items.filter(x => x.lvl === 'e');
-  if (blockers.length > 0) {
-    console.error('  readiness blockers still present:');
-    for (const b of blockers) console.error('    -', b.label, '::', b.detail);
-    throw new Error('readiness has ' + blockers.length + ' blocker(s); cannot finalise');
+  const blockerLabels = rdy.items.filter(x => x.lvl === 'e').map(x => x.label).sort();
+  const warningLabels = rdy.items.filter(x => x.lvl === 'w').map(x => x.label).sort();
+  const passLabels    = rdy.items.filter(x => x.lvl === 'o').map(x => x.label).sort();
+  if (MODE !== 'external') {
+    const exp = EXPECTED_READINESS_SIGNATURE;
+    const expBlockers = exp.blockerLabels.slice().sort();
+    const expWarns    = exp.warningLabels.slice().sort();
+    const expPass     = exp.passLabels.slice().sort();
+    const check = (a, e, name) => {
+      if (JSON.stringify(a) !== JSON.stringify(e)) {
+        throw new Error(name + ' set differs. expected=' + JSON.stringify(e) + ' actual=' + JSON.stringify(a));
+      }
+    };
+    check(blockerLabels, expBlockers, 'readiness blockers');
+    check(warningLabels, expWarns,    'readiness warnings');
+    check(passLabels,    expPass,     'readiness pass labels');
+    console.log(`  readiness signature MATCHED: 0/0/${passLabels.length} (blockers/warnings/pass)`);
+  } else {
+    console.log(`  readiness (external): ${blockerLabels.length} blockers, ${warningLabels.length} warnings, ${passLabels.length} passed`);
+    if (blockerLabels.length) throw new Error('external readiness has blockers: ' + JSON.stringify(blockerLabels));
   }
-  console.log(`  readiness: 0 blockers, ${rdy.warns} warnings, ${rdy.items.length - rdy.errors - rdy.warns} passed`);
 
-  // 5) Trigger finalisation.
+  // Wrap renderSlidePngs BEFORE clicking finalise so the FIRST render — the
+  // one finalizeReport actually feeds into the PDF and PPTX builders — is the
+  // one we capture.
+  const wrap = await page.evaluate(WRAP_RENDER_FN);
+  if (!wrap || wrap.error) throw new Error('render wrap failed: ' + (wrap && wrap.error));
+
   await page.evaluate(() => document.getElementById('btnPdf').click());
-  // Wait for finalSnapshot to become non-null (indicates PDF+PPTX+.data all ready).
   await page.waitForFunction(
     () => (typeof finalSnapshot !== 'undefined') && !!finalSnapshot,
     { timeout: 60000 });
 
-  // 6) Extract the 11 rendered pages from the tool's own renderSlidePngs().
-  //    Call it a SECOND time on the exact same state — this is what the tool
-  //    itself did inside finalizeReport(), and re-calling yields the same PNGs.
-  const pages = await page.evaluate(async () => {
-    const imgs = await renderSlidePngs();
-    return imgs;   // array of "data:image/jpeg;base64,..." strings
-  });
-  if (!Array.isArray(pages) || pages.length !== 11) {
-    throw new Error('expected 11 rendered pages, got ' + (Array.isArray(pages) ? pages.length : 'not-array'));
-  }
-
-  // 7) Extract PDF/PPTX/data blobs.
   const final = await page.evaluate(EXTRACT_FINAL_FN);
-  if (final.error) throw new Error(final.error);
+  if (!final || final.error) throw new Error(final && final.error);
+  if (!Array.isArray(final.images) || final.images.length !== 11) {
+    throw new Error('expected 11 intercepted final images, got ' + (final.images && final.images.length));
+  }
   const pdfBuf  = Buffer.from(final.pdf.b64, 'base64');
   const pptxBuf = Buffer.from(final.pptx.b64, 'base64');
   const dataBuf = Buffer.from(final.data.b64, 'base64');
   const dataObj = JSON.parse(dataBuf.toString('utf8'));
 
-  // Business snapshot — normalised to the report boundary (not S.rec/S.hist names).
+  const businessSnapshot = await page.evaluate(PROJECT_SNAPSHOT_FN);
+  if (businessSnapshot && businessSnapshot.error) throw new Error('project failed: ' + businessSnapshot.error);
+
   const snapshot = {
-    reportMonth: dataObj.reportingMonth,
-    entity: (dataObj.cfg && dataObj.cfg.entity) || null,
-    currency: 'USD',
+    reportMonth: businessSnapshot.reportMonth,
+    entity: businessSnapshot.entity,
+    currency: businessSnapshot.currency,
     finalisedFor: final.month,
+    financials:     businessSnapshot.financials,
+    kpi:            businessSnapshot.kpi,
+    transactions:   businessSnapshot.transactions,
+    unitEconomics:  businessSnapshot.unitEconomics,
+    distributions:  businessSnapshot.distributions,
+    commentary:     businessSnapshot.commentary,
+    adjustments:    businessSnapshot.adjustments,
+    overrides:      businessSnapshot.overrides,
+    compMode:       businessSnapshot.compMode,
+    confirmations:  businessSnapshot.confirmations,
+    reportStructure: businessSnapshot.reportStructure,
+    publishedHistoryKeys: businessSnapshot.publishedHistoryKeys,
     outputs: {
       pdf:  { pageCount: countPdfPages(pdfBuf),   md5: md5(pdfBuf),  bytes: pdfBuf.length,  name: final.pdf.name },
       pptx: { slideCount: countPptxSlides(pptxBuf), md5: md5(pptxBuf), bytes: pptxBuf.length, name: final.pptx.name },
@@ -338,73 +543,50 @@ async function run() {
         name: final.data.name,
       },
     },
-    pageHashes: pages.map((p) => md5(Buffer.from(p.split(',')[1], 'base64'))),
-    pageCount: pages.length,
-    // Include a compact business projection from the published record.
-    publishedRecord: (() => {
-      const pub = dataObj.hist && dataObj.hist[dataObj.reportingMonth];
-      if (!pub) return null;
-      return {
-        kpi: pub.kpi || null,
-        juris: pub.juris || null,
-        industries: pub.industries || null,
-        status: pub.status || null,
-        published: !!pub.published,
-      };
-    })(),
+    pageHashes: final.images.map(u => md5(Buffer.from(u.split(',')[1], 'base64'))),
+    pageCount: final.images.length,
+    imageSource: 'intercepted from finalizeReport() before PDF/PPTX build',
+    readinessSignature: {
+      blockers: blockerLabels.length, warnings: warningLabels.length,
+      blockerLabels, warningLabels, passLabels,
+    },
   };
 
-  // 8) Persist artefacts.
-  const outDir = MODE === 'capture' ? BASELINE
-                                    : path.join(BASELINE, 'runs', new Date().toISOString().replace(/[:.]/g,'-'));
-  const pagesOut = path.join(outDir, 'pages');
+  const pagesOut = path.join(outputDir, 'pages');
   fs.mkdirSync(pagesOut, { recursive: true });
-  pages.forEach((dataUrl, i) => {
-    const b = Buffer.from(dataUrl.split(',')[1], 'base64');
-    fs.writeFileSync(path.join(pagesOut, `page-${String(i+1).padStart(2,'0')}.jpg`), b);
+  final.images.forEach((dataUrl, i) => {
+    fs.writeFileSync(path.join(pagesOut, `page-${String(i+1).padStart(2,'0')}.jpg`),
+                     Buffer.from(dataUrl.split(',')[1], 'base64'));
   });
-  fs.writeFileSync(path.join(outDir, 'snapshot.json'), JSON.stringify(snapshot, null, 2));
+  fs.writeFileSync(path.join(outputDir, 'snapshot.json'), JSON.stringify(snapshot, null, 2));
 
   const manifest = {
     capturedAt: new Date().toISOString(),
     mode: MODE,
+    external: MODE === 'external',
     chromium: await browser.version(),
     playwright: require('playwright/package.json').version,
     viewport: '1280x720',
     deviceScaleFactor: 1,
     fontPack: 'fontsource@5.1.0 (Hanken Grotesk + Newsreader), per-weight WOFF2 served from local static server',
-    fixtures: {
-      pl:   fs.statSync(path.join(FIXTURES, 'synthetic-pl.xlsx')).size,
-      txn:  fs.statSync(path.join(FIXTURES, 'synthetic-txn.xlsx')).size,
-      bs:   fs.statSync(path.join(FIXTURES, 'synthetic-bs.xlsx')).size,
-      prev: fs.statSync(path.join(FIXTURES, 'synthetic-previous.data')).size,
+    inputs: MODE === 'external' ? { note: 'external paths intentionally not recorded here' } : {
+      pl:   fs.statSync(inputs.pl).size,
+      txn:  fs.statSync(inputs.txn).size,
+      prev: fs.statSync(inputs.previous).size,
     },
   };
-  fs.writeFileSync(path.join(outDir, 'manifest.json'), JSON.stringify(manifest, null, 2));
+  fs.writeFileSync(path.join(outputDir, 'manifest.json'), JSON.stringify(manifest, null, 2));
 
-  console.log('  wrote:', outDir);
-  console.log('  pdf pages:', snapshot.outputs.pdf.pageCount, 'pptx slides:', snapshot.outputs.pptx.slideCount, 'page pngs:', pages.length);
+  console.log('  wrote:', outputDir);
+  console.log('  pdf pages:', snapshot.outputs.pdf.pageCount, 'pptx slides:', snapshot.outputs.pptx.slideCount, 'page pngs:', final.images.length);
 
   await browser.close();
   server.close();
 
-  // 9) Compare mode: diff against baseline.
-  //    Per the approved specification: PDF/PPTX byte-equality is NOT the
-  //    contract (metadata timestamps inside those container formats vary
-  //    even when visible content is identical). The contract is:
-  //      1. Every one of the 11 rendered page images is byte-identical.
-  //      2. PDF page count and PPTX slide count match.
-  //      3. Continuation file's business shape (formatId, schemaVersion,
-  //         reportingMonth, histMonths, histMonthCount) matches. The
-  //         checksum inside the .data varies with the fresh published.at
-  //         timestamp the tool stamps on each publish, so we exclude it —
-  //         business content stability is proved by the identical page
-  //         renders and identical histMonths list.
-  //      4. Business snapshot (reportMonth, entity, publishedRecord.kpi
-  //         etc.) matches.
+  // Compare mode: diff against synthetic baseline.
   if (MODE === 'compare') {
     const baseSnap = JSON.parse(fs.readFileSync(path.join(BASELINE, 'snapshot.json'), 'utf8'));
-    const runSnap  = JSON.parse(fs.readFileSync(path.join(outDir, 'snapshot.json'), 'utf8'));
+    const runSnap  = JSON.parse(fs.readFileSync(path.join(outputDir, 'snapshot.json'), 'utf8'));
     const scrub = (o) => {
       const c = JSON.parse(JSON.stringify(o));
       if (c.outputs) {
@@ -417,24 +599,28 @@ async function run() {
     const a = JSON.stringify(scrub(baseSnap));
     const b = JSON.stringify(scrub(runSnap));
     if (a !== b) {
-      console.error('  BUSINESS SNAPSHOT DIFFERS from baseline');
-      console.error('    baseline:', a);
-      console.error('    this run:', b);
+      // Detailed diff to find the first differing top-level key.
+      const [bo, ro] = [scrub(baseSnap), scrub(runSnap)];
+      for (const k of Object.keys(bo)) {
+        if (JSON.stringify(bo[k]) !== JSON.stringify(ro[k])) {
+          console.error('  first differing top-level key:', k);
+          console.error('    baseline:', JSON.stringify(bo[k]).slice(0, 300));
+          console.error('    this run:', JSON.stringify(ro[k]).slice(0, 300));
+          break;
+        }
+      }
       throw new Error('business snapshot mismatch');
     }
-    // Pixel-identity across all 11 rendered report pages.
     for (let i = 1; i <= 11; i++) {
       const bp = path.join(BASELINE, 'pages', `page-${String(i).padStart(2,'0')}.jpg`);
-      const rp = path.join(outDir,   'pages', `page-${String(i).padStart(2,'0')}.jpg`);
+      const rp = path.join(outputDir,   'pages', `page-${String(i).padStart(2,'0')}.jpg`);
       const bh = md5(fs.readFileSync(bp));
       const rh = md5(fs.readFileSync(rp));
       if (bh !== rh) throw new Error('page ' + i + ' MD5 differs (' + bh + ' vs ' + rh + ')');
     }
-    console.log('  COMPARE PASS: 11 rendered pages byte-identical, business snapshot identical, PDF/PPTX structural match, continuation shape match');
+    console.log('  COMPARE PASS: 11 pages byte-identical, expanded business snapshot identical, PDF/PPTX structural match');
   }
 }
 
-run().then(
-  () => { console.log('OK'); process.exit(0); },
-  (err) => { console.error('FAIL:', err && err.stack || err); process.exit(1); }
-);
+run().then(() => { console.log('OK'); process.exit(0); },
+          (err) => { console.error('FAIL:', err && err.stack || err); process.exit(1); });

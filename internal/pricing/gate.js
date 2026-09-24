@@ -33,7 +33,7 @@
         return;
       }
       setBusy(false);
-      var code = out.body && out.body.code;
+      var code = out.body && (out.body.error || out.body.code);
       if (out.status === 429 || code === 'throttled') { setError('Too many attempts. Try again shortly.'); return; }
       if (code === 'invalid_passcode') { setError('Incorrect passcode.'); return; }
       if (code === 'not_configured' || code === 'storage_unconfigured') { setError('Not configured yet — contact the administrator.'); return; }

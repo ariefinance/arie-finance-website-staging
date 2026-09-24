@@ -262,20 +262,12 @@ select.inp{min-width:104px}
 .rp-donut-legend .sw{width:12px;height:12px;border-radius:2px;display:inline-block;border:1px solid rgba(0,0,0,.08)}
 .rp-donut-legend .ct{font-weight:600;min-width:26px;text-align:right;color:var(--ink)}
 .rp-donut-legend .pct{color:var(--mute);min-width:38px;text-align:right}
-.rp-side{display:flex;flex-direction:column}
-.rp-side .rp-section+.rp-section{border-top:1px solid var(--rule-soft)}
-.rp-side .rp-section h2{padding:12px 16px;border-bottom:1px solid var(--rule-soft)}
-.rp-progress{display:flex;align-items:stretch;gap:6px}
-.rp-progress .step{flex:1;background:var(--surface-2);border:1px solid var(--rule-soft);border-radius:6px;padding:8px 10px;text-align:center;min-width:0}
-.rp-progress .step b{display:block;font:600 20px var(--serif);color:var(--ink);line-height:1;letter-spacing:-.01em}
-.rp-progress .step .lb{display:block;font-size:10.5px;color:var(--mute);margin-top:5px;text-transform:uppercase;letter-spacing:.04em;font-weight:600}
-.rp-progress .step .sub{display:block;font-size:10px;color:var(--mute);margin-top:2px;font-style:italic}
-.rp-progress .arr{align-self:center;color:var(--mute);font-size:14px;padding:0 1px;flex:0 0 auto}
-.rp-attention-compact{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.rp-attention-compact{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px}
 .rp-attention-compact .cell{display:flex;align-items:baseline;justify-content:space-between;gap:8px;padding:2px 0;font-size:12.5px;color:var(--mute)}
 .rp-attention-compact .cell b{font:600 20px var(--serif);color:var(--ink);letter-spacing:-.01em}
 .rp-attention-compact .cell.overdue b{color:var(--red)}
 .rp-attention-compact .cell.stale b{color:var(--amber)}
+.rp-attention-compact .cell.hold b{color:var(--mute)}
 .rp-footer{margin-top:12px;font-size:11px;color:var(--mute);text-align:center}
 
 /* One A4 landscape page — named-page targeting keeps the Dashboard's default
@@ -314,12 +306,6 @@ select.inp{min-width:104px}
   #page-report .rp-donut-center b{font-size:18px}
   #page-report .rp-donut-legend{font-size:11px}
   #page-report .rp-donut-legend .row{padding:3px 0}
-  #page-report .rp-side .rp-section h2{padding:6px 10px}
-  #page-report .rp-progress .step{padding:6px 8px}
-  #page-report .rp-progress .step b{font-size:15px}
-  #page-report .rp-progress .step .lb{font-size:9.5px;margin-top:3px}
-  #page-report .rp-progress .step .sub{font-size:9px}
-  #page-report .rp-progress .arr{font-size:12px}
   #page-report .rp-attention-compact .cell b{font-size:15px}
   #page-report .rp-attention-compact .cell{font-size:11.5px}
   #page-report .rp-footer{margin-top:6px;font-size:10px}
@@ -542,18 +528,12 @@ select.inp{min-width:104px}
 
   <div class="rp-mid">
     <div class="panel">
-      <h2>Active opportunity mix <small>Point-in-time as at <span id="rp-asat">—</span></small></h2>
+      <h2>Current Pipeline Mix <small>Where active opportunities sit today · as at <span id="rp-asat">—</span></small></h2>
       <div class="pbody" id="rp-donut"></div>
     </div>
-    <div class="panel rp-side">
-      <div class="rp-section">
-        <h2>Commercial progression <small>Selected period · counts, not conversion</small></h2>
-        <div class="pbody" id="rp-progress"></div>
-      </div>
-      <div class="rp-section">
-        <h2>Attention <small>Same definitions as the dashboard</small></h2>
-        <div class="pbody" id="rp-attention"></div>
-      </div>
+    <div class="panel">
+      <h2>Management Attention <small>Same definitions as the dashboard</small></h2>
+      <div class="pbody" id="rp-attention"></div>
     </div>
   </div>
 
@@ -1190,14 +1170,19 @@ function renderDashboard(){
 function set(id, html){ const el = document.getElementById(id); if(el) el.innerHTML = html; }
 
 /* ---------------- Sales Analytics Report ----------------
-   Read-only reporting layer over the existing tracker data. KPIs come from
-   recorded milestones (contactedAt / meetingBookedAt / proposalSentAt / wonAt);
-   Ongoing Onboardings is a point-in-time count of the current Onboarding
-   stage. Period boundaries use the Mauritius calendar so month rollovers
-   agree with ARIE's reporting day. Prior-period comparison is suppressed
-   for any metric whose prior period falls outside the milestone-capture
-   completeness window — an honest "no prior-period comparison" beats a
-   misleading zero. */
+   Read-only reporting layer over the existing tracker data. Three sections,
+   each answering a distinct management question:
+     1. Period activity — five period-based KPI cards from recorded
+        milestones (contactedAt / meetingBookedAt / proposalSentAt /
+        onboardingStartedAt / wonAt).
+     2. Current pipeline — one donut mixing active leads across five plain-
+        English groups. Snapshot only. Not Contacted, Won, Lost excluded.
+     3. Management attention — Overdue follow-ups, Quiet 30+ days, On Hold.
+   Period boundaries use the Mauritius calendar. Prior-period comparison is
+   suppressed for any milestone metric whose prior period falls outside the
+   milestone-capture window — "no prior-period comparison" beats a
+   misleading zero. Clients Won can compare further back via the
+   onboardingDate fallback. */
 function mauMonthLabel(ym){
   if(!ym) return "—";
   const y = parseInt(ym.slice(0,4),10), m = parseInt(ym.slice(5,7),10);
@@ -1269,14 +1254,16 @@ function countWonIn(rng){
     return s >= rng.from && s <= rng.to;
   }).length;
 }
-/* Active opportunity groupings for the donut. Order controls slice order.
-   Not Contacted, Won, Lost are deliberately excluded — the donut is a mix
-   of ACTIVE opportunities only. */
+/* Current Pipeline Mix — five plain-English groups covering every active
+   stage. Order controls slice order (early → advancing → paused). Not
+   Contacted, Won and Lost are deliberately excluded — the donut answers
+   "where are ACTIVE opportunities sitting today?" only. */
 const RP_DONUT_GROUPS = [
-  {key:"engaged",    label:"Engaged",     color:"var(--navy)",  stages:new Set(["Contacted","Follow-up Due","Followed Up","Meeting Booked","Qualified"])},
-  {key:"commercial", label:"Commercial",  color:"var(--gold)",  stages:new Set(["Proposal / Terms Sent","Referral agreement signed"])},
-  {key:"onboarding", label:"Onboarding",  color:"var(--amber)", stages:new Set(["Onboarding"])},
-  {key:"onhold",     label:"On Hold",     color:"var(--mute)",  stages:new Set(["On Hold"])}
+  {key:"contact",  label:"Contacted / Follow-up",  color:"var(--navy)",  stages:new Set(["Contacted","Follow-up Due","Followed Up"])},
+  {key:"meeting",  label:"Meeting / Qualified",    color:"var(--gold)",  stages:new Set(["Meeting Booked","Qualified"])},
+  {key:"proposal", label:"Proposal / Agreement",   color:"var(--amber)", stages:new Set(["Proposal / Terms Sent","Referral agreement signed"])},
+  {key:"onboard",  label:"Onboarding",             color:"var(--green)", stages:new Set(["Onboarding"])},
+  {key:"onhold",   label:"On Hold",                color:"var(--mute)",  stages:new Set(["On Hold"])}
 ];
 function rpFormatDate(ymd){
   /* Reuses the tracker's own 3-letter MONTH array so the format is stable
@@ -1294,7 +1281,7 @@ function renderReport(){
   const rng = reportRange();
   if(!rng){
     set("rp-period-label", "Choose a period");
-    set("rp-kpis", ""); set("rp-donut", ""); set("rp-progress", ""); set("rp-attention", ""); set("rp-completeness", "");
+    set("rp-kpis", ""); set("rp-donut", ""); set("rp-attention", ""); set("rp-completeness", "");
     return;
   }
   set("rp-period-label", esc(rng.label));
@@ -1302,19 +1289,23 @@ function renderReport(){
   const activeFrom = SET.milestonesActiveFrom || "";
   const partial = !activeFrom || activeFrom > rng.from;
 
+  /* Period activity — all five KPI cards are counts of unique leads whose
+     matching milestone falls inside the selected reporting period. Ongoing
+     Onboardings (current stock) is intentionally NOT a KPI card — that
+     snapshot is visible in the donut's Onboarding slice. */
   const cur = {
     contacted: countMilestoneIn("contactedAt", rng),
     meetings:  countMilestoneIn("meetingBookedAt", rng),
     proposals: countMilestoneIn("proposalSentAt", rng),
+    entered:   countMilestoneIn("onboardingStartedAt", rng),
     won:       countWonIn(rng)
   };
-  const ongoingOnb = allLeads().filter(({lead}) => lead.status === "Onboarding").length;
 
   const priorRng = priorRangeFor(rng);   // null for custom range → no auto-comparison
   function priorFor(field, wonFallbackReliable){
     if(!priorRng) return null;
     // Won reuses onboardingDate as a historical fallback so it can compare
-    // pre-cutover periods; the other three cannot without manufacturing history.
+    // pre-cutover periods; the milestone metrics cannot, without manufacturing history.
     if(!wonFallbackReliable && (!activeFrom || activeFrom > priorRng.from)) return null;
     return {value: field === "won" ? countWonIn(priorRng) : countMilestoneIn(field, priorRng), label:priorRng.label};
   }
@@ -1322,6 +1313,7 @@ function renderReport(){
     contacted: priorFor("contactedAt", false),
     meetings:  priorFor("meetingBookedAt", false),
     proposals: priorFor("proposalSentAt", false),
+    entered:   priorFor("onboardingStartedAt", false),
     won:       priorFor("won", true)
   };
   function delta(now, prev){
@@ -1336,7 +1328,7 @@ function renderReport(){
     {lab:"Prospects Contacted", val:cur.contacted, note:delta(cur.contacted, prior.contacted), tag:partialTag},
     {lab:"Meetings Booked",     val:cur.meetings,  note:delta(cur.meetings,  prior.meetings),  tag:partialTag},
     {lab:"Proposals Sent",      val:cur.proposals, note:delta(cur.proposals, prior.proposals), tag:partialTag},
-    {lab:"Ongoing Onboardings — as at " + rpFormatDate(gen), val:ongoingOnb, note:'<div class="note">Point-in-time snapshot</div>', tag:""},
+    {lab:"Entered Onboarding",  val:cur.entered,   note:delta(cur.entered,   prior.entered),   tag:partialTag},
     {lab:"Clients Won",         val:cur.won,       note:delta(cur.won, prior.won),             tag:""}
   ];
   set("rp-kpis", kpis.map(k =>
@@ -1346,9 +1338,9 @@ function renderReport(){
        ${k.note}
      </div>`).join(""));
 
-  /* Active opportunity mix — donut. Buckets each ACTIVE lead into exactly one
-     of four groups. Not Contacted, Won and Lost are excluded. Legend shows
-     category / count / % of active. */
+  /* Current Pipeline Mix — donut. Buckets each ACTIVE lead into exactly one
+     of the five RP_DONUT_GROUPS. Not Contacted, Won and Lost are excluded.
+     Legend shows group label / count / % of active. */
   const groupCounts = RP_DONUT_GROUPS.map(g => ({...g, n:0}));
   let activeTotal = 0;
   allLeads().forEach(({lead}) => {
@@ -1385,7 +1377,7 @@ function renderReport(){
   set("rp-donut",
     `<div class="rp-donut-wrap">
        <div class="rp-donut">
-         <svg viewBox="0 0 42 42" role="img" aria-label="Active opportunity mix">
+         <svg viewBox="0 0 42 42" role="img" aria-label="Current Pipeline Mix">
            <circle cx="21" cy="21" r="15.915" fill="none" stroke="var(--rule-soft)" stroke-width="6"/>
            ${svgSegs}
          </svg>
@@ -1394,32 +1386,18 @@ function renderReport(){
        <div class="rp-donut-legend">${legendRows}</div>
      </div>`);
 
-  /* Commercial progression strip — every step is a SELECTED-PERIOD activity
-     count so the values are comparable. "Entered Onboarding" is the number of
-     unique leads whose onboardingStartedAt milestone falls in the reporting
-     period; the current point-in-time stock stays on the KPI card only.
-     NOT a strict cohort funnel, and no conversion percentages are shown. */
-  const enteredOnb = countMilestoneIn("onboardingStartedAt", rng);
-  const steps = [
-    {n:cur.contacted, lb:"Contacted",         sub:""},
-    {n:cur.meetings,  lb:"Meetings",          sub:""},
-    {n:cur.proposals, lb:"Proposals",         sub:""},
-    {n:enteredOnb,    lb:"Entered Onboarding", sub:""},
-    {n:cur.won,       lb:"Won",        sub:""}
-  ];
-  set("rp-progress",
-    `<div class="rp-progress">${steps.map((s,i) =>
-       `${i > 0 ? '<div class="arr">→</div>' : ""}<div class="step"><b>${s.n}</b><span class="lb">${esc(s.lb)}</span>${s.sub ? `<span class="sub">${esc(s.sub)}</span>` : ""}</div>`
-     ).join("")}</div>`);
-
-  /* Attention — only Overdue and Quiet 30+, compact. Reuses tracker predicates. */
+  /* Management Attention — three simple exception counts. Overdue and Quiet
+     reuse the tracker's existing predicates; On Hold is the current count of
+     status === "On Hold" leads. No speculative risk scoring. */
   const rowsAll = allLeads();
   const overdueN = rowsAll.filter(({lead}) => overdue(lead)).length;
   const staleN   = rowsAll.filter(({lead}) => stale(lead)).length;
+  const onHoldN  = rowsAll.filter(({lead}) => lead.status === "On Hold").length;
   set("rp-attention",
     `<div class="rp-attention-compact">
        <div class="cell overdue"><span>Overdue follow-ups</span><b>${overdueN}</b></div>
        <div class="cell stale"><span>Quiet 30+ days</span><b>${staleN}</b></div>
+       <div class="cell hold"><span>On Hold</span><b>${onHoldN}</b></div>
      </div>`);
 
   /* One-line data-completeness footer. */

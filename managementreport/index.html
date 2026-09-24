@@ -1448,22 +1448,160 @@ function wizStageUpload(){
       </div>
     </div>`;
 }
+/* Wizard-scoped input helpers. Same data-bind paths as the legacy tabs so
+   the global input handler at line 1267 writes into S.rec / S.cfg for free.
+   IDs are prefixed to avoid duplicate-id collisions with the legacy panel. */
+function wFld(label, path, opts){
+  opts=opts||{}; const v=getPath(opts.obj||S.rec,path)==null?'':getPath(opts.obj||S.rec,path);
+  const id='w_'+path.replace(/\W/g,'_');
+  return `<div class="fld"><label for="${id}">${esc(label)}</label>
+    <input id="${id}" data-bind="${path}" ${opts.obj?'data-cfg="1"':''} type="${opts.type||'number'}" step="any" value="${esc(v)}" placeholder="${esc(opts.ph||'')}">
+    ${opts.auto?`<span class="auto">${esc(opts.auto)}</span>`:''}</div>`;
+}
+function wTxt(label, path, rows, hint){
+  const v=getPath(S.rec,path)||''; const id='w_'+path.replace(/\W/g,'_');
+  return `<div class="fld"><label for="${id}">${esc(label)}</label>${hint?`<span class="auto">${esc(hint)}</span>`:''}
+    <textarea id="${id}" data-bind="${path}" data-str="1" rows="${rows||6}">${esc(v)}</textarea></div>`;
+}
+/* Compact review-state control for a commentary block. Mirrors revBox() from
+   the legacy pane so the readiness semantics stay identical. */
+function wRev(k){
+  const cur=(S.rec.text[k]||'').trim(), prev=((S.rec.prevText||{})[k]||'').trim();
+  const same=cur&&prev&&cur===prev;
+  const nu=(S.rec.noUpdate||{})[k];
+  const canNoUpdate=(k==='pipeline'||k==='regulatory'||k==='tech');
+  if(canNoUpdate&&(!cur||nu))
+    return `<label class="rev"><input type="checkbox" data-ck="noUpdate.${k}" ${nu?'checked':''}> No update this month</label>
+    ${nu?`<div class="tstat">The page will read: “${esc(NO_UPDATE)}”</div>`:`<div class="stale">Empty. Write this month’s update above, or tick “No update this month”.</div>`}`;
+  return `${same?`<div class="stale">Unchanged from ${esc(longLbl(shiftKey(S.key,-1)))} — confirm this is intentional before it goes to management.</div>`:''}
+  <label class="rev"><input type="checkbox" data-ck="review.${k}" ${S.rec.review[k]?'checked':''}> Reviewed / updated for ${esc(longLbl(S.key))}</label>`;
+}
 function wizStageReview(){
   if(!S.pl) return `<div class="wiz-placeholder">Upload the Profit &amp; Loss first.</div>`;
+  const c=compute();
   const R=readiness();
   const attention = R.items.filter(x=>x.lvl==='e'||x.lvl==='w');
   const zero = attention.length===0;
-  const list = zero
-    ? `<div class="wiz-card"><h4>Nothing needs your attention</h4><p class="h">All required reporting inputs are complete.</p></div>`
+
+  /* --- surface exception controls only when they are actually needed. --- */
+  const cards=[];
+
+  // Per-client denominator + basis (blockers 5 & 5a)
+  if(!isNum(c.active) || String(S.rec.kpi.activeBasis||'').trim().length<3){
+    cards.push(`<div class="wiz-card">
+      <h4>Per-client denominator</h4>
+      <p class="h">Used for monthly revenue per client and gross profit per client. It is deliberately not carried forward from last month and is not assumed to equal the headline client count. Record where the figure came from (e.g. “Finance confirmation — transacting clients”).</p>
+      <div class="grid2">${wFld('Denominator','kpi.activeClients')}${wFld('Source / basis','kpi.activeBasis',{type:'text',ph:'e.g. Finance confirmation'})}</div>
+    </div>`);
+  }
+
+  // Client count, accounts, jurisdictions, intl%, since-inception volume
+  const needsClientBase = !isNum(c.clients) || !isNum(S.rec.kpi.accountsActive) || !isNum(S.rec.kpi.accountsHeld)
+    || !isNum(c.jurisdictions) || !isNum(c.intlPct) || !isNum(c.metrics.volSinceInc);
+  if(needsClientBase){
+    cards.push(`<div class="wiz-card">
+      <h4>Client base &amp; volume KPIs</h4>
+      <p class="h">These print on the KPI page (page 7). Since-incorporation volume rolls forward once entered.</p>
+      <div class="grid2">
+        ${wFld('Clients','kpi.clients',{ph:c.clientsX==null?'':c.clientsX, auto:c.clientsX!=null?'From the Xero client row':'Not in the export — enter it'})}
+        ${wFld('Active accounts','kpi.accountsActive')}
+        ${wFld('Accounts held','kpi.accountsHeld')}
+        ${wFld('Jurisdictions','kpi.jurisdictions',{ph:c.jurNamed||'',auto:'Blank uses the client-mix list'})}
+        ${wFld('International clients (%)','kpi.intlPct',{ph:isNum(c.intlAuto)?c.intlAuto:'', auto:isNum(c.intlAuto)?`Blank derives ${c.intlAuto}% from the client-mix list`:'Blank derives it from the client-mix list'})}
+        ${wFld('Volume since incorporation (USDm)','kpi.volSinceInc',{ph:c.volIncAuto==null?'':c.volIncAuto, auto:c.volIncAuto==null?'Enter once; carried forward after':''})}
+      </div>
+    </div>`);
+  }
+
+  // YTD adjustment carry-forward confirmation
+  if(S.rec.adj.ytdOtherCarried && !S.rec.confirm.adjYtd){
+    cards.push(`<div class="wiz-card">
+      <h4>YTD adjustment carried from last month</h4>
+      <p class="h">A YTD adjustment of ${money(+S.rec.adj.ytdOther)}${S.rec.adj.ytdOtherLabel?' ('+esc(S.rec.adj.ytdOtherLabel)+')':''} was carried from last month. Confirm it still applies to ${esc(longLbl(S.key))}, or edit the amount/label below.</p>
+      <div class="grid2">${wFld('Amount','adj.ytdOther')}${wFld('Label','adj.ytdOtherLabel',{type:'text',ph:'e.g. approved YTD management adjustment'})}</div>
+      <label class="ack" style="margin-top:10px"><input type="checkbox" data-ck="confirm.adjYtd" ${S.rec.confirm.adjYtd?'checked':''}><span>Confirmed — this YTD adjustment still applies to ${esc(longLbl(S.key))}.</span></label>
+    </div>`);
+  }
+
+  // New Xero accounts requiring mapping review
+  const na=newAccounts();
+  if(na.length && !S.rec.confirm.accounts){
+    cards.push(`<div class="wiz-card">
+      <h4>New Xero account${na.length>1?'s':''} to review</h4>
+      <p class="h">${na.length} account${na.length>1?'':' has'} appeared this month that ${na.length>1?'have':'has'} not been seen before: <b>${na.slice(0,5).map(esc).join(', ')}${na.length>5?'…':''}</b>. Review the mapping in <button class="linkbtn" id="wizOpenAccountsMap" type="button" style="display:inline;padding:0;font-size:12.5px">Detailed setup → Figures</button>, then confirm here.</p>
+      <label class="ack"><input type="checkbox" data-ck="confirm.accounts" ${S.rec.confirm.accounts?'checked':''}><span>Mapping reviewed for the new account${na.length>1?'s':''}.</span></label>
+    </div>`);
+  }
+
+  // Commentary blocks that are unreviewed or missing
+  const commentaryNeedsAttention = TEXTS.filter(([k])=>{
+    const cur=(S.rec.text[k]||'').trim();
+    const nu=(S.rec.noUpdate||{})[k];
+    const rev=!!S.rec.review[k];
+    const onSlide=(k==='pipeline'||k==='regulatory'||k==='tech');
+    if(!cur && onSlide && !nu) return true;         // required and empty
+    if(cur && !rev) return true;                     // typed but unreviewed
+    return false;
+  });
+  if(commentaryNeedsAttention.length){
+    const hint='Start a line with “# ” for a subheading and “- ” for a bullet (indent two spaces for a sub-bullet). **Double-asterisk** for bold.';
+    cards.push(`<div class="wiz-card">
+      <h4>Commentary to review</h4>
+      <p class="h">${commentaryNeedsAttention.length} commentary block${commentaryNeedsAttention.length===1?'':'s'} still need${commentaryNeedsAttention.length===1?'s':''} your attention. Carried text can contain dated statements; each block must be marked reviewed for ${esc(longLbl(S.key))} before the report can be generated.</p>
+      <p class="h">${esc(hint)}</p>
+      ${commentaryNeedsAttention.map(([k,label])=>`
+        <div style="margin-top:14px;padding-top:14px;border-top:1px solid var(--border-soft)">
+          <div style="font-family:var(--serif);font-weight:500;font-size:15px;margin-bottom:4px">${esc(label)}</div>
+          ${wTxt('','text.'+k, k==='ebitdaNote'||k==='metricsNote'?3:8)}
+          ${wRev(k)}
+        </div>`).join('')}
+    </div>`);
+  }
+
+  // Distribution mismatch acknowledgement (still requires the operator to edit
+  // the lists themselves in Detailed setup for now; a follow-up commit brings
+  // the list editors inline).
+  const dmm=isNum(c.clients)&&c.jurTot>0&&c.jurTot!==c.clients;
+  const imm=isNum(c.clients)&&c.indTot>0&&c.indTot!==c.clients;
+  const distBlockers = (c.jurTot===0) || (c.indTot===0) || ((dmm||imm) && !S.rec.confirm.dist);
+  if(distBlockers){
+    cards.push(`<div class="wiz-card">
+      <h4>Client distributions</h4>
+      <p class="h">${c.jurTot===0?'No jurisdiction counts entered for this month. ':''}${c.indTot===0?'No industry counts entered for this month. ':''}${dmm||imm?`Headline clients ${c.clients}; jurisdiction total ${c.jurTot}; industry total ${c.indTot}. Review the source, then acknowledge below.`:''}
+        Category rows carry over from last month; counts start blank each month. Edit the lists in <button class="linkbtn" id="wizOpenDist" type="button" style="display:inline;padding:0;font-size:12.5px">Detailed setup → Client mix</button>.</p>
+      ${(dmm||imm)?`<label class="ack" style="margin-top:8px"><input type="checkbox" data-ck="confirm.dist" ${S.rec.confirm.dist?'checked':''}><span>I have reviewed the source data and confirm the report should be produced with these figures.</span></label>`:''}
+    </div>`);
+  }
+
+  // Republish confirmation (rare; edited after a prior finalisation)
+  if(S.rec.published && S.rec.status!=='published' && !S.rec.confirm.republish){
+    cards.push(`<div class="wiz-card">
+      <h4>Republish confirmation</h4>
+      <p class="h">${esc(longLbl(S.key))} was already finalised${S.rec.published.at?' on '+esc(String(S.rec.published.at).slice(0,10)):''}. Its published figures are frozen and used by later months. Confirm you intend to replace them.</p>
+      <label class="ack"><input type="checkbox" data-ck="confirm.republish" ${S.rec.confirm.republish?'checked':''}><span>Confirmed — next Finalize will replace the previously-published version.</span></label>
+    </div>`);
+  }
+
+  // Attention summary at the top: shows blockers + warnings that AREN'T yet
+  // being surfaced by an inline control card above.
+  const surfacedLabels = new Set([
+    ...(cards.length?['Per-client denominator','Per-client denominator basis','Client count','Accounts','Jurisdiction distribution','Industry distribution','Distribution difference','Since-incorporation volume','International %','Year-to-date volume','YTD adjustment','Unmapped accounts','Republish confirmation','Reviewed / updated']:[]),
+    // Every commentary label ends with the block name; the inline card covers all TEXTS.
+    'Pipeline','Regulatory commentary','Technology commentary','EBITDA note','Metrics note',
+  ]);
+  const remaining = attention.filter(x=>!surfacedLabels.has(x.label));
+
+  const header = zero
+    ? `<div class="wiz-card"><h4>Nothing needs your attention</h4><p class="h">All required reporting inputs are complete for ${esc(longLbl(S.key))}. You can continue to Review &amp; Generate.</p></div>`
     : `<div class="wiz-card">
         <h4>${attention.length} item${attention.length===1?'':'s'} need${attention.length===1?'s':''} your attention</h4>
-        <p class="h">Resolve each item below — the specific control opens in the detailed view.</p>
-        <ul style="list-style:none;padding:0;margin:0;display:grid;gap:8px">
-          ${attention.map(x=>`<li style="padding:10px 12px;border:1px solid ${x.lvl==='e'?'#E5B7B1':'#E1C88B'};border-radius:8px;background:${x.lvl==='e'?'#FDECE9':'var(--warn-bg)'};color:${x.lvl==='e'?'#9B2C2C':'var(--warn)'}"><b>${esc(x.label)}</b>${x.detail?` — <span style="color:var(--text)">${x.detail}</span>`:''}</li>`).join('')}
-        </ul>
-        <p class="h" style="margin-top:14px">In this commit the detailed controls remain in the legacy tabs (Detailed setup). Stage 2 gets its own inline exception controls in the next commit.</p>
+        <p class="h">Resolve each item below. Only blockers and warnings are shown; passed checks are hidden.</p>
+        ${remaining.length? `<ul style="list-style:none;padding:0;margin:0;display:grid;gap:6px">
+          ${remaining.map(x=>`<li style="padding:8px 12px;border:1px solid ${x.lvl==='e'?'#E5B7B1':'#E1C88B'};border-radius:8px;background:${x.lvl==='e'?'#FDECE9':'var(--warn-bg)'};color:${x.lvl==='e'?'#9B2C2C':'var(--warn)'};font-size:12.5px"><b>${esc(x.label)}</b>${x.detail?` — <span style="color:var(--text)">${x.detail}</span>`:''}</li>`).join('')}
+        </ul>`:''}
        </div>`;
-  return list + `
+
+  return header + cards.join('') + `
     <div class="wiz-actions">
       <div class="left">
         <button class="wiz-legacy" id="wizBack" type="button">← Back to Upload</button>
@@ -1545,6 +1683,8 @@ document.addEventListener('click',e=>{
   if(t.id==='wizBack'){ wizSetStage(Math.max(1,WIZ.stage-1)); return; }
   if(t.id==='wizGenerate'){ const b=$('#btnPdf'); if(b && !b.disabled) b.click(); return; }
   if(t.id==='wizLegacy'){ document.body.classList.remove('mr-wizard-mode'); return; }
+  if(t.id==='wizOpenAccountsMap'){ S.tab='figures'; document.body.classList.remove('mr-wizard-mode'); renderPanes(); return; }
+  if(t.id==='wizOpenDist'){ S.tab='clients'; document.body.classList.remove('mr-wizard-mode'); renderPanes(); return; }
   if(t.dataset.wizRm){ wizRemoveSource(t.dataset.wizRm); return; }
 });
 document.addEventListener('change',e=>{
@@ -1570,7 +1710,17 @@ function changed(refreshPanel){
   if(isFinalizing) return;   // inputs are locked while a report is being finalised
   invalidateFinal();   // any edit invalidates a finalised snapshot; require Finalize again
   if(S.rec&&S.rec.status==='published'){ S.rec.status='draft'; if(S.rec.confirm) S.rec.confirm.republish=false; }
-  scheduleSave(); rerender(); if(refreshPanel){ clearTimeout(changed.t); changed.t=setTimeout(()=>{ const a=document.activeElement; const id=a&&a.id; renderPanes(); if(id){ const n=document.getElementById(id); if(n){ n.focus(); try{ const L=n.value.length; n.setSelectionRange&&n.type==='text'&&n.setSelectionRange(L,L);}catch(e){} } } },700); } }
+  scheduleSave(); rerender();
+  // Wizard refresh: debounced, focus-preserving. Keeps the Stage 2 readiness
+  // card / exception cards in step with the state the operator just typed.
+  clearTimeout(changed.wt); changed.wt=setTimeout(()=>{
+    if(document.body.classList.contains('mr-wizard-mode')){
+      const a=document.activeElement; const id=a&&a.id; const start=(a&&a.selectionStart), end=(a&&a.selectionEnd);
+      renderWizard();
+      if(id && /^w_/.test(id)){ const n=document.getElementById(id); if(n){ try{ n.focus(); if(start!=null && n.setSelectionRange) n.setSelectionRange(start,end); }catch(e){} } }
+    }
+  },350);
+  if(refreshPanel){ clearTimeout(changed.t); changed.t=setTimeout(()=>{ const a=document.activeElement; const id=a&&a.id; renderPanes(); if(id){ const n=document.getElementById(id); if(n){ n.focus(); try{ const L=n.value.length; n.setSelectionRange&&n.type==='text'&&n.setSelectionRange(L,L);}catch(e){} } } },700); } }
 
 /* ================= events ================= */
 document.addEventListener('input',e=>{

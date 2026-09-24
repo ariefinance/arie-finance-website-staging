@@ -1,0 +1,38 @@
+{
+  "v": 1,
+  "savedAt": "2026-09-24T08:41:09.189Z",
+  "rec": {
+    "adj": {},
+    "kpi": {},
+    "txn": {},
+    "text": {},
+    "review": {},
+    "confirm": {},
+    "noUpdate": {},
+    "juris": [],
+    "industries": [],
+    "status": "published",
+    "published": true
+  },
+  "hist": {
+    "2026-07": {
+      "adj": {},
+      "kpi": {},
+      "txn": {},
+      "text": {},
+      "review": {},
+      "confirm": {},
+      "noUpdate": {},
+      "juris": [],
+      "industries": [],
+      "status": "published",
+      "published": true
+    }
+  },
+  "cfg": {
+    "entity": "Acme Holdings Ltd",
+    "currency": "USD",
+    "reportMonth": "2026-07"
+  },
+  "__checksum": "227905929"
+}

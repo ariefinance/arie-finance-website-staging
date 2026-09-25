@@ -14,7 +14,8 @@
   // current blank template's 56-widget page 1 layout).
   const PDF_MAP = {
     client:             "undefined",              // Account Name (remitter)
-    address:            "undefined_2",            // Address line 1
+    address:            "undefined_2",            // Remitter Address line 1
+    address2:           "Address",                // Remitter Address line 2 (widget name is "Address")
     contact:            "Contact No",             // Contact number
     currency:           "Payment currency",
     amount:             "Amount",

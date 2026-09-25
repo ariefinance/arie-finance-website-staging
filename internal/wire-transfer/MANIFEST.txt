@@ -9,6 +9,7 @@ extract.js
 cleanup.js
 words.js
 require.js
+state.js
 pdf-fill.js
 MANIFEST.txt
 assets/maubank-tt-dd.pdf

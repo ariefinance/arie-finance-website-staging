@@ -861,6 +861,30 @@ function initCaps(){
    Every mutation entry point below routes through this predicate. */
 function mutationLocked(){ return isFinalizing || !!finalSnapshot; }
 
+/* Central transaction-source transition. Called from every code path that
+   accepts a new Transaction Summary (handleFiles auto-detect and
+   wizClassifyManual manual pick). Guarantees:
+   - old txn-derived current-month values ALWAYS retire before the new source
+     applies (§1: a workbook without the current month must not silently keep
+     the previous workbook's figures);
+   - S.txn / S.files.txn are set consistently;
+   - auto-apply and strict auto-seed run when S.key + S.rec are known. */
+function applyTransactionSource(parsedTxn, filename){
+  if(S.rec){
+    S.rec.txn = { inCount:null, outCount:null, inUsd:null, outUsd:null };
+    if(S.rec.kpi) S.rec.kpi.volYtd = null;
+  }
+  S.txn = parsedTxn;
+  S.files.txn = filename;
+  if(!S.key || !S.rec) return;
+  const tm = parsedTxn.months[S.key];
+  if(tm){
+    S.rec.txn = { inCount:tm.inCount, outCount:tm.outCount, inUsd:tm.inUsd, outUsd:tm.outUsd };
+    if(parsedTxn.ytd && parsedTxn.ytd.key===S.key && !isNum(S.rec.kpi.volYtd)) S.rec.kpi.volYtd = parsedTxn.ytd.usd/1e6;
+  }
+  autoSeedFromTxn();
+}
+
 /* §4 — strict auto-seed from the current Transaction Summary. Before seeding
    this source's months, purge any month keys the CURRENT session seeded from
    a PREVIOUS Transaction Summary (source replacement should not leave stale
@@ -891,15 +915,16 @@ function autoSeedFromTxn(){
 async function handleFiles(list){
   if(mutationLocked()) return;          // frozen while finalising, and after finalisation until "Make changes"
   invalidateFinal();                    // new source files change the report -> old outputs no longer valid
+  let pendingTxn = null;                // {parsed, filename} — applied AFTER the loop, once S.key is known.
   for(const f of list){
     try{
-      const buf=await f.arrayBuffer(); if(isFinalizing) return;   // finalisation started during the async read: abort
+      const buf=await f.arrayBuffer(); if(mutationLocked()) return;
       const wb=XLSX.read(buf,{type:'array'}); const rows=sheetRows(wb); const kind=detectKind(rows);
       if(kind==='pl'){ S.pl=parsePL(rows); S.files.pl=f.name; }
       else if(kind==='bs'){ S.bs=parseBS(rows); S.files.bs=f.name; }
       else {
         const ts=parseTxnSummary(wb);
-        if(ts){ S.txn=ts; S.files.txn=f.name; toast(`${f.name}: ${Object.keys(ts.months).length} months of transaction data read. Apply them in the KPIs and Setup tabs.`,6000); }
+        if(ts){ pendingTxn = { parsed: ts, filename: f.name }; toast(`${f.name}: ${Object.keys(ts.months).length} months of transaction data read.`,6000); }
         else { toast(`${f.name}: not recognised as a Xero Profit and Loss, Balance Sheet or Transaction Summary export.`,5000); }
         continue;
       }
@@ -916,19 +941,12 @@ async function handleFiles(list){
     }
     scheduleSave();
   }
-  /* Phase A §7 — auto-apply the current-month transaction figures once a
-     valid Transaction Summary and the current reporting month are both known.
-     Same values as the legacy #txnApply click; user manual overrides survive
-     (volYtd is only auto-set when unset). Safeguards from readiness() still
-     apply: a workbook without a matching month leaves S.rec.txn as-is and the
-     Transaction data blocker fires. */
-  if(S.txn && S.key && S.rec){
-    const tm=S.txn.months[S.key];
-    if(tm){
-      S.rec.txn={inCount:tm.inCount, outCount:tm.outCount, inUsd:tm.inUsd, outUsd:tm.outUsd};
-      if(S.txn.ytd && S.txn.ytd.key===S.key && !isNum(S.rec.kpi.volYtd)) S.rec.kpi.volYtd=S.txn.ytd.usd/1e6;
-    }
-    autoSeedFromTxn();
+  // §1 / §4 — funnel every new Transaction Summary through the central
+  // helper so old txn-derived current-month values retire before the new
+  // source applies. A replacement workbook that lacks S.key will now leave
+  // S.rec.txn blank and readiness raises the Transaction data blocker.
+  if(pendingTxn){
+    applyTransactionSource(pendingTxn.parsed, pendingTxn.filename);
     scheduleSave();
   }
   renderAll();
@@ -1325,6 +1343,12 @@ function setHist(key,f,val){
   const v=val===''?null:num(val);
   mt[f]= v==null?null:(f==='gpMargin'?v/100:v);
   r.reported=r.published; r.seed=true;
+  // §3 — an operator edit converts an auto-seeded month into a genuine
+  // record. Remove it from the current-session auto-seed tracker so a later
+  // Transaction Summary removal/replacement never deletes what the operator
+  // just typed. The hist object itself stays; strict hasOwnProperty then
+  // guards it against silent reseeds.
+  if(S.__autoSeededKeys) S.__autoSeededKeys.delete(key);
 }
 /* Seeds transaction history for months that were NOT produced in this tool.
    A month with its own saved record is published history and is never overwritten. */
@@ -1465,20 +1489,9 @@ async function wizClassifyManual(idx, kind){
     } else if(kind==='txn'){
       const parsed = parseTxnSummary(wb);
       if(!parsed) throw new Error('The workbook does not contain an "In / Out / row labels" transaction block for any month.');
-      S.txn = parsed; S.files.txn = entry.name;
+      applyTransactionSource(parsed, entry.name);
     }
     WIZ.unclassified.splice(idx,1);
-    // Run auto-application + strict auto-seed the same way handleFiles does,
-    // so a manually-classified Transaction Summary still yields the current-
-    // month figures and six-month history.
-    if(S.txn && S.key && S.rec){
-      const tm = S.txn.months[S.key];
-      if(tm){
-        S.rec.txn = { inCount:tm.inCount, outCount:tm.outCount, inUsd:tm.inUsd, outUsd:tm.outUsd };
-        if(S.txn.ytd && S.txn.ytd.key===S.key && !isNum(S.rec.kpi.volYtd)) S.rec.kpi.volYtd = S.txn.ytd.usd/1e6;
-      }
-      autoSeedFromTxn();
-    }
     scheduleSave(); renderAll();
     toast(`${entry.name}: accepted as ${({pl:'Profit & Loss', txn:'Transaction Summary', bs:'Balance Sheet'})[kind]}.`, 4500);
   } catch(err){
@@ -2304,7 +2317,18 @@ function applyContinuation(obj){
   S.cfg=Object.assign(defaultCfg(),clone(obj.cfg));
   S.contMonth=obj.reportingMonth;
   migrateHist();
+  // §2 — the auto-seed tracker described months seeded from a Transaction
+  // Summary loaded BEFORE this continuation. That provenance no longer
+  // applies to the refreshed hist. Reset the tracker; any seed:true entry
+  // supplied by the continuation is now guarded by the strict hasOwnProperty
+  // rule against silent reseeding.
+  S.__autoSeededKeys = new Set();
   if(S.key){ S.rec=null; ensureRec(); }
+  // If a Transaction Summary is already loaded and the current reporting
+  // month is known, re-run auto-seed against the refreshed hist so any
+  // genuinely absent last-6 month gets seeded now. Continuation entries are
+  // protected by hasOwnProperty.
+  if(S.txn && S.key && S.rec) autoSeedFromTxn();
   renderAll();
 }
 function importContinuation(file){

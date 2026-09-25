@@ -89,11 +89,14 @@ async function openTool(browser){
 
 async function loadPack(page, opts){
   opts=opts||{};
-  const previous = opts.previous || PRV;
   await page.waitForSelector('#contFile',{state:'attached',timeout:10000});
-  await page.setInputFiles('#contFile', previous);
-  if(opts.expectHistKey){
-    await page.waitForFunction((k)=>(typeof S!=='undefined')&&S.hist&&!!S.hist[k], opts.expectHistKey, {timeout:5000}).catch(()=>{});
+  // previous:false → do NOT upload a Previous Month File. previous:<path> → that
+  // specific one. Omitted → default synthetic PRV.
+  if(opts.previous !== false){
+    await page.setInputFiles('#contFile', opts.previous || PRV);
+    if(opts.expectHistKey){
+      await page.waitForFunction((k)=>(typeof S!=='undefined')&&S.hist&&!!S.hist[k], opts.expectHistKey, {timeout:5000}).catch(()=>{});
+    }
   }
   const files=[]; if(opts.pl!==false) files.push(opts.pl||PL);
   if(opts.txn!==false) files.push(opts.txn||TXN);
@@ -733,6 +736,119 @@ async function T25_classifyUnknown(browser){
   } finally { await ctx.close(); }
 }
 
+async function T30_txnReplacementMissingCurrentMonth(browser){
+  const {ctx,page}=await openTool(browser);
+  try{
+    await loadPack(page);
+    const st = await page.evaluate(()=>{
+      const before = { ...S.rec.txn, filename: S.files.txn };
+      // Replacement Transaction Summary that is structurally valid but does
+      // NOT contain the current reporting month.
+      const replacement = { months: { '2026-04': { inUsd:1000, outUsd:1000, inCount:1, outCount:1 } }, ytd: null, sheet: 'Sheet1' };
+      applyTransactionSource(replacement, 'replacement-txn.xlsx');
+      const after = { ...S.rec.txn, filename: S.files.txn, volYtd: S.rec.kpi.volYtd };
+      const R = readiness();
+      const txnBlocker = R.items.some(x=>x.lvl==='e' && x.label==='Transaction data');
+      return { before, after, txnBlocker };
+    });
+    const allCleared = st.after.inCount===null && st.after.outCount===null && st.after.inUsd===null && st.after.outUsd===null;
+    if(typeof st.before.inCount==='number' && allCleared && st.after.filename==='replacement-txn.xlsx'
+       && (st.after.volYtd===null || st.after.volYtd===undefined) && st.txnBlocker)
+      ok('T30 Txn replacement without current month clears old figures + raises Transaction data blocker');
+    else fail('T30 Txn replacement clears', JSON.stringify(st));
+  } finally { await ctx.close(); }
+}
+
+async function T31_continuationResetsProvenance(browser){
+  const {ctx,page}=await openTool(browser);
+  try{
+    await loadPack(page, {previous:false, txn:false});   // just PL
+    const st = await page.evaluate(()=>{
+      // Seed April (a month WITHIN last6 for Sep) from a fake Txn source.
+      const fakeTxn = { months: { '2026-04': { inUsd:100, outUsd:100, inCount:1, outCount:1 } }, ytd: null };
+      applyTransactionSource(fakeTxn, 'fake-txn.xlsx');
+      const seededFromTxn = S.hist['2026-04'] && S.hist['2026-04'].published.metrics.inUsd===100;
+      const trackerHadApr = S.__autoSeededKeys && S.__autoSeededKeys.has('2026-04');
+      // Import a continuation carrying its OWN April entry with distinct values.
+      applyContinuation({
+        formatId: 'arie-management-report-continuation',
+        schemaVersion: 1,
+        reportingMonth: '2026-08',
+        hist: { '2026-04': { seed:true, published: { metrics: { inUsd:999, outUsd:999, inCount:9, outCount:9, volMonth:0.001998 } } } },
+        cfg: {},
+      });
+      const postContTrackerEmpty = S.__autoSeededKeys && S.__autoSeededKeys.size===0;
+      const postContAprFromCont = S.hist['2026-04'] && S.hist['2026-04'].published.metrics.inUsd===999;
+      // Remove Txn source — the continuation-supplied April must SURVIVE.
+      wizRemoveSource('txn');
+      const finalApr = S.hist['2026-04'];
+      const finalAprSurvives = !!finalApr && finalApr.published.metrics.inUsd===999;
+      return { seededFromTxn, trackerHadApr, postContTrackerEmpty, postContAprFromCont, finalAprSurvives };
+    });
+    if(st.seededFromTxn && st.trackerHadApr && st.postContTrackerEmpty && st.postContAprFromCont && st.finalAprSurvives)
+      ok('T31 Continuation import resets auto-seed provenance; continuation-supplied hist survives later Txn removal');
+    else fail('T31 Continuation resets provenance', JSON.stringify(st));
+  } finally { await ctx.close(); }
+}
+
+async function T32_orderIndependent(browser){
+  async function run(order){
+    const {ctx,page}=await openTool(browser);
+    try{
+      for(const kind of order){
+        if(kind==='pmf') await page.setInputFiles('#contFile', PRV);
+        else if(kind==='pl') await page.setInputFiles('#file', [PL]);
+        else if(kind==='txn') await page.setInputFiles('#file', [TXN]);
+        await page.waitForTimeout(400);
+      }
+      return await page.evaluate(()=>({
+        histKeys: Object.keys(S.hist||{}).sort(),
+        contMonth: S.contMonth,
+        // Sample: values at 2026-08 (from continuation) should be the same in both orders.
+        hist08InUsd: S.hist['2026-08'] && S.hist['2026-08'].published && S.hist['2026-08'].published.metrics && S.hist['2026-08'].published.metrics.inUsd,
+        hist08Seed: S.hist['2026-08'] && !!S.hist['2026-08'].adj,
+        recKey: S.key,
+      }));
+    } finally { await ctx.close(); }
+  }
+  const stA = await run(['pmf','pl','txn']);
+  const stB = await run(['pl','txn','pmf']);
+  const same = JSON.stringify(stA.histKeys)===JSON.stringify(stB.histKeys)
+            && stA.contMonth===stB.contMonth
+            && stA.hist08InUsd===stB.hist08InUsd
+            && stA.recKey===stB.recKey;
+  if(same) ok('T32 Upload ordering: {PMF,PL,TXN} produces same hist as {PL,TXN,PMF}');
+  else fail('T32 Order independence', JSON.stringify({stA, stB}));
+}
+
+async function T33_operatorEditedSeedSurvives(browser){
+  const {ctx,page}=await openTool(browser);
+  try{
+    await loadPack(page, {previous:false, txn:false});   // just PL
+    const st = await page.evaluate(()=>{
+      // Use April (within last6 for Sep) so auto-seed actually populates it.
+      const fakeTxn = { months: { '2026-04': { inUsd:100, outUsd:100, inCount:1, outCount:1 } }, ytd: null };
+      applyTransactionSource(fakeTxn, 'fake-txn.xlsx');
+      const seededInTracker = S.__autoSeededKeys && S.__autoSeededKeys.has('2026-04');
+      // Operator manually edits April via setHist().
+      setHist('2026-04', 'gpMargin', 65);
+      const afterEditInTracker = S.__autoSeededKeys && S.__autoSeededKeys.has('2026-04');
+      // Remove Txn source.
+      wizRemoveSource('txn');
+      const finalApr = S.hist['2026-04'];
+      return {
+        seededInTracker,
+        afterEditInTracker,
+        finalHistExists: !!finalApr,
+        finalGpMargin: finalApr && finalApr.published.metrics.gpMargin,
+      };
+    });
+    if(st.seededInTracker && !st.afterEditInTracker && st.finalHistExists && st.finalGpMargin===0.65)
+      ok('T33 Operator-edited auto-seeded month survives Txn removal (edit breaks provenance)');
+    else fail('T33 Edited seed survives', JSON.stringify(st));
+  } finally { await ctx.close(); }
+}
+
 async function main(){
   const server = await serveRepo();
   const browser = await chromium.launch({executablePath: CHROMIUM_EXE, args:['--disable-dev-shm-usage']});
@@ -766,6 +882,10 @@ async function main(){
     await T27_signOutPendingDownload(browser);
     await T28_commentaryEditorStability(browser);
     await T29_unrelatedWarningVisible(browser);
+    await T30_txnReplacementMissingCurrentMonth(browser);
+    await T31_continuationResetsProvenance(browser);
+    await T32_orderIndependent(browser);
+    await T33_operatorEditedSeedSurvives(browser);
   } finally {
     await browser.close();
     server.close();

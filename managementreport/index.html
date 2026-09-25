@@ -777,20 +777,12 @@ const FIGKEYS=['acc','subTxn','fxOther','maint','advisory','rev','staff','prof',
    used as "previously reported" by a later month. */
 function publishMonth(){
   const c=compute();
-  // §8 — also persist the KPI values that Stage 3's next-month comparative
-  // table reads (Clients, Active accounts, Jurisdictions). Does not affect
-  // the current month's rendered output; the report engine reads from
-  // S.rec.kpi / compute() directly. Purely for the following month's
-  // Review & Generate previous-column.
-  const kpiSnap = {
-    clients:        isNum(c.clients)                 ? c.clients                 : null,
-    accountsActive: isNum(S.rec.kpi.accountsActive)  ? S.rec.kpi.accountsActive  : null,
-    accountsHeld:   isNum(S.rec.kpi.accountsHeld)    ? S.rec.kpi.accountsHeld    : null,
-    jurisdictions:  isNum(c.jurisdictions)           ? c.jurisdictions           : null,
-    intlPct:        isNum(c.intlPct)                 ? c.intlPct                 : null,
-  };
+  // Phase A leaves the published/continuation shape unchanged. The
+  // complete monthly record (including its top-level S.rec.kpi) is already
+  // stored in S.hist[key] by saveNow(); Stage 3 reads prior Clients /
+  // Active accounts / Jurisdictions from hist[prevKey].kpi directly.
   S.rec.published={ key:S.key, at:new Date().toISOString(),
-    fig:pick(c.cur,FIGKEYS), metrics:c.metrics, kpi:kpiSnap };
+    fig:pick(c.cur,FIGKEYS), metrics:c.metrics };
   S.rec.status='published';
   if(S.rec.confirm) S.rec.confirm.republish=false;
   return saveNow();
@@ -869,6 +861,32 @@ function initCaps(){
    Every mutation entry point below routes through this predicate. */
 function mutationLocked(){ return isFinalizing || !!finalSnapshot; }
 
+/* §4 — strict auto-seed from the current Transaction Summary. Before seeding
+   this source's months, purge any month keys the CURRENT session seeded from
+   a PREVIOUS Transaction Summary (source replacement should not leave stale
+   history). Only touches entries this session created; a seeded entry that
+   the operator subsequently promoted (with .adj) or that was overwritten
+   from a Previous Month File stays. */
+function autoSeedFromTxn(){
+  if(!S.txn || !S.key) return;
+  // Purge previous session-seed set.
+  if(S.__autoSeededKeys){
+    for(const k of Array.from(S.__autoSeededKeys)){
+      const r = S.hist[k];
+      if(r && r.seed && !r.adj) delete S.hist[k];
+    }
+  }
+  S.__autoSeededKeys = new Set();
+  last6().slice(0,-1).forEach(x=>{
+    if(Object.prototype.hasOwnProperty.call(S.hist||{}, x)) return;
+    const mm=S.txn.months[x]; if(!mm) return;
+    const r=S.hist[x]={};
+    r.published={metrics:{inUsd:mm.inUsd, outUsd:mm.outUsd, inCount:mm.inCount, outCount:mm.outCount, volMonth:(mm.inUsd+mm.outUsd)/1e6}};
+    r.reported=r.published; r.seed=true;
+    S.__autoSeededKeys.add(x);
+  });
+}
+
 /* ================= uploads ================= */
 async function handleFiles(list){
   if(mutationLocked()) return;          // frozen while finalising, and after finalisation until "Make changes"
@@ -910,17 +928,7 @@ async function handleFiles(list){
       S.rec.txn={inCount:tm.inCount, outCount:tm.outCount, inUsd:tm.inUsd, outUsd:tm.outUsd};
       if(S.txn.ytd && S.txn.ytd.key===S.key && !isNum(S.rec.kpi.volYtd)) S.rec.kpi.volYtd=S.txn.ytd.usd/1e6;
     }
-    /* Phase A §8 — strict auto-seed: fill hist[x] ONLY when there is no own
-       property for that key at all. If S.hist has ANY object for that
-       month (published, draft, partial, seeded, or anything else), it stays
-       untouched. This is stricter than checking for specific markers. */
-    last6().slice(0,-1).forEach(x=>{
-      if(Object.prototype.hasOwnProperty.call(S.hist||{}, x)) return;
-      const mm=S.txn.months[x]; if(!mm) return;
-      const r=S.hist[x]={};
-      r.published={metrics:{inUsd:mm.inUsd, outUsd:mm.outUsd, inCount:mm.inCount, outCount:mm.outCount, volMonth:(mm.inUsd+mm.outUsd)/1e6}};
-      r.reported=r.published; r.seed=true;
-    });
+    autoSeedFromTxn();
     scheduleSave();
   }
   renderAll();
@@ -1469,13 +1477,7 @@ async function wizClassifyManual(idx, kind){
         S.rec.txn = { inCount:tm.inCount, outCount:tm.outCount, inUsd:tm.inUsd, outUsd:tm.outUsd };
         if(S.txn.ytd && S.txn.ytd.key===S.key && !isNum(S.rec.kpi.volYtd)) S.rec.kpi.volYtd = S.txn.ytd.usd/1e6;
       }
-      last6().slice(0,-1).forEach(x=>{
-        if(Object.prototype.hasOwnProperty.call(S.hist||{}, x)) return;
-        const mm = S.txn.months[x]; if(!mm) return;
-        const r = S.hist[x] = {};
-        r.published = { metrics: { inUsd:mm.inUsd, outUsd:mm.outUsd, inCount:mm.inCount, outCount:mm.outCount, volMonth:(mm.inUsd+mm.outUsd)/1e6 } };
-        r.reported = r.published; r.seed = true;
-      });
+      autoSeedFromTxn();
     }
     scheduleSave(); renderAll();
     toast(`${entry.name}: accepted as ${({pl:'Profit & Loss', txn:'Transaction Summary', bs:'Balance Sheet'})[kind]}.`, 4500);
@@ -1496,11 +1498,21 @@ function wizRemoveSource(kind){
     S.txn=null; S.files.txn=null;
     // §3 — clear the current-month transaction values that were auto-applied
     // from this workbook, and the YTD volume auto-set from its YTD block.
-    // Anything the operator typed manually stays, but auto-applied values
-    // must not persist after their source is removed.
     if(S.rec){
       S.rec.txn = { inCount:null, outCount:null, inUsd:null, outUsd:null };
       if(S.rec.kpi) S.rec.kpi.volYtd = null;
+    }
+    // §4 — undo history that was auto-seeded from this Transaction Summary in
+    // the current session. Only touches entries this session created; never
+    // months loaded from a Previous Month File, published months, seeded
+    // history that was promoted to a real record (has adj), or any month the
+    // operator subsequently edited.
+    if(S.__autoSeededKeys){
+      for(const k of Array.from(S.__autoSeededKeys)){
+        const r = S.hist[k];
+        if(r && r.seed && !r.adj) delete S.hist[k];
+      }
+      S.__autoSeededKeys = new Set();
     }
   }
   else if(kind==='bs'){ S.bs=null; S.files.bs=null; }
@@ -1607,6 +1619,12 @@ function wizStageReview(){
 
   /* --- surface exception controls only when they are actually needed. --- */
   const cards=[];
+  /* §5 — surfacedLabels is built incrementally as each card is created,
+     so a readiness item can only be considered "already shown" if the
+     card that represents it actually renders. This prevents unrelated
+     warnings from being hidden by the presence of another card. */
+  const surfacedLabels = new Set();
+  const surface = (...labels) => labels.forEach(l=>surfacedLabels.add(l));
 
   // Per-client denominator + basis (blockers 5 & 5a)
   if(!isNum(c.active) || String(S.rec.kpi.activeBasis||'').trim().length<3){
@@ -1615,6 +1633,7 @@ function wizStageReview(){
       <p class="h">Used for monthly revenue per client and gross profit per client. It is deliberately not carried forward from last month and is not assumed to equal the headline client count. Record where the figure came from (e.g. “Finance confirmation — transacting clients”).</p>
       <div class="grid2">${wFld('Denominator','kpi.activeClients')}${wFld('Source / basis','kpi.activeBasis',{type:'text',ph:'e.g. Finance confirmation'})}</div>
     </div>`);
+    surface('Per-client denominator','Per-client denominator basis');
   }
 
   // Client count, accounts, jurisdictions, intl%, since-inception volume
@@ -1633,6 +1652,7 @@ function wizStageReview(){
         ${wFld('Volume since incorporation (USDm)','kpi.volSinceInc',{ph:c.volIncAuto==null?'':c.volIncAuto, auto:c.volIncAuto==null?'Enter once; carried forward after':''})}
       </div>
     </div>`);
+    surface('Client count','Accounts','Since-incorporation volume','Year-to-date volume');
   }
 
   // YTD adjustment carry-forward confirmation
@@ -1643,6 +1663,7 @@ function wizStageReview(){
       <div class="grid2">${wFld('Amount','adj.ytdOther')}${wFld('Label','adj.ytdOtherLabel',{type:'text',ph:'e.g. approved YTD management adjustment'})}</div>
       <label class="ack" style="margin-top:10px"><input type="checkbox" data-ck="confirm.adjYtd" ${S.rec.confirm.adjYtd?'checked':''}><span>Confirmed — this YTD adjustment still applies to ${esc(longLbl(S.key))}.</span></label>
     </div>`);
+    surface('YTD adjustment');
   }
 
   // New Xero accounts requiring mapping review
@@ -1653,6 +1674,7 @@ function wizStageReview(){
       <p class="h">${na.length} account${na.length>1?'':' has'} appeared this month that ${na.length>1?'have':'has'} not been seen before: <b>${na.slice(0,5).map(esc).join(', ')}${na.length>5?'…':''}</b>. Review the mapping in <button class="linkbtn" id="wizOpenAccountsMap" type="button" style="display:inline;padding:0;font-size:12.5px">Detailed setup → Figures</button>, then confirm here.</p>
       <label class="ack"><input type="checkbox" data-ck="confirm.accounts" ${S.rec.confirm.accounts?'checked':''}><span>Mapping reviewed for the new account${na.length>1?'s':''}.</span></label>
     </div>`);
+    surface('Unmapped accounts','New accounts');
   }
 
   // Commentary blocks that are unreviewed or missing. A block whose current
@@ -1681,6 +1703,8 @@ function wizStageReview(){
           ${wRev(k)}
         </div>`).join('')}
     </div>`);
+    // Only mark the specific commentary labels represented in this card as surfaced.
+    commentaryNeedsAttention.forEach(([,l])=>surface(l));
   }
 
   // Distribution list editors — inline. Reuses the same data-list/data-add/data-del
@@ -1715,6 +1739,10 @@ function wizStageReview(){
       ${jurBlock}${indBlock}
       ${(dmm||imm)?`<label class="ack" style="margin-top:12px"><input type="checkbox" data-ck="confirm.dist" ${S.rec.confirm.dist?'checked':''}><span>Headline clients ${c.clients}; jurisdiction total ${c.jurTot}; industry total ${c.indTot}. Reviewed and confirmed for ${esc(longLbl(S.key))}.</span></label>`:''}
     </div>`);
+    // Only mark the distributions actually represented by a block here.
+    if(jurBlock) surface('Jurisdiction distribution');
+    if(indBlock) surface('Industry distribution');
+    if(dmm||imm) surface('Distribution difference');
   }
 
   // Republish confirmation (rare; edited after a prior finalisation)
@@ -1724,15 +1752,13 @@ function wizStageReview(){
       <p class="h">${esc(longLbl(S.key))} was already finalised${S.rec.published.at?' on '+esc(String(S.rec.published.at).slice(0,10)):''}. Its published figures are frozen and used by later months. Confirm you intend to replace them.</p>
       <label class="ack"><input type="checkbox" data-ck="confirm.republish" ${S.rec.confirm.republish?'checked':''}><span>Confirmed — next Finalize will replace the previously-published version.</span></label>
     </div>`);
+    surface('Republish confirmation');
   }
 
-  // Attention summary at the top: shows blockers + warnings that AREN'T yet
-  // being surfaced by an inline control card above.
-  const surfacedLabels = new Set([
-    ...(cards.length?['Per-client denominator','Per-client denominator basis','Client count','Accounts','Jurisdiction distribution','Industry distribution','Distribution difference','Since-incorporation volume','International %','Year-to-date volume','YTD adjustment','Unmapped accounts','Republish confirmation','Reviewed / updated']:[]),
-    // Every commentary label ends with the block name; the inline card covers all TEXTS.
-    'Pipeline','Regulatory commentary','Technology commentary','EBITDA note','Metrics note',
-  ]);
+  // Attention summary at the top: shows blockers + warnings that are NOT
+  // being surfaced by an inline control card above. surfacedLabels was built
+  // incrementally alongside each card (§5) so an unrelated warning cannot be
+  // silently hidden by another card.
   const remaining = attention.filter(x=>!surfacedLabels.has(x.label));
 
   // Headline copy tracks the actual gate: blockers stop progress; warnings
@@ -1769,12 +1795,16 @@ function wizStageReview(){
 function wizStageGenerate(){
   if(!S.pl) return `<div class="wiz-placeholder">Upload the Profit &amp; Loss first.</div>`;
   const c=compute();
-  // §8 — the comparative table uses frozen prior-month published values from
-  // hist[prevKey]. Never recalculated. Blank em-dash where a published value
-  // does not exist for a metric.
+  // §8 — the comparative table uses frozen prior-month values from hist:
+  //   Revenue / EBITDA           → hist[prevKey].published.fig
+  //   Transaction volume         → hist[prevKey].published.metrics
+  //   Clients / Accounts / Juris → hist[prevKey].kpi (the record's top-level
+  //                                 kpi that saveNow() stored when the month
+  //                                 was published — same shape as S.rec.kpi)
+  // Never recalculated. Blank em-dash where a value does not exist.
   const prevHist = S.hist && S.hist[c.prevKey];
   const pm = (prevHist && prevHist.published && prevHist.published.metrics) || {};
-  const pk = (prevHist && prevHist.published && prevHist.published.kpi) || {};
+  const pk = (prevHist && prevHist.kpi) || {};
   const pFig = (prevHist && prevHist.published && prevHist.published.fig) || null;
   const prevClients      = isNum(pk.clients) ? pk.clients : null;
   const prevAccActive    = isNum(pk.accountsActive) ? pk.accountsActive : null;
@@ -1812,8 +1842,18 @@ function wizStageGenerate(){
     return `${esc(m.name)} → ${esc(lbl)}`;
   });
   const commentaryState = TEXTS.map(([k,label])=>{
-    const cur=(S.rec.text[k]||'').trim(); const nu=(S.rec.noUpdate||{})[k]; const rev=!!S.rec.review[k];
-    const state = nu&&!cur? 'no update' : (cur? (rev?'reviewed':'unreviewed') : 'empty');
+    const cur=(S.rec.text[k]||'').trim();
+    const prev=((S.rec.prevText||{})[k]||'').trim();
+    const nu=(S.rec.noUpdate||{})[k]; const rev=!!S.rec.review[k];
+    const changedThisMonth = !!cur && cur!==prev;
+    // §6 — mirror readiness() semantics: a changed block is "updated this
+    // month", not "unreviewed". Carried unchanged text without review is
+    // "unresolved" (the readiness blocker); with review it's "reviewed
+    // unchanged"; a truly empty on-slide block marked noUpdate is "no update".
+    const state = !cur ? (nu?'no update':'empty')
+                : changedThisMonth ? 'updated this month'
+                : rev ? 'reviewed unchanged'
+                : 'unresolved';
     return `${esc(label)}: ${state}${cur?` (${cur.length} chars)`:''}`;
   });
   const details = `
@@ -1925,6 +1965,20 @@ function renderWizard(){
   const wf=$('#wizFile');
   if(wf) wf.addEventListener('change', ev=>{ if(ev.target.files && ev.target.files.length) wizHandleDrop(ev.target.files); ev.target.value=''; });
 })();
+/* When a wizard input loses focus, refresh the wizard once — the debounced
+   refresh in changed() intentionally skips while focus is on a wizard input
+   (§2), so a manual re-render is needed after blur to sync the readiness
+   summary + card visibility with the state the operator just finished typing. */
+document.addEventListener('focusout', e=>{
+  const t=e.target;
+  if(t && t.id && /^w_/.test(t.id) && document.body.classList.contains('mr-wizard-mode')){
+    setTimeout(()=>{
+      const a=document.activeElement;
+      if(a && a.id && /^w_/.test(a.id)) return;   // focus moved to another wizard input — leave it
+      renderWizard();
+    }, 100);
+  }
+});
 /* Wizard event delegation (kept separate from the legacy input/click handlers). */
 document.addEventListener('click',e=>{
   if(isFinalizing) return;
@@ -1935,7 +1989,19 @@ document.addEventListener('click',e=>{
   if(t.id==='wizDlPdf'){  downloadFinal('pdf');  return; }
   if(t.id==='wizDlPptx'){ downloadFinal('pptx'); return; }
   if(t.id==='wizDlData'){ downloadFinal('data'); return; }
-  if(t.id==='wizMakeChanges'){ invalidateFinal(); WIZ.stage=2; renderAll(); return; }
+  if(t.id==='wizMakeChanges'){
+    // §1 — deliberate transition back to the draft/republish lifecycle.
+    // Freeing the mutation lock alone is not enough: an already-published
+    // record needs to be moved to draft with confirm.republish cleared so
+    // readiness() correctly requires Republish confirmation before the next
+    // finalisation.
+    invalidateFinal();
+    if(S.rec && S.rec.published){
+      S.rec.status='draft';
+      if(S.rec.confirm) S.rec.confirm.republish=false;
+    }
+    WIZ.stage=2; renderAll(); return;
+  }
   if(t.id==='wizLegacy'){ document.body.classList.remove('mr-wizard-mode'); return; }
   if(t.id==='wizOpenAccountsMap'){ S.tab='figures'; document.body.classList.remove('mr-wizard-mode'); renderPanes(); return; }
   if(t.id==='wizOpenDist'){ S.tab='clients'; document.body.classList.remove('mr-wizard-mode'); renderPanes(); return; }
@@ -1967,12 +2033,15 @@ function changed(refreshPanel){
   scheduleSave(); rerender();
   // Wizard refresh: debounced, focus-preserving. Keeps the Stage 2 readiness
   // card / exception cards in step with the state the operator just typed.
+  // §2 — if a wizard input currently has focus, do NOT re-render the wizard.
+  // A re-render would destroy the input element, and if the block no longer
+  // qualifies as "needs attention" the textarea would disappear mid-word.
+  // The refresh runs on the next change() call after blur.
   clearTimeout(changed.wt); changed.wt=setTimeout(()=>{
-    if(document.body.classList.contains('mr-wizard-mode')){
-      const a=document.activeElement; const id=a&&a.id; const start=(a&&a.selectionStart), end=(a&&a.selectionEnd);
-      renderWizard();
-      if(id && /^w_/.test(id)){ const n=document.getElementById(id); if(n){ try{ n.focus(); if(start!=null && n.setSelectionRange) n.setSelectionRange(start,end); }catch(e){} } }
-    }
+    if(!document.body.classList.contains('mr-wizard-mode')) return;
+    const a=document.activeElement;
+    if(a && a.id && /^w_/.test(a.id)) return;   // active edit — leave the wizard DOM alone
+    renderWizard();
   },350);
   if(refreshPanel){ clearTimeout(changed.t); changed.t=setTimeout(()=>{ const a=document.activeElement; const id=a&&a.id; renderPanes(); if(id){ const n=document.getElementById(id); if(n){ n.focus(); try{ const L=n.value.length; n.setSelectionRange&&n.type==='text'&&n.setSelectionRange(L,L);}catch(e){} } } },700); } }
 

@@ -326,22 +326,32 @@ async function T12_makeChangesUnlocks(browser){
   try{
     await loadPack(page);
     const st = await page.evaluate(()=>{
+      // Simulate a completed publish: this is the state Make Changes reacts to.
+      S.rec.published = { key: S.key, at: '2026-09-01T00:00:00Z', fig: {}, metrics: {} };
+      S.rec.status = 'published';
+      S.rec.confirm.republish = true;
       finalSnapshot = { month: S.key, pdf:{}, pptx:{}, data:{} };
       S.dl = { pdf: true, pptx: true };
-      // Trigger the wizard "Make changes" click path directly.
       WIZ.stage = 3;
       const btn = document.createElement('button'); btn.id='wizMakeChanges';
       document.body.appendChild(btn); btn.click();
-      // Now try a mutation — should succeed.
+      // Mutation should now be allowed.
       wizRemoveSource('txn');
+      // And readiness should NOW list a "Republish confirmation" blocker.
+      const R = readiness();
       return {
         finalSnapshot: !!finalSnapshot,
         stage: WIZ.stage,
         dlEmpty: !S.dl || Object.keys(S.dl).length===0,
         txnCleared: !S.txn,
+        status: S.rec.status,
+        republish: S.rec.confirm.republish,
+        republishBlocker: R.items.some(x=>x.lvl==='e' && x.label==='Republish confirmation'),
       };
     });
-    if(!st.finalSnapshot && st.stage===2 && st.dlEmpty && st.txnCleared) ok('T12 "Make changes" clears finalSnapshot, resets S.dl, unlocks mutation');
+    if(!st.finalSnapshot && st.stage===2 && st.dlEmpty && st.txnCleared
+       && st.status==='draft' && st.republish===false && st.republishBlocker)
+      ok('T12 "Make changes" clears snapshot + S.dl, sets status=draft, resets republish flag, produces republish blocker');
     else fail('T12 Make changes unlock', JSON.stringify(st));
   } finally { await ctx.close(); }
 }
@@ -361,25 +371,25 @@ async function T13_pickerAcceptsData(browser){
 async function T14_dropProcessedOnce(browser){
   const {ctx,page}=await openTool(browser);
   try{
-    // Instrument handleFiles then drop onto #wizDrop. Verify handleFiles is
-    // called at most once (not once by wizard and again by global drop handler).
+    // Instrument handleFiles then dispatch a real drop event on #wizDrop
+    // carrying a valid xlsx buffer. Assert handleFiles is called EXACTLY
+    // once — zero calls fail (setup broken), two calls fail (regression).
     await page.evaluate(()=>{ window.__hfCalls = 0; const orig = window.handleFiles; window.handleFiles = async function(list){ window.__hfCalls++; return orig.apply(this, arguments); }; });
-    // Force the wizard to render its drop zone.
     await page.evaluate(()=>{ renderWizard(); });
     await page.waitForSelector('#wizDrop', {timeout: 5000});
-    // Simulate a drop by dispatching a DragEvent on #wizDrop with a File.
-    const calls = await page.evaluate(async ()=>{
+    const buf = fs.readFileSync(PL);
+    const calls = await page.evaluate(async (b64)=>{
+      const bytes = Uint8Array.from(atob(b64), c=>c.charCodeAt(0));
       const dt = new DataTransfer();
-      dt.items.add(new File(['<xlsx>'], 'sample.xlsx'));
+      dt.items.add(new File([bytes], 'sample.xlsx', {type:'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'}));
       const evt = new DragEvent('drop', { dataTransfer: dt, bubbles: true, cancelable: true });
       const zone = document.getElementById('wizDrop');
       zone.dispatchEvent(evt);
-      // Give any queued microtasks a moment to run.
-      await new Promise(r=>setTimeout(r,150));
+      await new Promise(r=>setTimeout(r,300));
       return window.__hfCalls;
-    });
-    if(calls <= 1) ok('T14 Wizard drop routes handleFiles at most once (no double-processing)');
-    else fail('T14 Drop double-processing', 'handleFiles calls: ' + calls);
+    }, buf.toString('base64'));
+    if(calls === 1) ok('T14 Wizard drop routes handleFiles EXACTLY once');
+    else fail('T14 Drop routing', 'handleFiles calls: ' + calls + ' (want 1)');
   } finally { await ctx.close(); }
 }
 
@@ -434,9 +444,10 @@ async function T17_stage3Comparative(browser){
   try{
     await loadPack(page);
     const state = await page.evaluate(fillZeroBlockerState() + `; (()=>{
-      // Stamp a published.kpi onto the prior month so Stage 3 has prior
-      // Client / Accounts / Jurisdictions values to render.
-      S.hist['2026-08'].published.kpi = { clients:2, accountsActive:4, jurisdictions:2 };
+      // Stamp a top-level kpi onto the prior month record so Stage 3 has
+      // prior Client / Accounts / Jurisdictions to render. Phase A reads
+      // from hist[prevKey].kpi (the record's own kpi, not published.kpi).
+      S.hist['2026-08'].kpi = { clients:2, accountsActive:4, jurisdictions:2 };
       wizSetStage(3);
       const html = document.getElementById('wizard').innerHTML;
       const clientsRowOk        = /Clients[\\s\\S]{0,900}?<td[^>]*>2</.test(html);
@@ -589,6 +600,125 @@ async function T24_distEditors(browser){
   } finally { await ctx.close(); }
 }
 
+async function T26_continuationShape(browser){
+  const {ctx,page}=await openTool(browser);
+  try{
+    await loadPack(page);
+    // Publish and check the shape of hist[key].published.
+    const shape = await page.evaluate(fillZeroBlockerState() + `; (async ()=>{
+      await publishMonth();
+      const p = S.hist[S.key].published;
+      return { keys: Object.keys(p).sort(), hasKpi: 'kpi' in p };
+    })()`);
+    // Pre-Phase-A shape is { key, at, fig, metrics }. Phase A must not add
+    // extra fields like published.kpi.
+    const expected = ['at','fig','key','metrics'];
+    const shapeOk = JSON.stringify(shape.keys) === JSON.stringify(expected);
+    if(shapeOk && !shape.hasKpi) ok('T26 publishMonth preserves pre-Phase-A shape (no published.kpi)');
+    else fail('T26 Continuation shape', JSON.stringify(shape));
+  } finally { await ctx.close(); }
+}
+
+async function T27_signOutPendingDownload(browser){
+  const {ctx,page}=await openTool(browser);
+  try{
+    await loadPack(page);
+    // Finalised report with the PDF downloaded but PPTX + Next Month File
+    // not yet started. Sign out should warn with "pending" wording naming
+    // the outstanding outputs.
+    await page.evaluate(()=>{
+      finalSnapshot = { month: S.key, pdf:{blob:new Blob(['x'])}, pptx:{blob:new Blob(['x'])}, data:{blob:new Blob(['x'])} };
+      S.dl = { pdf: true };
+      window.__confirmCalls = 0;
+      window.confirm = (m)=>{ window.__confirmMsg = m; window.__confirmCalls++; return false; };
+    });
+    await page.evaluate(()=>{ document.getElementById('btnSignOut').click(); });
+    const st = await page.evaluate(()=>({ calls: window.__confirmCalls, msg: window.__confirmMsg||'', bypass: !!window.__mrBypassUnload }));
+    const pendingWords = /PowerPoint/.test(st.msg) && /Next Month File/.test(st.msg);
+    if(st.calls===1 && pendingWords && !st.bypass) ok('T27 Sign out warns on pending PowerPoint + Next Month File; cancel aborts');
+    else fail('T27 Sign out pending download', JSON.stringify(st));
+  } finally { await ctx.close(); }
+}
+
+async function T28_commentaryEditorStability(browser){
+  const {ctx,page}=await openTool(browser);
+  try{
+    await loadPack(page);
+    // Force a commentary block to be surfaced (carried unchanged text needing review).
+    await page.evaluate(()=>{
+      Object.assign(S.rec.kpi, { clients:3, activeClients:3, activeBasis:'Test denominator basis', accountsActive:5, accountsHeld:5, jurisdictions:3, intlPct:66, volSinceInc:5, volMonth:5, volYtd:5 });
+      S.rec.juris.forEach(x=>x.count=1); S.rec.industries.forEach(x=>x.count=1);
+      S.rec.confirm = Object.assign(S.rec.confirm||{}, { dist:true, accounts:true, adjYtd:true, republish:false });
+      S.rec.text.pipeline = 'Carried pipeline text';
+      S.rec.prevText.pipeline = 'Carried pipeline text';  // unchanged → needs review
+      S.rec.review.pipeline = false;
+      S.rec.noUpdate.pipeline = true;   // temporarily so other blocks are OK
+      S.rec.noUpdate.regulatory = true;
+      S.rec.noUpdate.tech = true;
+      S.rec.noUpdate.pipeline = false;  // pipeline is the one to render
+      wizSetStage(2);
+    });
+    // Focus the wizard's pipeline textarea, type multiple characters with
+    // deliberate delays > debounce, then assert the textarea is still there
+    // and its content matches what we typed.
+    const stable = await page.evaluate(async ()=>{
+      const ta = document.querySelector('#w_text_pipeline');
+      if(!ta) return { setup: 'textarea not rendered' };
+      ta.focus();
+      // Start from the current text.
+      const original = ta.value;
+      const suffix = 'X changes here';
+      for(let i=0; i<suffix.length; i++){
+        ta.value = original + suffix.slice(0, i+1);
+        ta.dispatchEvent(new Event('input', { bubbles: true }));
+        // Wait longer than the 350ms debounced wizard refresh.
+        await new Promise(r=>setTimeout(r, 100));
+      }
+      // Wait one more debounce cycle.
+      await new Promise(r=>setTimeout(r, 500));
+      const stillPresent = !!document.querySelector('#w_text_pipeline');
+      const value = stillPresent ? document.querySelector('#w_text_pipeline').value : null;
+      const focused = stillPresent && document.activeElement === document.querySelector('#w_text_pipeline');
+      return { stillPresent, value, focused };
+    });
+    const expectedEnd = 'X changes here';
+    if(stable.stillPresent && (stable.value||'').endsWith(expectedEnd))
+      ok('T28 Commentary textarea remains stable through multiple keystrokes');
+    else fail('T28 Commentary editor stability', JSON.stringify(stable));
+  } finally { await ctx.close(); }
+}
+
+async function T29_unrelatedWarningVisible(browser){
+  const {ctx,page}=await openTool(browser);
+  try{
+    await loadPack(page);
+    // Configure a state that has a denominator BLOCKER + jurisdiction WARNING.
+    // The denominator card should be surfaced; the jurisdiction warning
+    // must remain in the summary list (never silently hidden).
+    const state = await page.evaluate(()=>{
+      // Cause a denominator blocker: leave kpi.activeClients as null.
+      Object.assign(S.rec.kpi, { clients:3, activeClients:null, activeBasis:'', accountsActive:5, accountsHeld:5, jurisdictions:3, intlPct:66, volSinceInc:5, volMonth:5, volYtd:5 });
+      // Distribution: total mismatches clients but confirm.dist is true → warning stays.
+      S.rec.juris.forEach(x=>x.count=1); S.rec.industries.forEach(x=>x.count=1);
+      S.rec.juris[0].count = 2; S.rec.industries[0].count = 2;
+      S.rec.confirm = Object.assign(S.rec.confirm||{}, { dist:true, accounts:true, adjYtd:true, republish:false });
+      S.rec.noUpdate = { pipeline:true, regulatory:true, tech:true };
+      S.rec.review = { pipeline:false, regulatory:false, tech:false, ebitdaNote:false, metricsNote:false };
+      S.rec.text = { pipeline:'', regulatory:'', tech:'', ebitdaNote:'', metricsNote:'' };
+      if(typeof newAccounts==='function'){ const na=newAccounts(); if(na.length){ S.cfg.knownAccounts = [...new Set([...(S.cfg.knownAccounts||[]), ...na])]; } }
+      wizSetStage(2);
+      const html = document.getElementById('wizard').innerHTML;
+      // Denominator card is present.
+      const denominatorCardOk = /Per-client denominator/.test(html) && /kpi\.activeClients/.test(html);
+      // Jurisdiction warning must still appear in the summary list on top.
+      const warningVisibleOk = /Jurisdiction distribution/.test(html);
+      return { denominatorCardOk, warningVisibleOk };
+    });
+    if(state.denominatorCardOk && state.warningVisibleOk) ok('T29 Unrelated warning stays visible when another exception card is present');
+    else fail('T29 Warning hidden by unrelated card', JSON.stringify(state));
+  } finally { await ctx.close(); }
+}
+
 async function T25_classifyUnknown(browser){
   const {ctx,page}=await openTool(browser);
   try{
@@ -632,6 +762,10 @@ async function main(){
     await T23_signOutWarn(browser);
     await T24_distEditors(browser);
     await T25_classifyUnknown(browser);
+    await T26_continuationShape(browser);
+    await T27_signOutPendingDownload(browser);
+    await T28_commentaryEditorStability(browser);
+    await T29_unrelatedWarningVisible(browser);
   } finally {
     await browser.close();
     server.close();

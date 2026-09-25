@@ -1,0 +1,17 @@
+ARIE MauBank Wire Transfer v1 — runtime files only.
+Host behind ARIE staff-only access (same pattern as /internal/pricing).
+
+index.html
+styles.css
+app.js
+parser.js
+extract.js
+cleanup.js
+words.js
+require.js
+pdf-fill.js
+MANIFEST.txt
+assets/maubank-tt-dd.pdf
+vendor/pdf-lib.min.js
+vendor/jszip.min.js
+vendor/msgreader.browser.js

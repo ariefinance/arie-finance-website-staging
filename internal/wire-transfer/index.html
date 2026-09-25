@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<base href="/internal/wire-transfer/">
+<meta name="robots" content="noindex, nofollow">
+<title>ARIE Finance — MauBank Wire Transfer</title>
+<link rel="icon" href="data:,">
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+<!-- Access gate (sibling of /internal/pricing) -->
+<div class="iwtgate" id="iwtgate">
+  <div class="iwtgate-card">
+    <h1>MauBank Wire Transfer</h1>
+    <p>Staff-only tool. Enter the access passcode to continue.</p>
+    <form id="iwtgateForm" autocomplete="off">
+      <label for="iwtgatePass">Access passcode</label>
+      <input id="iwtgatePass" type="password" autocomplete="off" autocapitalize="off" spellcheck="false" placeholder="Enter passcode">
+      <button type="submit" id="iwtgateBtn">Sign in</button>
+      <div class="iwtgate-err" id="iwtgateErr" role="alert" aria-live="polite"></div>
+    </form>
+    <div class="iwtgate-foot">Sessions expire after 12 hours. Nothing you upload is stored by the website.</div>
+  </div>
+</div>
+
+<div class="app">
+  <div class="topbar">
+    <div class="brand">ARIE Finance <span class="sub">MauBank Wire Transfer</span></div>
+    <div class="spacer"></div>
+    <span class="privacy">Private by design · files never leave your browser</span>
+    <button class="btn secondary small" id="btnSignOut" type="button">Sign out</button>
+  </div>
+
+  <div class="content">
+    <aside>
+      <div class="card" id="dropCard">
+        <h2>Upload payment requests</h2>
+        <p class="hint" style="margin:0 0 8px;color:var(--muted);font-size:12px">
+          Accepts <span class="kbd">.msg</span> and <span class="kbd">.eml</span> — several at once is fine.
+        </p>
+        <div class="drop" id="drop">
+          <div class="big">Drop email files here</div>
+          <div>or click to choose files</div>
+        </div>
+      </div>
+      <div class="card">
+        <div class="toolbar" style="margin:0 0 10px">
+          <h2 style="margin:0">Batch</h2>
+          <div class="spacer"></div>
+          <button class="btn secondary" id="btnClearAll" disabled>Clear all</button>
+          <button class="btn accent" id="btnGenerateAll" disabled>Generate All ▸ ZIP</button>
+        </div>
+        <ul class="tx-list" id="txList"></ul>
+      </div>
+    </aside>
+
+    <main class="card" id="detailCard"></main>
+  </div>
+</div>
+
+<input type="file" id="fileInput" accept=".msg,.eml" multiple class="hide">
+
+<!-- Vendored, no CDN -->
+<script src="vendor/pdf-lib.min.js"></script>
+<script src="vendor/jszip.min.js"></script>
+<script src="vendor/msgreader.browser.js"></script>
+
+<!-- App modules -->
+<script src="cleanup.js"></script>
+<script src="words.js"></script>
+<script src="require.js"></script>
+<script src="parser.js"></script>
+<script src="extract.js"></script>
+<script src="pdf-fill.js"></script>
+<script src="app.js"></script>
+
+<script>
+/* ===== Access gate + session (sibling of /internal/pricing) ===== */
+(function () {
+  var API = "/api/internal/wire-transfer";
+  function api(opts) {
+    opts = opts || {};
+    var init = { method: opts.method || "GET", headers: { "Content-Type": "application/json" }, credentials: "same-origin" };
+    if (opts.body) init.body = JSON.stringify(opts.body);
+    return fetch(API + (opts.query || ""), init).then(function (r) {
+      return r.json().catch(function () { return {}; }).then(function (j) {
+        if (!r.ok) { var e = new Error(j.error || ("http_" + r.status)); e.code = j.error; e.status = r.status; throw e; }
+        return j;
+      });
+    });
+  }
+  var gate = document.getElementById("iwtgate");
+  var errEl = document.getElementById("iwtgateErr");
+  function showGate(msg) {
+    if (gate) gate.classList.remove("hidden");
+    document.body.classList.add("locked");
+    if (msg != null && errEl) errEl.textContent = msg;
+    var p = document.getElementById("iwtgatePass");
+    if (p) { p.value = ""; try { p.focus(); } catch (e) {} }
+  }
+  function hideGate() { if (gate) gate.classList.add("hidden"); document.body.classList.remove("locked"); }
+  function signOut() {
+    api({ method: "POST", body: { action: "logout" } }).catch(function () {}).then(function () { location.reload(); });
+  }
+  var soBtn = document.getElementById("btnSignOut");
+  if (soBtn) soBtn.addEventListener("click", signOut);
+  var form = document.getElementById("iwtgateForm");
+  if (form) form.addEventListener("submit", function (ev) {
+    ev.preventDefault();
+    var btn = document.getElementById("iwtgateBtn"), pass = document.getElementById("iwtgatePass").value;
+    if (!pass) { errEl.textContent = "Enter the passcode."; return; }
+    btn.disabled = true; var old = btn.textContent; btn.textContent = "Signing in…"; errEl.textContent = "";
+    api({ method: "POST", body: { action: "login", passcode: pass } }).then(function () { hideGate(); })
+      .catch(function (err) {
+        var m = err.code === "invalid_passcode" ? "Incorrect passcode."
+          : err.code === "too_many_attempts" ? "Too many attempts. Wait a few minutes and try again."
+          : (err.code === "passcode_unconfigured") ? "Not configured yet — contact the administrator."
+          : "Could not sign in. Please try again.";
+        errEl.textContent = m;
+      }).then(function () { btn.disabled = false; btn.textContent = old; });
+  });
+  showGate("");
+  api({ method: "GET", query: "?action=session" }).then(function () { hideGate(); }).catch(function () { showGate(""); });
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<base href="/internal/pricing/">
+<meta name="robots" content="noindex, nofollow">
+<title>ARIE Document Builder</title>
+<link rel="icon" href="data:,">
+<link rel="stylesheet" href="styles.css">
+<style>
+/* ---------- Access gate (sibling of /managementreport) ---------- */
+.ipgate{position:fixed;inset:0;z-index:1100;background:rgba(6,17,58,.62);backdrop-filter:blur(4px);display:flex;align-items:center;justify-content:center;padding:24px}
+.ipgate.hidden{display:none}
+.ipgate-card{background:#fff;color:#06113A;border:1px solid #CAD7E6;border-radius:14px;padding:28px 26px;max-width:400px;width:100%;box-shadow:0 30px 80px -20px rgba(0,0,0,.45);font-family:"Hanken Grotesk",system-ui,-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif}
+.ipgate-card h1{font-family:"Newsreader",Georgia,"Times New Roman",serif;font-size:22px;margin:0 0 6px;color:#06113A}
+.ipgate-card p{margin:0 0 14px;color:#454E66;font-size:13.5px}
+.ipgate-card label{display:block;font-weight:600;font-size:13px;margin:0 0 6px}
+.ipgate-card input{width:100%;border:1px solid #CAD7E6;border-radius:8px;padding:10px 12px;font:inherit;color:#06113A;background:#fff}
+.ipgate-card input:focus{outline:2px solid #4940D6;outline-offset:1px;border-color:#4940D6}
+.ipgate-card button{margin-top:14px;width:100%;background:#C99B3F;border:1px solid #C99B3F;color:#06113A;font-weight:700;border-radius:8px;padding:10px 14px;cursor:pointer;font:inherit;font-weight:700}
+.ipgate-card button:hover:not(:disabled){background:#D6A949;border-color:#D6A949}
+.ipgate-card button:disabled{opacity:.6;cursor:default}
+.ipgate-err{color:#b3261e;font-size:12.5px;font-weight:600;margin-top:12px;min-height:15px}
+.ipgate-foot{margin-top:16px;font-size:11px;color:#6B7590}
+body.locked{overflow:hidden}
+#btn-signout{position:absolute;top:10px;right:14px;z-index:20;background:transparent;color:#454E66;border:1px solid #CAD7E6;border-radius:6px;padding:4px 10px;font:600 12px "Hanken Grotesk",system-ui,sans-serif;cursor:pointer}
+#btn-signout:hover{border-color:#4940D6}
+.brandbar{position:relative}
+</style>
+</head>
+<body>
+<div class="ipgate" id="ipgate">
+  <div class="ipgate-card">
+    <h1>ARIE Document Builder</h1>
+    <p>Staff-only tool. Enter the access passcode to continue.</p>
+    <form id="ipgateForm" autocomplete="off">
+      <label for="ipgatePass">Access passcode</label>
+      <input id="ipgatePass" type="password" autocomplete="off" autocapitalize="off" spellcheck="false" placeholder="Enter passcode">
+      <button type="submit" id="ipgateBtn">Sign in</button>
+      <div class="ipgate-err" id="ipgateErr" role="alert" aria-live="polite"></div>
+    </form>
+    <div class="ipgate-foot">Sessions expire after 12 hours. Nothing you enter is stored by the website.</div>
+  </div>
+</div>
+<div id="browser-warn" class="browser-warn no-print" hidden>This browser is not supported for PDF export. Open this page in Google Chrome or Microsoft Edge.</div>
+<div class="app">
+  <aside class="controls">
+    <div class="brandbar">
+      <button type="button" id="btn-signout" aria-label="Sign out of the ARIE Document Builder">Sign out</button>
+      <h1>ARIE Document Builder <span id="app-version"></span></h1>
+      <p id="brand-sub">Edit any field, add or remove sections, then download.</p>
+      <div class="modes">
+        <button data-mode="indicative">Indicative Fee Schedule</button>
+        <button data-mode="client">Client Fee Schedule</button>
+        <button data-mode="welcome">Welcome Pack</button>
+      </div>
+      <div class="actions">
+        <button class="btn-gold" data-act="pdf" id="btn-pdf">Save as PDF</button>
+        <button class="btn-navy" data-act="word" id="btn-word">Download Word</button>
+        <button class="btn-ghost" data-act="reset" id="btn-reset">Reset</button>
+        <button class="btn-new" data-act="newClient" id="btn-new" style="flex-basis:100%">Start New Client · clears everything</button>
+      </div>
+      <p class="export-note">PDF is the client-ready output. Word is fully editable and may paginate slightly differently from the PDF.</p>
+    </div>
+    <div class="pane" id="pane"></div>
+  </aside>
+  <main class="desk" id="desk"></main>
+</div>
+<div id="overflow-toast" class="toast no-print" hidden>A page exceeds A4 (outlined in red) — shorten text or remove rows. Export is blocked until fixed.</div>
+<div id="toast" class="toast no-print" hidden></div>
+
+<script src="vendor/pdf.min.js"></script>
+<script src="vendor/docx.iife.js"></script>
+<script src="assets.js"></script>
+<script src="defaults.js"></script>
+<script src="docxio.js"></script>
+<script src="wiring.js"></script>
+<script src="render.js"></script>
+<script src="exports.js"></script>
+<script src="app.js"></script>
+<script>
+/* ===== Access gate + session (sibling of /managementreport) =====
+   Password is verified server-side by /api/internal/pricing. The tool is
+   revealed only for a valid session. Sign out clears the cookie and RELOADS
+   the page, which wipes all session state, wiring buffers, attached files
+   and rendered pages from browser memory. */
+(function(){
+  var API="/api/internal/pricing";
+  function api(opts){
+    opts=opts||{};
+    var init={method:opts.method||"GET",headers:{"Content-Type":"application/json"},credentials:"same-origin"};
+    if(opts.body) init.body=JSON.stringify(opts.body);
+    return fetch(API+(opts.query||""),init).then(function(r){
+      return r.json().catch(function(){return {};}).then(function(j){
+        if(!r.ok){ var e=new Error(j.error||("http_"+r.status)); e.code=j.error; e.status=r.status; throw e; }
+        return j;
+      });
+    });
+  }
+  var gate=document.getElementById("ipgate");
+  var errEl=document.getElementById("ipgateErr");
+  function showGate(msg){ if(gate) gate.classList.remove("hidden"); document.body.classList.add("locked"); if(msg!=null&&errEl) errEl.textContent=msg; var p=document.getElementById("ipgatePass"); if(p){ p.value=""; try{p.focus();}catch(e){} } }
+  function hideGate(){ if(gate) gate.classList.add("hidden"); document.body.classList.remove("locked"); }
+  function signOut(){ api({method:"POST",body:{action:"logout"}}).catch(function(){}).then(function(){ location.reload(); }); }
+  var soBtn=document.getElementById("btn-signout"); if(soBtn) soBtn.addEventListener("click",signOut);
+  var form=document.getElementById("ipgateForm");
+  if(form) form.addEventListener("submit",function(ev){
+    ev.preventDefault();
+    var btn=document.getElementById("ipgateBtn"), pass=document.getElementById("ipgatePass").value;
+    if(!pass){ errEl.textContent="Enter the passcode."; return; }
+    btn.disabled=true; var old=btn.textContent; btn.textContent="Signing in…"; errEl.textContent="";
+    api({method:"POST",body:{action:"login",passcode:pass}}).then(function(){ hideGate(); })
+      .catch(function(err){
+        var m = err.code==="invalid_passcode" ? "Incorrect passcode."
+          : err.code==="too_many_attempts" ? "Too many attempts. Wait a few minutes and try again."
+          : (err.code==="storage_unconfigured"||err.code==="passcode_unconfigured") ? "Not configured yet — contact the administrator."
+          : "Could not sign in. Please try again.";
+        errEl.textContent=m;
+      }).then(function(){ btn.disabled=false; btn.textContent=old; });
+  });
+  // On load, the gate is shown until a valid session is confirmed.
+  showGate("");
+  api({method:"GET",query:"?action=session"}).then(function(){ hideGate(); }).catch(function(){ showGate(""); });
+})();
+</script>
+</body>
+</html>

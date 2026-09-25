@@ -241,11 +241,39 @@ select.inp{min-width:104px}
 .startup .acts{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}
 .warnbar{background:var(--gold-wash);border:1px solid var(--gold-line);border-radius:8px;padding:10px 13px;font-size:12.5px;color:var(--ink);margin-top:14px}
 
-/* Sales Report — 5-column KPI grid overrides the 6-column dashboard ledger. */
+/* ---------- Sales Report ---------- */
+/* 5-column KPI grid overrides the 6-column dashboard ledger. */
 .rp-ledger{grid-template-columns:repeat(5,minmax(0,1fr))}
 .rp-ledger .fig.small{font-size:22px}
 @media (max-width:1100px){ .rp-ledger{grid-template-columns:repeat(2,1fr)} }
 @media (max-width:680px){ .rp-ledger{grid-template-columns:1fr} }
+.rp-meta{margin-top:2px;color:var(--mute);font-size:12px}
+.rp-mid{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:14px;margin-top:14px;align-items:stretch}
+.rp-mid .panel{margin-top:0}
+.rp-donut-wrap{display:flex;gap:16px;align-items:center}
+.rp-donut{flex:0 0 158px;position:relative}
+.rp-donut svg{display:block;width:100%;height:auto}
+.rp-donut-center{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;pointer-events:none}
+.rp-donut-center b{font:600 22px var(--serif);color:var(--ink);line-height:1}
+.rp-donut-center span{font-size:11px;color:var(--mute);margin-top:2px}
+.rp-donut-legend{flex:1;font-size:12.5px}
+.rp-donut-legend .row{display:grid;grid-template-columns:14px 1fr auto auto;gap:8px;align-items:center;padding:5px 0;border-bottom:1px dotted var(--rule-soft)}
+.rp-donut-legend .row:last-child{border-bottom:0}
+.rp-donut-legend .sw{width:12px;height:12px;border-radius:2px;display:inline-block;border:1px solid rgba(0,0,0,.08)}
+.rp-donut-legend .ct{font-weight:600;min-width:26px;text-align:right;color:var(--ink)}
+.rp-donut-legend .pct{color:var(--mute);min-width:38px;text-align:right}
+.rp-attention-compact{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px}
+.rp-attention-compact .cell{display:flex;align-items:baseline;justify-content:space-between;gap:8px;padding:2px 0;font-size:12.5px;color:var(--mute)}
+.rp-attention-compact .cell b{font:600 20px var(--serif);color:var(--ink);letter-spacing:-.01em}
+.rp-attention-compact .cell.overdue b{color:var(--red)}
+.rp-attention-compact .cell.stale b{color:var(--amber)}
+.rp-attention-compact .cell.hold b{color:var(--mute)}
+.rp-footer{margin-top:12px;font-size:11px;color:var(--mute);text-align:center}
+
+/* One A4 landscape page — named-page targeting keeps the Dashboard's default
+   print size untouched. All report-specific print rules are scoped to
+   #page-report so nothing else in the site is affected. */
+@page rp-landscape{ size: A4 landscape; margin: 10mm 10mm; }
 
 @media print{
   header nav,.top .right,.pagehead .asof,#page-pipeline,#page-settings,.noprint{display:none!important}
@@ -254,6 +282,34 @@ select.inp{min-width:104px}
   main{padding:0}
   .ledger,.rp-ledger{box-shadow:none;border-color:#ccc}
   .rp-ledger{grid-template-columns:repeat(5,minmax(0,1fr))!important}
+  /* Report-only compression: single A4 landscape page, no clipping. */
+  #page-report{page:rp-landscape}
+  /* Hide the site's sticky header when the Sales Report is being printed —
+     otherwise it consumes the top of page 1 and Chrome pushes the whole
+     report (whose panels are break-inside:avoid) onto page 2. The report
+     carries its own <h1>Sales Analytics Report</h1> inside .pagehead so
+     nothing is lost. Scoped via :has(#page-report.on) so Dashboard and
+     Pipeline prints keep the header. */
+  body:has(#page-report.on) header{display:none!important}
+  #page-report .pagehead{margin-bottom:6px}
+  #page-report .pagehead h1{font-size:18px;margin:0}
+  #page-report .rp-meta{font-size:10.5px}
+  #page-report .ledger.rp-ledger{margin-top:8px}
+  #page-report .ledger.rp-ledger>div{padding:8px 10px}
+  #page-report .ledger.rp-ledger .lab{font-size:10.5px}
+  #page-report .ledger.rp-ledger .fig.small{font-size:17px}
+  #page-report .ledger.rp-ledger .note{font-size:10px;margin-top:3px}
+  #page-report .rp-mid{margin-top:8px;gap:8px}
+  #page-report .rp-mid .panel>h2{padding:6px 10px;font-size:11px}
+  #page-report .rp-mid .pbody{padding:8px 10px}
+  #page-report .rp-donut{flex:0 0 130px}
+  #page-report .rp-donut-center b{font-size:18px}
+  #page-report .rp-donut-legend{font-size:11px}
+  #page-report .rp-donut-legend .row{padding:3px 0}
+  #page-report .rp-attention-compact .cell b{font-size:15px}
+  #page-report .rp-attention-compact .cell{font-size:11.5px}
+  #page-report .rp-footer{margin-top:6px;font-size:10px}
+  #page-report .panel{break-inside:avoid}
 }
 @media (max-width:1100px){
   .ledger{grid-template-columns:1fr 1fr}
@@ -451,7 +507,7 @@ select.inp{min-width:104px}
   <div class="pagehead">
     <div>
       <h1>Sales Analytics Report</h1>
-      <p>Concise snapshot of client-acquisition activity, driven by recorded milestones — not inferred from current stage.</p>
+      <div class="rp-meta">Period: <b id="rp-period-label" style="color:var(--ink)">—</b> · Generated <span id="rp-generated">—</span> · ARIE Finance</div>
     </div>
     <div class="asof noprint" style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
       <select id="rp-period" style="border:1px solid var(--rule);background:var(--surface);color:var(--ink);border-radius:7px;padding:6px 9px;font-size:12.5px">
@@ -468,27 +524,20 @@ select.inp{min-width:104px}
     </div>
   </div>
 
-  <div class="panel" style="padding:12px 16px;margin-top:0">
-    <div style="display:flex;gap:16px;flex-wrap:wrap;align-items:baseline">
-      <div style="font:600 15px var(--serif);color:var(--ink)">Reporting period: <span id="rp-period-label">—</span></div>
-      <div style="color:var(--mute);font-size:12px">Generated <span id="rp-generated">—</span> · ARIE Finance</div>
-    </div>
-  </div>
+  <div class="ledger rp-ledger" id="rp-kpis"></div>
 
-  <div class="ledger rp-ledger" id="rp-kpis" style="margin-top:16px"></div>
-
-  <div class="cols" style="margin-top:18px">
+  <div class="rp-mid">
     <div class="panel">
-      <h2>Current pipeline by Stage <small>Point-in-time as at <span id="rp-asat">—</span></small></h2>
-      <div class="pbody" id="rp-pipeline"></div>
+      <h2>Current Pipeline Mix <small>Where active opportunities sit today · as at <span id="rp-asat">—</span></small></h2>
+      <div class="pbody" id="rp-donut"></div>
     </div>
     <div class="panel">
-      <h2>Needs attention <small>Same definitions as the dashboard</small></h2>
+      <h2>Management Attention <small>Same definitions as the dashboard</small></h2>
       <div class="pbody" id="rp-attention"></div>
     </div>
   </div>
 
-  <p class="hint" id="rp-completeness" style="margin-top:14px"></p>
+  <p class="rp-footer" id="rp-completeness"></p>
 </section>
 
 <!-- ============ PIPELINE ============ -->
@@ -806,7 +855,11 @@ function findLead(id){ for(const k of SEG_KEYS){ const x = DATA[k].find(z => z.i
 const ROUTE = {"Onboarding":"onboarding", "Won":"existing"};
 const ROUTE_TARGETS = new Set(Object.values(ROUTE));
 function isValidReverseDest(dest){
-  return !!(dest && SEGMENTS[dest] && !SEGMENTS[dest].hidden && !ROUTE_TARGETS.has(dest));
+  /* Hidden means hidden from user-facing tabs/dashboard/reporting only — it is
+     NOT invalid as a data destination. A UK or Africa lead that was filed into
+     Onboarding/Existing must be able to return to its true home segment even
+     though that segment is currently not rendered in the tab bar. */
+  return !!(dest && SEGMENTS[dest] && !ROUTE_TARGETS.has(dest));
 }
 function routeLead(id){
   const f = findLead(id); if(!f) return null;
@@ -1117,14 +1170,19 @@ function renderDashboard(){
 function set(id, html){ const el = document.getElementById(id); if(el) el.innerHTML = html; }
 
 /* ---------------- Sales Analytics Report ----------------
-   Read-only reporting layer over the existing tracker data. KPIs come from
-   recorded milestones (contactedAt / meetingBookedAt / proposalSentAt / wonAt);
-   Ongoing Onboardings is a point-in-time count of the current Onboarding
-   stage. Period boundaries use the Mauritius calendar so month rollovers
-   agree with ARIE's reporting day. Prior-period comparison is suppressed
-   for any metric whose prior period falls outside the milestone-capture
-   completeness window — an honest "no prior-period comparison" beats a
-   misleading zero. */
+   Read-only reporting layer over the existing tracker data. Three sections,
+   each answering a distinct management question:
+     1. Period activity — five period-based KPI cards from recorded
+        milestones (contactedAt / meetingBookedAt / proposalSentAt /
+        onboardingStartedAt / wonAt).
+     2. Current pipeline — one donut mixing active leads across five plain-
+        English groups. Snapshot only. Not Contacted, Won, Lost excluded.
+     3. Management attention — Overdue follow-ups, Quiet 30+ days, On Hold.
+   Period boundaries use the Mauritius calendar. Prior-period comparison is
+   suppressed for any milestone metric whose prior period falls outside the
+   milestone-capture window — "no prior-period comparison" beats a
+   misleading zero. Clients Won can compare further back via the
+   onboardingDate fallback. */
 function mauMonthLabel(ym){
   if(!ym) return "—";
   const y = parseInt(ym.slice(0,4),10), m = parseInt(ym.slice(5,7),10);
@@ -1196,14 +1254,34 @@ function countWonIn(rng){
     return s >= rng.from && s <= rng.to;
   }).length;
 }
+/* Current Pipeline Mix — five plain-English groups covering every active
+   stage. Order controls slice order (early → advancing → paused). Not
+   Contacted, Won and Lost are deliberately excluded — the donut answers
+   "where are ACTIVE opportunities sitting today?" only. */
+const RP_DONUT_GROUPS = [
+  {key:"contact",  label:"Contacted / Follow-up",  color:"var(--navy)",  stages:new Set(["Contacted","Follow-up Due","Followed Up"])},
+  {key:"meeting",  label:"Meeting / Qualified",    color:"var(--gold)",  stages:new Set(["Meeting Booked","Qualified"])},
+  {key:"proposal", label:"Proposal / Agreement",   color:"var(--amber)", stages:new Set(["Proposal / Terms Sent","Referral agreement signed"])},
+  {key:"onboard",  label:"Onboarding",             color:"var(--green)", stages:new Set(["Onboarding"])},
+  {key:"onhold",   label:"On Hold",                color:"var(--mute)",  stages:new Set(["On Hold"])}
+];
+function rpFormatDate(ymd){
+  /* Reuses the tracker's own 3-letter MONTH array so the format is stable
+     ("24 Sep 2026") independent of the browser's ICU locale-data version,
+     which sometimes renders en-GB "Sep" as "Sept". */
+  if(!ymd || typeof ymd !== "string" || ymd.length < 10) return ymd || "";
+  const y = parseInt(ymd.slice(0,4),10), m = parseInt(ymd.slice(5,7),10), d = parseInt(ymd.slice(8,10),10);
+  if(!y || !m || !d || m < 1 || m > 12) return ymd;
+  return d + " " + MONTH[m-1] + " " + y;
+}
 function renderReport(){
   const gen = stamp();
-  set("rp-generated", esc(gen));
-  set("rp-asat", esc(gen));
+  set("rp-generated", esc(rpFormatDate(gen)));
+  set("rp-asat", esc(rpFormatDate(gen)));
   const rng = reportRange();
   if(!rng){
     set("rp-period-label", "Choose a period");
-    set("rp-kpis", ""); set("rp-pipeline", ""); set("rp-attention", ""); set("rp-completeness", "");
+    set("rp-kpis", ""); set("rp-donut", ""); set("rp-attention", ""); set("rp-completeness", "");
     return;
   }
   set("rp-period-label", esc(rng.label));
@@ -1211,19 +1289,23 @@ function renderReport(){
   const activeFrom = SET.milestonesActiveFrom || "";
   const partial = !activeFrom || activeFrom > rng.from;
 
+  /* Period activity — all five KPI cards are counts of unique leads whose
+     matching milestone falls inside the selected reporting period. Ongoing
+     Onboardings (current stock) is intentionally NOT a KPI card — that
+     snapshot is visible in the donut's Onboarding slice. */
   const cur = {
     contacted: countMilestoneIn("contactedAt", rng),
     meetings:  countMilestoneIn("meetingBookedAt", rng),
     proposals: countMilestoneIn("proposalSentAt", rng),
+    entered:   countMilestoneIn("onboardingStartedAt", rng),
     won:       countWonIn(rng)
   };
-  const ongoingOnb = allLeads().filter(({lead}) => lead.status === "Onboarding").length;
 
   const priorRng = priorRangeFor(rng);   // null for custom range → no auto-comparison
   function priorFor(field, wonFallbackReliable){
     if(!priorRng) return null;
     // Won reuses onboardingDate as a historical fallback so it can compare
-    // pre-cutover periods; the other three cannot without manufacturing history.
+    // pre-cutover periods; the milestone metrics cannot, without manufacturing history.
     if(!wonFallbackReliable && (!activeFrom || activeFrom > priorRng.from)) return null;
     return {value: field === "won" ? countWonIn(priorRng) : countMilestoneIn(field, priorRng), label:priorRng.label};
   }
@@ -1231,6 +1313,7 @@ function renderReport(){
     contacted: priorFor("contactedAt", false),
     meetings:  priorFor("meetingBookedAt", false),
     proposals: priorFor("proposalSentAt", false),
+    entered:   priorFor("onboardingStartedAt", false),
     won:       priorFor("won", true)
   };
   function delta(now, prev){
@@ -1242,11 +1325,11 @@ function renderReport(){
   const partialTag = partial ? ' <span style="font-size:10.5px;color:var(--amber);font-weight:600;letter-spacing:.02em;text-transform:uppercase;vertical-align:middle;margin-left:6px">partial history</span>' : "";
 
   const kpis = [
-    {lab:"Prospects Contacted",                val:cur.contacted, note:delta(cur.contacted, prior.contacted), tag:partialTag},
-    {lab:"Meetings Booked",                    val:cur.meetings,  note:delta(cur.meetings,  prior.meetings),  tag:partialTag},
-    {lab:"Proposals Sent",                     val:cur.proposals, note:delta(cur.proposals, prior.proposals), tag:partialTag},
-    {lab:"Ongoing Onboardings — as at " + gen, val:ongoingOnb,    note:'<div class="note">Point-in-time snapshot</div>', tag:""},
-    {lab:"Clients Won",                        val:cur.won,       note:delta(cur.won, prior.won),             tag:""}
+    {lab:"Prospects Contacted", val:cur.contacted, note:delta(cur.contacted, prior.contacted), tag:partialTag},
+    {lab:"Meetings Booked",     val:cur.meetings,  note:delta(cur.meetings,  prior.meetings),  tag:partialTag},
+    {lab:"Proposals Sent",      val:cur.proposals, note:delta(cur.proposals, prior.proposals), tag:partialTag},
+    {lab:"Entered Onboarding",  val:cur.entered,   note:delta(cur.entered,   prior.entered),   tag:partialTag},
+    {lab:"Clients Won",         val:cur.won,       note:delta(cur.won, prior.won),             tag:""}
   ];
   set("rp-kpis", kpis.map(k =>
     `<div>
@@ -1255,34 +1338,79 @@ function renderReport(){
        ${k.note}
      </div>`).join(""));
 
-  const dist = {}; STAGES.forEach(s => dist[s] = 0);
-  allLeads().forEach(({lead}) => { if(dist[lead.status] != null) dist[lead.status]++; });
-  const maxN = Math.max(1, ...STAGES.map(s => dist[s]));
-  set("rp-pipeline", STAGES.map(s =>
-    `<div style="display:grid;grid-template-columns:180px 1fr 48px;gap:12px;align-items:center;padding:6px 0;border-bottom:1px solid var(--rule-soft)">
-       <div style="font-size:12.5px;font-weight:600">${esc(s)}</div>
-       <div style="height:14px;background:var(--surface-2);border:1px solid var(--rule-soft);border-radius:3px;overflow:hidden"><div style="height:100%;background:var(--navy);width:${(dist[s]/maxN*100).toFixed(1)}%"></div></div>
-       <div class="num" style="font-size:12.5px">${dist[s]}</div>
-     </div>`).join(""));
+  /* Current Pipeline Mix — donut. Buckets each ACTIVE lead into exactly one
+     of the five RP_DONUT_GROUPS. Not Contacted, Won and Lost are excluded.
+     Legend shows group label / count / % of active. */
+  const groupCounts = RP_DONUT_GROUPS.map(g => ({...g, n:0}));
+  let activeTotal = 0;
+  allLeads().forEach(({lead}) => {
+    for(const g of groupCounts){ if(g.stages.has(lead.status)){ g.n++; activeTotal++; break; } }
+  });
+  const donutSegs = activeTotal > 0
+    ? (function(){
+        // Compute integer percentages that always sum to exactly 100 so the
+        // donut and legend agree byte-for-byte.
+        const raw = groupCounts.map(g => g.n / activeTotal * 100);
+        const floors = raw.map(x => Math.floor(x));
+        let remainder = 100 - floors.reduce((a,b) => a+b, 0);
+        const order = groupCounts.map((_,i) => i).sort((a,b) => (raw[b]-floors[b]) - (raw[a]-floors[a]));
+        const pcts = floors.slice();
+        for(let i = 0; i < remainder; i++) pcts[order[i]]++;
+        let cumulative = 0;
+        return groupCounts.map((g, i) => {
+          const pct = pcts[i];
+          if(g.n === 0) return {seg:"", legend:{...g, pct}};
+          const seg = `<circle cx="21" cy="21" r="15.915" fill="none" stroke="${g.color}" stroke-width="6" stroke-dasharray="${pct} ${100-pct}" stroke-dashoffset="${(400 - cumulative) % 100}" transform="rotate(-90 21 21)"/>`;
+          cumulative += pct;
+          return {seg, legend:{...g, pct}};
+        });
+      })()
+    : groupCounts.map(g => ({seg:"", legend:{...g, pct:0}}));
+  const svgSegs = donutSegs.map(x => x.seg).join("");
+  const legendRows = donutSegs.map(x =>
+    `<div class="row">
+       <span class="sw" style="background:${x.legend.color}"></span>
+       <span>${esc(x.legend.label)}</span>
+       <span class="ct">${x.legend.n}</span>
+       <span class="pct">${activeTotal > 0 ? x.legend.pct + "%" : "—"}</span>
+     </div>`).join("");
+  set("rp-donut",
+    `<div class="rp-donut-wrap">
+       <div class="rp-donut">
+         <svg viewBox="0 0 42 42" role="img" aria-label="Current Pipeline Mix">
+           <circle cx="21" cy="21" r="15.915" fill="none" stroke="var(--rule-soft)" stroke-width="6"/>
+           ${svgSegs}
+         </svg>
+         <div class="rp-donut-center"><b>${activeTotal}</b><span>active</span></div>
+       </div>
+       <div class="rp-donut-legend">${legendRows}</div>
+     </div>`);
 
+  /* Management Attention — three simple exception counts. Overdue and Quiet
+     reuse the tracker's existing predicates; On Hold is the current count of
+     status === "On Hold" leads. No speculative risk scoring. */
   const rowsAll = allLeads();
   const overdueN = rowsAll.filter(({lead}) => overdue(lead)).length;
   const staleN   = rowsAll.filter(({lead}) => stale(lead)).length;
+  const onHoldN  = rowsAll.filter(({lead}) => lead.status === "On Hold").length;
   set("rp-attention",
-    `<div style="display:grid;grid-template-columns:1fr 1fr;gap:16px">
-       <div><div class="lab">Overdue follow-ups</div><div class="fig small" style="color:var(--red)">${overdueN}</div></div>
-       <div><div class="lab">Quiet 30+ days</div><div class="fig small" style="color:var(--amber)">${staleN}</div></div>
-     </div>
-     <p class="hint" style="margin:12px 0 0">Same definitions as the dashboard's Needs-Attention panel — no competing metrics.</p>`);
+    `<div class="rp-attention-compact">
+       <div class="cell overdue"><span>Overdue follow-ups</span><b>${overdueN}</b></div>
+       <div class="cell stale"><span>Quiet 30+ days</span><b>${staleN}</b></div>
+       <div class="cell hold"><span>On Hold</span><b>${onHoldN}</b></div>
+     </div>`);
 
-  const notes = [];
+  /* One-line data-completeness footer. */
+  let footer;
   if(activeFrom){
-    notes.push("Activity milestone capture began <b>" + esc(activeFrom) + "</b> (Mauritius date). Prospects Contacted, Meetings Booked and Proposals Sent are complete only from that date; Clients Won uses recorded conversion dates and is complete historically.");
+    const nice = rpFormatDate(activeFrom);
+    footer = partial
+      ? `Activity milestone history is complete from ${esc(nice)}; earlier Contacted, Meeting, Proposal and Entered-Onboarding figures may under-count.`
+      : `Activity milestone history is complete from ${esc(nice)}.`;
   } else {
-    notes.push("Milestone capture starts today. Historical Prospects Contacted, Meetings Booked and Proposals Sent are unavailable until the next reporting period.");
+    footer = "Milestone capture starts today; earlier Contacted, Meeting, Proposal and Entered-Onboarding activity is not available.";
   }
-  if(partial) notes.push("This period predates full milestone capture — figures marked <b>PARTIAL HISTORY</b> may under-count.");
-  set("rp-completeness", notes.join(" "));
+  set("rp-completeness", footer);
 }
 
 /* ---------------- pipeline ---------------- */
@@ -1825,7 +1953,12 @@ $("btn-csv").onclick = () => {
   download("ARIE_pipeline_" + (view.seg === "all" ? "all" : view.seg) + "_" + stamp() + ".csv", csvRows(rows), "text/csv");
 };
 $("s-csv-all").onclick = () => {
-  const rows = allLeads().map(r => ({...r, ...economics(r.lead, r.seg)}));
+  /* "Export every segment to CSV" must include hidden segments (UK, Africa)
+     so operators can reach that data. Iterates SEG_KEYS directly rather than
+     allLeads() (which is intentionally VISIBLE_SEG_KEYS only). Dashboard,
+     Sales Report, tabs, filters, search all continue to use allLeads(). */
+  const rows = SEG_KEYS.flatMap(k => DATA[k].map(l => ({lead:l, seg:k})))
+    .map(r => ({...r, ...economics(r.lead, r.seg)}));
   download("ARIE_pipeline_all_" + stamp() + ".csv", csvRows(rows), "text/csv");
 };
 

@@ -1,13 +1,19 @@
 /*
  * ARIE Finance — GA4 / GTM event layer (dataLayer only).
+ *
  * Loads only on the marketing single-page site (index.html); utility
- * routes (/salestracker, /managementreport, /internal/*, /logout) do not
- * include this file, so no analytics is pushed from those pages.
+ * routes (/salestracker, /managementreport, /internal/*, /logout) do
+ * not include this file, so no analytics is pushed from those pages.
  *
  * Consent Mode: Advanced. Before explicit acceptance analytics_storage
- * is denied and Google may send cookieless pings; on cookie acceptance
- * the index.html accept handler flips analytics_storage to granted.
+ * is denied and Google may send cookieless pings; the site's cookie
+ * banner handles the explicit accept / essential-only flip.
  * Advertising storage/consent is never granted.
+ *
+ * PII policy: we never push name, email, phone, company, message body,
+ * uploaded files, or free text from any form into the dataLayer. Only
+ * non-personal intent slugs, CTA text, and URLs of tel:/mailto: links
+ * (which are the site's public contact details) are captured.
  */
 (function () {
   'use strict';
@@ -67,6 +73,12 @@
     if (s && s.className) return String(s.className).split(/\s+/)[0] || 'section';
     return 'unknown';
   }
+  function currentContactTopic() {
+    var checked = document.querySelector('input[name="topic"]:checked');
+    if (!checked) return '';
+    var t = checked.getAttribute('data-topic');
+    return t || '';
+  }
 
   var START_APP_RE = /start\s+your\s+application/i;
   var SPEAK_RE = /^(speak to our team|speak to the team|contact arie finance)$/i;
@@ -92,11 +104,18 @@
     if (!t) return;
 
     // start_application: customer/client application CTA intent only.
-    // Matches "Start Your Application" and the mobile-cta-short "Apply"
-    // which is the same button, per repo audit.
-    if (START_APP_RE.test(t) || t === 'Apply') {
-      push('start_application', { cta_text: t, cta_location: ctaLocation(link) });
-      return;
+    // Strict identity: the DOM element must be the site's contact-route
+    // anchor (data-route="contact"). This rejects any unrelated future
+    // button labelled "Apply" — for example a hypothetical careers
+    // Apply control — from being classified as a commercial CTA.
+    // Matched text: "Start Your Application" or the exact mobile short
+    // label "Apply" that lives inside the same data-route="contact"
+    // anchor as "Start Your Application" (verified in the repo).
+    if (link.matches && link.matches('a[data-route="contact"]')) {
+      if (START_APP_RE.test(t) || t === 'Apply') {
+        push('start_application', { cta_text: t, cta_location: ctaLocation(link) });
+        return;
+      }
     }
 
     // speak_to_team: general commercial contact CTAs.
@@ -106,28 +125,29 @@
     }
   }, true);
 
-  // ---------- introducer_enquiry (intent radio in contact form) ----------
-  // The current site has no standalone "Discuss an Introducer Relationship"
-  // CTA. The introducer signal that exists is the contact-form topic radio
-  // (input[name="topic"][data-topic="introducer"], label "Introducer /
-  // partnership"). Fire once per session on selection.
-  var introducerFired = false;
+  // ---------- contact_topic_selected (engagement) ----------
+  // Fires whenever the contact-form intent radio changes. Parameter
+  // contact_topic is the non-personal slug from the radio's data-topic
+  // attribute (e.g. "account", "payments", "introducer", "referral",
+  // "support", "other"). Selection is INTEREST, not a submitted lead;
+  // the actual submitted lead is contact_form_submit with the same
+  // contact_topic value.
   document.addEventListener('change', function (ev) {
     var t = ev.target;
     if (!t || t.name !== 'topic') return;
-    if (t.getAttribute && t.getAttribute('data-topic') === 'introducer' && t.checked && !introducerFired) {
-      introducerFired = true;
-      push('introducer_enquiry', {
-        cta_text: 'Introducer / partnership',
-        cta_location: 'contact_form_intent'
-      });
-    }
+    if (!t.checked) return;
+    var slug = t.getAttribute && t.getAttribute('data-topic');
+    if (!slug) return;
+    push('contact_topic_selected', { contact_topic: slug });
   }, true);
 
   // ---------- form_start / form_submit ----------
   // form_start on first user interaction with each form, once.
-  // form_submit when the site's existing success element gets .is-visible
-  // (set by the confirmed-success branch in the contact/careers handler).
+  // form_submit when the site's existing success element gets
+  // .is-visible (set by the confirmed-success branch in the site's
+  // contact/careers submit handler, after /api/website-form returns
+  // {ok:true}). For the contact form, contact_topic is attached from
+  // whichever intent radio is checked at that moment.
   document.querySelectorAll('form[data-form]').forEach(function (form) {
     var name = form.dataset.form; // "contact" | "careers"
     var started = false;
@@ -146,7 +166,12 @@
     try {
       var mo = new MutationObserver(function () {
         if (success.classList.contains('is-visible')) {
-          push(name + '_form_submit', { form_name: name });
+          var params = { form_name: name };
+          if (name === 'contact') {
+            var topic = currentContactTopic();
+            if (topic) params.contact_topic = topic;
+          }
+          push(name + '_form_submit', params);
           mo.disconnect();
         }
       });

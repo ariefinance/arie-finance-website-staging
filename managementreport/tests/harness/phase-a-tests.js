@@ -799,26 +799,79 @@ async function T32_orderIndependent(browser){
         if(kind==='pmf') await page.setInputFiles('#contFile', PRV);
         else if(kind==='pl') await page.setInputFiles('#file', [PL]);
         else if(kind==='txn') await page.setInputFiles('#file', [TXN]);
-        await page.waitForTimeout(400);
+        // Wait for the resulting state (async importContinuation + FileReader).
+        await page.waitForFunction((k)=>{
+          if(k==='pmf') return typeof S!=='undefined' && !!S.contMonth;
+          if(k==='pl')  return typeof S!=='undefined' && !!S.pl;
+          if(k==='txn') return typeof S!=='undefined' && !!S.txn;
+        }, kind, {timeout: 8000}).catch(()=>{});
       }
-      return await page.evaluate(()=>({
-        histKeys: Object.keys(S.hist||{}).sort(),
-        contMonth: S.contMonth,
-        // Sample: values at 2026-08 (from continuation) should be the same in both orders.
-        hist08InUsd: S.hist['2026-08'] && S.hist['2026-08'].published && S.hist['2026-08'].published.metrics && S.hist['2026-08'].published.metrics.inUsd,
-        hist08Seed: S.hist['2026-08'] && !!S.hist['2026-08'].adj,
-        recKey: S.key,
-      }));
+      return await page.evaluate(()=>{
+        const histSummary = {};
+        for(const k of Object.keys(S.hist||{}).sort()){
+          const m = S.hist[k] && S.hist[k].published && S.hist[k].published.metrics;
+          histSummary[k] = m ? [m.inUsd||null, m.outUsd||null, m.inCount||null, m.outCount||null] : null;
+        }
+        const R = readiness();
+        return {
+          reportingMonth: S.key,
+          contMonth:      S.contMonth,
+          txnFilename:    S.files.txn,
+          recTxn: S.rec ? { ...S.rec.txn } : null,
+          volYtd: S.rec && S.rec.kpi ? S.rec.kpi.volYtd : null,
+          txnBlocker: R.items.some(x=>x.lvl==='e' && x.label==='Transaction data'),
+          historicalSeries: histSummary,
+          seedProvenance: Array.from(S.__autoSeededKeys||[]).sort(),
+        };
+      });
     } finally { await ctx.close(); }
   }
   const stA = await run(['pmf','pl','txn']);
   const stB = await run(['pl','txn','pmf']);
-  const same = JSON.stringify(stA.histKeys)===JSON.stringify(stB.histKeys)
-            && stA.contMonth===stB.contMonth
-            && stA.hist08InUsd===stB.hist08InUsd
-            && stA.recKey===stB.recKey;
-  if(same) ok('T32 Upload ordering: {PMF,PL,TXN} produces same hist as {PL,TXN,PMF}');
-  else fail('T32 Order independence', JSON.stringify({stA, stB}));
+  const stC = await run(['txn','pmf','pl']);
+  const stD = await run(['txn','pl','pmf']);
+  const sig = s => JSON.stringify(s);
+  const orders = { A: stA, B: stB, C: stC, D: stD };
+  const first = sig(stA);
+  const different = Object.entries(orders).filter(([k,s])=>sig(s)!==first);
+  if(different.length===0)
+    ok('T32 Upload ordering deterministic across {PMF,PL,TXN}, {PL,TXN,PMF}, {TXN,PMF,PL}, {TXN,PL,PMF} — full state matches');
+  else fail('T32 Order independence', JSON.stringify({different: different.map(([k])=>k), stA, stB, stC, stD}));
+}
+
+async function T34_unifiedPickerMultiFile(browser){
+  const {ctx,page}=await openTool(browser);
+  try{
+    // Drive a real multi-file selection through the wizard's dedicated
+    // #wizFile input (mixed .xlsx + .data), asserting the same final state
+    // as any of the T32 orderings.
+    await page.waitForSelector('#wizFile',{state:'attached',timeout:5000});
+    // Legit Previous Month File plus PL + TXN through one picker action.
+    await page.setInputFiles('#wizFile', [PRV, PL, TXN]);
+    await page.waitForFunction(()=>typeof S!=='undefined' && !!S.pl && !!S.txn && !!S.contMonth, {timeout: 10000}).catch(()=>{});
+    // Small settle for any queued renderWizard.
+    await page.waitForTimeout(300);
+    const st = await page.evaluate(()=>{
+      const tm = S.txn && S.txn.months && S.txn.months[S.key];
+      const R = readiness();
+      return {
+        reportingMonth: S.key,
+        contMonth: S.contMonth,
+        recTxn: S.rec ? { ...S.rec.txn } : null,
+        wbCurrent: tm ? { inCount:tm.inCount, outCount:tm.outCount, inUsd:tm.inUsd, outUsd:tm.outUsd } : null,
+        txnBlocker: R.items.some(x=>x.lvl==='e' && x.label==='Transaction data'),
+        filenames: { pl: S.files.pl, txn: S.files.txn },
+      };
+    });
+    const matches = st.recTxn && st.wbCurrent
+        && st.recTxn.inCount===st.wbCurrent.inCount
+        && st.recTxn.outCount===st.wbCurrent.outCount
+        && st.recTxn.inUsd===st.wbCurrent.inUsd
+        && st.recTxn.outUsd===st.wbCurrent.outUsd;
+    if(st.reportingMonth==='2026-09' && st.contMonth==='2026-08' && matches && !st.txnBlocker && st.filenames.pl && st.filenames.txn)
+      ok('T34 Unified #wizFile picker accepts multi-file mixed .xlsx + .data selection and produces coherent state');
+    else fail('T34 Unified picker multi-file', JSON.stringify(st));
+  } finally { await ctx.close(); }
 }
 
 async function T33_operatorEditedSeedSurvives(browser){
@@ -886,6 +939,7 @@ async function main(){
     await T31_continuationResetsProvenance(browser);
     await T32_orderIndependent(browser);
     await T33_operatorEditedSeedSurvives(browser);
+    await T34_unifiedPickerMultiFile(browser);
   } finally {
     await browser.close();
     server.close();

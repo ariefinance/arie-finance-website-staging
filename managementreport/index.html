@@ -825,7 +825,31 @@ function ensureRec(){
     ['adj','kpi','txn','ov','text','prevText','review','confirm','noUpdate'].forEach(k=>S.rec[k]=S.rec[k]||{});
     S.rec.status = S.rec.status || (S.rec.published?'published':'draft');
     S.rec.juris=S.rec.juris||[]; S.rec.industries=S.rec.industries||[];
+    // Whenever a fresh S.rec is built, rehydrate current-month values from
+    // the currently-loaded Transaction Summary. This makes upload ordering
+    // deterministic: TXN → PL, PL → TXN → PMF, and every permutation end
+    // with the same S.rec.txn and volYtd. autoSeedFromTxn() alone would only
+    // restore historical series, not current-month figures.
+    rehydrateFromActiveTxn();
   }
+}
+function rehydrateFromActiveTxn(){
+  if(!S.txn || !S.key || !S.rec) return;
+  const tm = S.txn.months[S.key];
+  if(tm){
+    // Only auto-apply when the fresh record has no txn values yet. This
+    // preserves an operator-typed value that ended up in the loaded hist
+    // (for e.g. an already-published month reopened via a PMF import).
+    const t = S.rec.txn || {};
+    const empty = !isNum(t.inCount) && !isNum(t.outCount) && !isNum(t.inUsd) && !isNum(t.outUsd);
+    if(empty){
+      S.rec.txn = { inCount:tm.inCount, outCount:tm.outCount, inUsd:tm.inUsd, outUsd:tm.outUsd };
+    }
+    if(S.txn.ytd && S.txn.ytd.key===S.key && !isNum(S.rec.kpi.volYtd)) S.rec.kpi.volYtd = S.txn.ytd.usd/1e6;
+  }
+  // Fill any absent last-6 month from the current source. hasOwnProperty
+  // rule protects existing hist entries.
+  autoSeedFromTxn();
 }
 
 /* ================= persistence ================= */
@@ -868,7 +892,7 @@ function mutationLocked(){ return isFinalizing || !!finalSnapshot; }
      applies (§1: a workbook without the current month must not silently keep
      the previous workbook's figures);
    - S.txn / S.files.txn are set consistently;
-   - auto-apply and strict auto-seed run when S.key + S.rec are known. */
+   - auto-apply and strict auto-seed run via rehydrateFromActiveTxn(). */
 function applyTransactionSource(parsedTxn, filename){
   if(S.rec){
     S.rec.txn = { inCount:null, outCount:null, inUsd:null, outUsd:null };
@@ -876,13 +900,7 @@ function applyTransactionSource(parsedTxn, filename){
   }
   S.txn = parsedTxn;
   S.files.txn = filename;
-  if(!S.key || !S.rec) return;
-  const tm = parsedTxn.months[S.key];
-  if(tm){
-    S.rec.txn = { inCount:tm.inCount, outCount:tm.outCount, inUsd:tm.inUsd, outUsd:tm.outUsd };
-    if(parsedTxn.ytd && parsedTxn.ytd.key===S.key && !isNum(S.rec.kpi.volYtd)) S.rec.kpi.volYtd = parsedTxn.ytd.usd/1e6;
-  }
-  autoSeedFromTxn();
+  rehydrateFromActiveTxn();
 }
 
 /* §4 — strict auto-seed from the current Transaction Summary. Before seeding
@@ -1444,7 +1462,7 @@ let __wizLastFileHandled = null;
 async function wizRouteFile(f){
   if(mutationLocked()) return;
   const nm=(f.name||'').toLowerCase();
-  if(/\.data$/.test(nm) || /application\/json/.test(f.type||'') || /\.json$/.test(nm)){ importContinuation(f); return; }
+  if(/\.data$/.test(nm) || /application\/json/.test(f.type||'') || /\.json$/.test(nm)){ await importContinuation(f); return; }
   if(/\.(xlsx|xls)$/.test(nm)){
     const plBefore=!!S.pl, txnBefore=!!S.txn, bsBefore=!!S.bs;
     __wizLastFileHandled = f.name;
@@ -2323,29 +2341,38 @@ function applyContinuation(obj){
   // supplied by the continuation is now guarded by the strict hasOwnProperty
   // rule against silent reseeding.
   S.__autoSeededKeys = new Set();
+  // Rebuild S.rec from the refreshed hist. ensureRec() calls
+  // rehydrateFromActiveTxn() which restores current-month txn values from
+  // an already-loaded Transaction Summary and re-runs autoSeedFromTxn().
+  // If S.key is not yet known, rehydration will happen when handleFiles
+  // establishes it and calls ensureRec.
   if(S.key){ S.rec=null; ensureRec(); }
-  // If a Transaction Summary is already loaded and the current reporting
-  // month is known, re-run auto-seed against the refreshed hist so any
-  // genuinely absent last-6 month gets seeded now. Continuation entries are
-  // protected by hasOwnProperty.
-  if(S.txn && S.key && S.rec) autoSeedFromTxn();
   renderAll();
 }
 function importContinuation(file){
-  if(!file) return;
-  if(mutationLocked()) return;          // frozen while finalising, and after finalisation until "Make changes"
-  if(file.size>CONT_MAX_BYTES){ toast('That continuation file is too large to be valid.',6000); return; }
-  const reader=new FileReader();
-  reader.onerror=function(){ toast('Could not read that file.',6000); };
-  reader.onload=function(){
-    if(mutationLocked()) return;        // finalisation started while the file was being read: ignore this import
-    let obj; try{ obj=JSON.parse(reader.result); }catch(e){ toast('That file is not valid JSON and was not loaded.',6000); return; }
-    const v=validateContinuation(obj); if(!v.ok){ toast(v.msg,7000); return; }
-    if(S.key){ const need=shiftKey(S.key,-1); if(obj.reportingMonth!==need){ toast('This continuation file is for '+longLbl(obj.reportingMonth)+', but the report month is '+longLbl(S.key)+'. Load the '+longLbl(need)+' file instead.',9000); return; } }
-    applyContinuation(obj);
-    toast('Loaded continuation from '+longLbl(obj.reportingMonth)+'. Now upload this month’s source files.',6000);
-  };
-  reader.readAsText(file);
+  // Returns a Promise that resolves once read + validation + adjacency +
+  // application (or a handled rejection) have completed. Callers that need
+  // deterministic ordering (wizRouteFile / wizHandleDrop) can await it so a
+  // subsequent handleFiles or importContinuation call runs against the state
+  // that this call fully wrote through.
+  if(!file) return Promise.resolve();
+  if(mutationLocked()) return Promise.resolve();
+  if(file.size>CONT_MAX_BYTES){ toast('That Previous Month File is too large to be valid.',6000); return Promise.resolve(); }
+  return new Promise(resolve=>{
+    const reader=new FileReader();
+    reader.onerror=function(){ toast('Could not read that file.',6000); resolve(); };
+    reader.onload=function(){
+      try{
+        if(mutationLocked()) return;    // finalisation started while the file was being read: ignore this import
+        let obj; try{ obj=JSON.parse(reader.result); }catch(e){ toast('That file is not valid JSON and was not loaded.',6000); return; }
+        const v=validateContinuation(obj); if(!v.ok){ toast(v.msg,7000); return; }
+        if(S.key){ const need=shiftKey(S.key,-1); if(obj.reportingMonth!==need){ toast('This Previous Month File is for '+longLbl(obj.reportingMonth)+', but the report month is '+longLbl(S.key)+'. Load the '+longLbl(need)+' file instead.',9000); return; } }
+        applyContinuation(obj);
+        toast('Loaded Previous Month File from '+longLbl(obj.reportingMonth)+'. Now upload this month’s source files.',6000);
+      } finally { resolve(); }
+    };
+    reader.readAsText(file);
+  });
 }
 if($('#btnImport')) $('#btnImport').onclick=()=>$('#contFile') && $('#contFile').click();
 if($('#contFile')) $('#contFile').onchange=e=>{ const f=e.target.files&&e.target.files[0]; importContinuation(f); e.target.value=''; };

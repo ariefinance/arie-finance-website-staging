@@ -1,0 +1,385 @@
+{
+  "reportMonth": "2026-09",
+  "entity": "Acme Holdings Ltd",
+  "currency": "USD",
+  "finalisedFor": "2026-09",
+  "financials": {
+    "current": {
+      "acc": 2500,
+      "subTxn": 1600,
+      "fxOther": 0,
+      "maint": 0,
+      "advisory": 0,
+      "rev": 4100,
+      "staff": 0,
+      "prof": 100,
+      "other": 1400,
+      "intro": 0,
+      "opex": 1500,
+      "nonop": 0,
+      "ebitda": 2600,
+      "gp": 4100
+    },
+    "ytd": {
+      "acc": 13500,
+      "subTxn": 10800,
+      "fxOther": 0,
+      "maint": 0,
+      "advisory": 0,
+      "rev": 24300,
+      "staff": 0,
+      "prof": 900,
+      "other": 12600,
+      "intro": 0,
+      "opex": 13500,
+      "nonop": 0,
+      "ebitda": 10800,
+      "gp": 24300
+    },
+    "comparative": {
+      "acc": 1900,
+      "subTxn": 1200,
+      "fxOther": 0,
+      "maint": 0,
+      "advisory": 0,
+      "rev": 3100,
+      "staff": 1200,
+      "prof": 100,
+      "other": 200,
+      "intro": 0,
+      "opex": 1500,
+      "nonop": 0,
+      "ebitda": 1600,
+      "gp": 3100
+    },
+    "comparativeBasis": "reported",
+    "comparativeMonth": "2026-08"
+  },
+  "kpi": {
+    "clients": 3,
+    "clientsFromPl": 3,
+    "active": 3,
+    "activeBasis": "Regression fixture (synthetic)",
+    "accountsActive": 5,
+    "accountsHeld": 5,
+    "jurisdictions": 3,
+    "intlPct": 66,
+    "avgRevPerClient": 900
+  },
+  "transactions": {
+    "current": {
+      "inUsd": 140000,
+      "outUsd": 126000,
+      "inCount": 18,
+      "outCount": 17,
+      "volMonth": 0.27,
+      "volYtd": 2.05,
+      "volSinceInc": 5
+    },
+    "sixMonth": [
+      {
+        "key": "2026-04",
+        "inUsd": 120000,
+        "outUsd": 108000,
+        "inCount": 14,
+        "outCount": 13
+      },
+      {
+        "key": "2026-05",
+        "inUsd": 115000,
+        "outUsd": 103500,
+        "inCount": 13,
+        "outCount": 12
+      },
+      {
+        "key": "2026-06",
+        "inUsd": 110000,
+        "outUsd": 99000,
+        "inCount": 12,
+        "outCount": 11
+      },
+      {
+        "key": "2026-07",
+        "inUsd": 105000,
+        "outUsd": 94500,
+        "inCount": 11,
+        "outCount": 10
+      },
+      {
+        "key": "2026-08",
+        "inUsd": 100000,
+        "outUsd": 90000,
+        "inCount": 10,
+        "outCount": 9
+      },
+      {
+        "key": "2026-09",
+        "inUsd": 140000,
+        "outUsd": 126000,
+        "inCount": 18,
+        "outCount": 17
+      }
+    ]
+  },
+  "unitEconomics": {
+    "current": {
+      "gpMargin": 1,
+      "revPerClient": 1366.67,
+      "gpPerClient": 1366.67,
+      "volPerClient": 88666.67,
+      "txnPerClient": 11.67
+    },
+    "sixMonth": [
+      {
+        "key": "2026-04",
+        "gpMargin": 0.6,
+        "revPerClient": 0.5,
+        "gpPerClient": 0.3,
+        "volPerClient": 0.5,
+        "txnPerClient": 5
+      },
+      {
+        "key": "2026-05",
+        "gpMargin": 0.6,
+        "revPerClient": 0.5,
+        "gpPerClient": 0.3,
+        "volPerClient": 0.5,
+        "txnPerClient": 5
+      },
+      {
+        "key": "2026-06",
+        "gpMargin": 0.6,
+        "revPerClient": 0.5,
+        "gpPerClient": 0.3,
+        "volPerClient": 0.5,
+        "txnPerClient": 5
+      },
+      {
+        "key": "2026-07",
+        "gpMargin": 0.6,
+        "revPerClient": 0.5,
+        "gpPerClient": 0.3,
+        "volPerClient": 0.5,
+        "txnPerClient": 5
+      },
+      {
+        "key": "2026-08",
+        "gpMargin": 0.6,
+        "revPerClient": 0.5,
+        "gpPerClient": 0.3,
+        "volPerClient": 0.5,
+        "txnPerClient": 5
+      },
+      {
+        "key": "2026-09",
+        "gpMargin": 1,
+        "revPerClient": 1366.67,
+        "gpPerClient": 1366.67,
+        "volPerClient": 88666.67,
+        "txnPerClient": 11.67
+      }
+    ]
+  },
+  "distributions": {
+    "juris": [
+      {
+        "name": "Mauritius",
+        "count": 1
+      },
+      {
+        "name": "United Kingdom",
+        "count": 1
+      },
+      {
+        "name": "United Arab Emirates",
+        "count": 1
+      }
+    ],
+    "industries": [
+      {
+        "name": "Financial Services",
+        "count": 2
+      },
+      {
+        "name": "Technology",
+        "count": 1
+      }
+    ],
+    "jurTot": 3,
+    "indTot": 3
+  },
+  "commentary": {
+    "pipeline": {
+      "noUpdate": true,
+      "review": true,
+      "text": ""
+    },
+    "regulatory": {
+      "noUpdate": true,
+      "review": true,
+      "text": ""
+    },
+    "tech": {
+      "noUpdate": true,
+      "review": true,
+      "text": ""
+    },
+    "ebitdaNote": {
+      "noUpdate": true,
+      "review": true,
+      "text": ""
+    },
+    "metricsNote": {
+      "noUpdate": true,
+      "review": true,
+      "text": ""
+    }
+  },
+  "adjustments": {
+    "reclassMonth": 0,
+    "reclassYtd": 0,
+    "ytdOther": 0,
+    "ytdOtherLabel": "",
+    "ytdOtherCarried": false
+  },
+  "overrides": {},
+  "compMode": "reported",
+  "confirmations": {
+    "adjYtd": true,
+    "dist": true,
+    "accounts": true,
+    "republish": false
+  },
+  "reportStructure": {
+    "slideCount": 11,
+    "pages": [
+      {
+        "index": 1,
+        "title": "Monthly management report for September 2026"
+      },
+      {
+        "index": 2,
+        "title": "Operational updates"
+      },
+      {
+        "index": 3,
+        "title": "Regulatory updates"
+      },
+      {
+        "index": 4,
+        "title": "Tech updates"
+      },
+      {
+        "index": 5,
+        "title": "Numbers at a glance: revenue"
+      },
+      {
+        "index": 6,
+        "title": "Numbers at a glance: expenses"
+      },
+      {
+        "index": 7,
+        "title": "Main KPIs, September 2026"
+      },
+      {
+        "index": 8,
+        "title": "Transaction volume summary"
+      },
+      {
+        "index": 9,
+        "title": "Other metrics"
+      },
+      {
+        "index": 10,
+        "title": "Client distribution by jurisdiction"
+      },
+      {
+        "index": 11,
+        "title": "Client distribution by industry"
+      }
+    ]
+  },
+  "publishedHistoryKeys": [
+    "2026-03",
+    "2026-04",
+    "2026-05",
+    "2026-06",
+    "2026-07",
+    "2026-08",
+    "2026-09"
+  ],
+  "outputs": {
+    "pdf": {
+      "pageCount": 11,
+      "md5": "dca1320c058e81004c38a37fe0663bb9",
+      "bytes": 2290399,
+      "name": "ARIE_Finance_Management_Report_September_2026.pdf"
+    },
+    "pptx": {
+      "slideCount": 11,
+      "md5": "1156eb684a547daa70b09ae0447b307d",
+      "bytes": 2377752,
+      "name": "ARIE_Finance_Management_Report_September_2026.pptx"
+    },
+    "continuation": {
+      "formatId": "arie-management-report-continuation",
+      "schemaVersion": 1,
+      "reportingMonth": "2026-09",
+      "checksum": "b1a50f62",
+      "histMonthCount": 7,
+      "histMonths": [
+        "2026-03",
+        "2026-04",
+        "2026-05",
+        "2026-06",
+        "2026-07",
+        "2026-08",
+        "2026-09"
+      ],
+      "name": "ARIE_Management_Report_September_2026.data"
+    }
+  },
+  "pageHashes": [
+    "18688b474682afa856e6bb424e31ae74",
+    "530e4971dde1dab0f954b703efbd3038",
+    "548b7149560d8fd6a2abddee41283b5d",
+    "abb060fb0eee5dd2b346dbe7a7f344c0",
+    "be143daf4dbbca3a00b8c470f3aa3c9b",
+    "2ee4e2686cf188d33a55a6611f47fa71",
+    "bf49ec183d69626a6a822ec1488182df",
+    "eb032d6de56a7b01013ebc8ec4ea193e",
+    "418cf489a5b2e092e6af1c7723875939",
+    "277739d9c48e10ee2bdf1691e5ff7d3e",
+    "d1e316f6450e63e2e6114fa1ea7bed78"
+  ],
+  "pageCount": 11,
+  "imageSource": "intercepted from finalizeReport() before PDF/PPTX build",
+  "readinessSignature": {
+    "blockers": 0,
+    "warnings": 0,
+    "blockerLabels": [],
+    "warningLabels": [],
+    "passLabels": [
+      "Accounts",
+      "Client count",
+      "Comparative month",
+      "EBITDA note",
+      "Financial data",
+      "Industry distribution",
+      "Jurisdiction distribution",
+      "Line mapping",
+      "Metrics note",
+      "Per-client denominator",
+      "Pipeline",
+      "Regulatory commentary",
+      "Reporting month",
+      "Since-incorporation volume",
+      "Status",
+      "Technology commentary",
+      "Transaction data",
+      "Transaction history",
+      "Unit-economics history",
+      "Year-to-date volume"
+    ]
+  }
+}

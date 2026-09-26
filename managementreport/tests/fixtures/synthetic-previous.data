@@ -1,0 +1,620 @@
+{
+ "formatId": "arie-management-report-continuation",
+ "schemaVersion": 1,
+ "reportingMonth": "2026-08",
+ "generatedAt": "2026-09-01T00:00:00.000Z",
+ "builderVersion": "2026-09-stateless-1",
+ "hist": {
+  "2026-03": {
+   "key": "2026-03",
+   "status": "published",
+   "published": {
+    "at": "2026-03-15T09:00:00Z",
+    "metrics": {
+     "inUsd": 125000,
+     "outUsd": 112500,
+     "inCount": 15,
+     "outCount": 14,
+     "volMonth": 0.2375,
+     "volYtd": 2.5,
+     "volSinceInc": 5.5,
+     "gpMargin": 0.6,
+     "revPerClient": 0.5,
+     "gpPerClient": 0.3,
+     "volPerClient": 0.5,
+     "txnPerClient": 5
+    },
+    "fig": {
+     "acc": 1900,
+     "subTxn": 1200,
+     "fxOther": 0,
+     "maint": 0,
+     "advisory": 0,
+     "rev": 3100,
+     "staff": 1200,
+     "prof": 100,
+     "other": 200,
+     "intro": 0,
+     "opex": 1500,
+     "nonop": 0,
+     "ebitda": 1600,
+     "gp": 3100
+    }
+   },
+   "kpi": {
+    "clients": 3,
+    "accountsActive": 5,
+    "accountsHeld": 5,
+    "jurisdictions": 3,
+    "intlPct": 66,
+    "volMonth": 0.2375,
+    "volYtd": 2.5,
+    "volSinceInc": 5.5
+   },
+   "adj": {},
+   "txn": {
+    "inUsd": 125000,
+    "outUsd": 112500,
+    "inCount": 15,
+    "outCount": 14
+   },
+   "text": {
+    "pipeline": "",
+    "regulatory": "",
+    "tech": "",
+    "ebitdaNote": "",
+    "metricsNote": ""
+   },
+   "review": {
+    "pipeline": true,
+    "regulatory": true,
+    "tech": true,
+    "ebitdaNote": true,
+    "metricsNote": true
+   },
+   "confirm": {},
+   "noUpdate": {
+    "pipeline": true,
+    "regulatory": true,
+    "tech": true,
+    "ebitdaNote": true,
+    "metricsNote": true
+   },
+   "juris": [
+    {
+     "name": "Mauritius",
+     "count": 1
+    },
+    {
+     "name": "United Kingdom",
+     "count": 1
+    },
+    {
+     "name": "United Arab Emirates",
+     "count": 1
+    }
+   ],
+   "industries": [
+    {
+     "name": "Financial Services",
+     "count": 2
+    },
+    {
+     "name": "Technology",
+     "count": 1
+    }
+   ]
+  },
+  "2026-04": {
+   "key": "2026-04",
+   "status": "published",
+   "published": {
+    "at": "2026-04-15T09:00:00Z",
+    "metrics": {
+     "inUsd": 120000,
+     "outUsd": 108000,
+     "inCount": 14,
+     "outCount": 13,
+     "volMonth": 0.228,
+     "volYtd": 2.4,
+     "volSinceInc": 5.4,
+     "gpMargin": 0.6,
+     "revPerClient": 0.5,
+     "gpPerClient": 0.3,
+     "volPerClient": 0.5,
+     "txnPerClient": 5
+    },
+    "fig": {
+     "acc": 1900,
+     "subTxn": 1200,
+     "fxOther": 0,
+     "maint": 0,
+     "advisory": 0,
+     "rev": 3100,
+     "staff": 1200,
+     "prof": 100,
+     "other": 200,
+     "intro": 0,
+     "opex": 1500,
+     "nonop": 0,
+     "ebitda": 1600,
+     "gp": 3100
+    }
+   },
+   "kpi": {
+    "clients": 3,
+    "accountsActive": 5,
+    "accountsHeld": 5,
+    "jurisdictions": 3,
+    "intlPct": 66,
+    "volMonth": 0.228,
+    "volYtd": 2.4,
+    "volSinceInc": 5.4
+   },
+   "adj": {},
+   "txn": {
+    "inUsd": 120000,
+    "outUsd": 108000,
+    "inCount": 14,
+    "outCount": 13
+   },
+   "text": {
+    "pipeline": "",
+    "regulatory": "",
+    "tech": "",
+    "ebitdaNote": "",
+    "metricsNote": ""
+   },
+   "review": {
+    "pipeline": true,
+    "regulatory": true,
+    "tech": true,
+    "ebitdaNote": true,
+    "metricsNote": true
+   },
+   "confirm": {},
+   "noUpdate": {
+    "pipeline": true,
+    "regulatory": true,
+    "tech": true,
+    "ebitdaNote": true,
+    "metricsNote": true
+   },
+   "juris": [
+    {
+     "name": "Mauritius",
+     "count": 1
+    },
+    {
+     "name": "United Kingdom",
+     "count": 1
+    },
+    {
+     "name": "United Arab Emirates",
+     "count": 1
+    }
+   ],
+   "industries": [
+    {
+     "name": "Financial Services",
+     "count": 2
+    },
+    {
+     "name": "Technology",
+     "count": 1
+    }
+   ]
+  },
+  "2026-05": {
+   "key": "2026-05",
+   "status": "published",
+   "published": {
+    "at": "2026-05-15T09:00:00Z",
+    "metrics": {
+     "inUsd": 115000,
+     "outUsd": 103500,
+     "inCount": 13,
+     "outCount": 12,
+     "volMonth": 0.2185,
+     "volYtd": 2.3,
+     "volSinceInc": 5.3,
+     "gpMargin": 0.6,
+     "revPerClient": 0.5,
+     "gpPerClient": 0.3,
+     "volPerClient": 0.5,
+     "txnPerClient": 5
+    },
+    "fig": {
+     "acc": 1900,
+     "subTxn": 1200,
+     "fxOther": 0,
+     "maint": 0,
+     "advisory": 0,
+     "rev": 3100,
+     "staff": 1200,
+     "prof": 100,
+     "other": 200,
+     "intro": 0,
+     "opex": 1500,
+     "nonop": 0,
+     "ebitda": 1600,
+     "gp": 3100
+    }
+   },
+   "kpi": {
+    "clients": 3,
+    "accountsActive": 5,
+    "accountsHeld": 5,
+    "jurisdictions": 3,
+    "intlPct": 66,
+    "volMonth": 0.2185,
+    "volYtd": 2.3,
+    "volSinceInc": 5.3
+   },
+   "adj": {},
+   "txn": {
+    "inUsd": 115000,
+    "outUsd": 103500,
+    "inCount": 13,
+    "outCount": 12
+   },
+   "text": {
+    "pipeline": "",
+    "regulatory": "",
+    "tech": "",
+    "ebitdaNote": "",
+    "metricsNote": ""
+   },
+   "review": {
+    "pipeline": true,
+    "regulatory": true,
+    "tech": true,
+    "ebitdaNote": true,
+    "metricsNote": true
+   },
+   "confirm": {},
+   "noUpdate": {
+    "pipeline": true,
+    "regulatory": true,
+    "tech": true,
+    "ebitdaNote": true,
+    "metricsNote": true
+   },
+   "juris": [
+    {
+     "name": "Mauritius",
+     "count": 1
+    },
+    {
+     "name": "United Kingdom",
+     "count": 1
+    },
+    {
+     "name": "United Arab Emirates",
+     "count": 1
+    }
+   ],
+   "industries": [
+    {
+     "name": "Financial Services",
+     "count": 2
+    },
+    {
+     "name": "Technology",
+     "count": 1
+    }
+   ]
+  },
+  "2026-06": {
+   "key": "2026-06",
+   "status": "published",
+   "published": {
+    "at": "2026-06-15T09:00:00Z",
+    "metrics": {
+     "inUsd": 110000,
+     "outUsd": 99000,
+     "inCount": 12,
+     "outCount": 11,
+     "volMonth": 0.209,
+     "volYtd": 2.2,
+     "volSinceInc": 5.2,
+     "gpMargin": 0.6,
+     "revPerClient": 0.5,
+     "gpPerClient": 0.3,
+     "volPerClient": 0.5,
+     "txnPerClient": 5
+    },
+    "fig": {
+     "acc": 1900,
+     "subTxn": 1200,
+     "fxOther": 0,
+     "maint": 0,
+     "advisory": 0,
+     "rev": 3100,
+     "staff": 1200,
+     "prof": 100,
+     "other": 200,
+     "intro": 0,
+     "opex": 1500,
+     "nonop": 0,
+     "ebitda": 1600,
+     "gp": 3100
+    }
+   },
+   "kpi": {
+    "clients": 3,
+    "accountsActive": 5,
+    "accountsHeld": 5,
+    "jurisdictions": 3,
+    "intlPct": 66,
+    "volMonth": 0.209,
+    "volYtd": 2.2,
+    "volSinceInc": 5.2
+   },
+   "adj": {},
+   "txn": {
+    "inUsd": 110000,
+    "outUsd": 99000,
+    "inCount": 12,
+    "outCount": 11
+   },
+   "text": {
+    "pipeline": "",
+    "regulatory": "",
+    "tech": "",
+    "ebitdaNote": "",
+    "metricsNote": ""
+   },
+   "review": {
+    "pipeline": true,
+    "regulatory": true,
+    "tech": true,
+    "ebitdaNote": true,
+    "metricsNote": true
+   },
+   "confirm": {},
+   "noUpdate": {
+    "pipeline": true,
+    "regulatory": true,
+    "tech": true,
+    "ebitdaNote": true,
+    "metricsNote": true
+   },
+   "juris": [
+    {
+     "name": "Mauritius",
+     "count": 1
+    },
+    {
+     "name": "United Kingdom",
+     "count": 1
+    },
+    {
+     "name": "United Arab Emirates",
+     "count": 1
+    }
+   ],
+   "industries": [
+    {
+     "name": "Financial Services",
+     "count": 2
+    },
+    {
+     "name": "Technology",
+     "count": 1
+    }
+   ]
+  },
+  "2026-07": {
+   "key": "2026-07",
+   "status": "published",
+   "published": {
+    "at": "2026-07-15T09:00:00Z",
+    "metrics": {
+     "inUsd": 105000,
+     "outUsd": 94500,
+     "inCount": 11,
+     "outCount": 10,
+     "volMonth": 0.1995,
+     "volYtd": 2.1,
+     "volSinceInc": 5.1,
+     "gpMargin": 0.6,
+     "revPerClient": 0.5,
+     "gpPerClient": 0.3,
+     "volPerClient": 0.5,
+     "txnPerClient": 5
+    },
+    "fig": {
+     "acc": 1900,
+     "subTxn": 1200,
+     "fxOther": 0,
+     "maint": 0,
+     "advisory": 0,
+     "rev": 3100,
+     "staff": 1200,
+     "prof": 100,
+     "other": 200,
+     "intro": 0,
+     "opex": 1500,
+     "nonop": 0,
+     "ebitda": 1600,
+     "gp": 3100
+    }
+   },
+   "kpi": {
+    "clients": 3,
+    "accountsActive": 5,
+    "accountsHeld": 5,
+    "jurisdictions": 3,
+    "intlPct": 66,
+    "volMonth": 0.1995,
+    "volYtd": 2.1,
+    "volSinceInc": 5.1
+   },
+   "adj": {},
+   "txn": {
+    "inUsd": 105000,
+    "outUsd": 94500,
+    "inCount": 11,
+    "outCount": 10
+   },
+   "text": {
+    "pipeline": "",
+    "regulatory": "",
+    "tech": "",
+    "ebitdaNote": "",
+    "metricsNote": ""
+   },
+   "review": {
+    "pipeline": true,
+    "regulatory": true,
+    "tech": true,
+    "ebitdaNote": true,
+    "metricsNote": true
+   },
+   "confirm": {},
+   "noUpdate": {
+    "pipeline": true,
+    "regulatory": true,
+    "tech": true,
+    "ebitdaNote": true,
+    "metricsNote": true
+   },
+   "juris": [
+    {
+     "name": "Mauritius",
+     "count": 1
+    },
+    {
+     "name": "United Kingdom",
+     "count": 1
+    },
+    {
+     "name": "United Arab Emirates",
+     "count": 1
+    }
+   ],
+   "industries": [
+    {
+     "name": "Financial Services",
+     "count": 2
+    },
+    {
+     "name": "Technology",
+     "count": 1
+    }
+   ]
+  },
+  "2026-08": {
+   "key": "2026-08",
+   "status": "published",
+   "published": {
+    "at": "2026-08-15T09:00:00Z",
+    "metrics": {
+     "inUsd": 100000,
+     "outUsd": 90000,
+     "inCount": 10,
+     "outCount": 9,
+     "volMonth": 0.19,
+     "volYtd": 2,
+     "volSinceInc": 5,
+     "gpMargin": 0.6,
+     "revPerClient": 0.5,
+     "gpPerClient": 0.3,
+     "volPerClient": 0.5,
+     "txnPerClient": 5
+    },
+    "fig": {
+     "acc": 1900,
+     "subTxn": 1200,
+     "fxOther": 0,
+     "maint": 0,
+     "advisory": 0,
+     "rev": 3100,
+     "staff": 1200,
+     "prof": 100,
+     "other": 200,
+     "intro": 0,
+     "opex": 1500,
+     "nonop": 0,
+     "ebitda": 1600,
+     "gp": 3100
+    }
+   },
+   "kpi": {
+    "clients": 3,
+    "accountsActive": 5,
+    "accountsHeld": 5,
+    "jurisdictions": 3,
+    "intlPct": 66,
+    "volMonth": 0.19,
+    "volYtd": 2,
+    "volSinceInc": 5
+   },
+   "adj": {},
+   "txn": {
+    "inUsd": 100000,
+    "outUsd": 90000,
+    "inCount": 10,
+    "outCount": 9
+   },
+   "text": {
+    "pipeline": "",
+    "regulatory": "",
+    "tech": "",
+    "ebitdaNote": "",
+    "metricsNote": ""
+   },
+   "review": {
+    "pipeline": true,
+    "regulatory": true,
+    "tech": true,
+    "ebitdaNote": true,
+    "metricsNote": true
+   },
+   "confirm": {},
+   "noUpdate": {
+    "pipeline": true,
+    "regulatory": true,
+    "tech": true,
+    "ebitdaNote": true,
+    "metricsNote": true
+   },
+   "juris": [
+    {
+     "name": "Mauritius",
+     "count": 1
+    },
+    {
+     "name": "United Kingdom",
+     "count": 1
+    },
+    {
+     "name": "United Arab Emirates",
+     "count": 1
+    }
+   ],
+   "industries": [
+    {
+     "name": "Financial Services",
+     "count": 2
+    },
+    {
+     "name": "Technology",
+     "count": 1
+    }
+   ]
+  }
+ },
+ "cfg": {
+  "map": {},
+  "directCosts": [],
+  "yearVolumes": [],
+  "includeFinPos": false,
+  "company": "ARIE FINANCE (regression fixture)",
+  "entity": "Acme Holdings Ltd",
+  "domestic": "Mauritius",
+  "knownAccounts": null
+ },
+ "checksum": "ff69ac96"
+}

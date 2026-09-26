@@ -1,4 +1,9 @@
 User-agent: *
 Allow: /
+Disallow: /api/
+Disallow: /internal/
+Disallow: /managementreport/
+Disallow: /salestracker/
+Disallow: /logout/
 
 Sitemap: https://www.ariefinance.com/sitemap.xml

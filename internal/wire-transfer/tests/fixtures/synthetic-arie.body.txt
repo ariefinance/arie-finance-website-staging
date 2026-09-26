@@ -1,0 +1,78 @@
+We need to discuss the below when you have a few minutes pls
+
+From: Arie Finance <no-reply@ariefinance.com>
+Date: Tuesday, July 28, 2026 at 9:51 AM
+To: ACBM Customer Care <customercare@ariefinance.com>
+Subject: Cross-border wire transfer request
+
+
+
+
+
+
+Hello Arie Finance Bank,
+
+Please find below details of the cross-border wire transfer to be carried out at your end. Kindly process the transaction as per the information provided.
+
+________________________________
+
+
+Country: United Arab Emirates
+
+
+Beneficiary Name: Aisha Sudally
+
+
+Beneficiary Address: 3rd Floor, KPMG Building, , Ebene, 124324
+
+
+Beneficiary Bank Name: Emirates NBD
+
+
+
+Beneficiary Account Number: 001015435042701
+
+
+Beneficiary IBAN: AE970260001015435042701
+
+
+Transfer Currency: USD
+
+
+Transfer Amount: 1.0
+
+
+Purpose: COMPUTER_SERVICES
+
+
+________________________________
+
+
+Additional Transaction Information
+
+
+Source Amount: 999.0
+
+
+Source Currency: EUR
+
+
+
+Sender Details
+
+
+Sender Name: ARIE Finance Limited
+
+
+Sender Account Number: 00000016
+
+
+Reference: Manual test
+
+
+Charges: 0.0
+
+
+Regards,
+
+The Arie Team

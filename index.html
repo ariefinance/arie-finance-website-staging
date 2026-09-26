@@ -1,6 +1,27 @@
 <!DOCTYPE html>
 <html lang="en"><head>
 <meta charset="utf-8">
+<!-- Consent Mode v2 default (Advanced): analytics denied, ads permanently denied. -->
+<script>
+window.dataLayer = window.dataLayer || [];
+function gtag(){dataLayer.push(arguments);}
+gtag('consent','default',{
+  analytics_storage:'denied',
+  ad_storage:'denied',
+  ad_user_data:'denied',
+  ad_personalization:'denied',
+  wait_for_update:500
+});
+try{
+  var _c = localStorage.getItem('arie_analytics_consent');
+  if(_c==='granted' || (!_c && localStorage.getItem('arie_cookies_ok')==='1')){
+    gtag('consent','update',{analytics_storage:'granted'});
+  }
+}catch(e){}
+</script>
+<!-- Google Tag Manager -->
+<script>(function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src='https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);})(window,document,'script','dataLayer','GTM-T24ZGR86');</script>
+<!-- End Google Tag Manager -->
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="google-site-verification" content="kDpxQmYvooc4_IouztYxIQ8WdMTB5ut7-tqIqf24e_4" />
 <title>ARIE Finance — International Payment Platform for Global Businesses</title>
@@ -1546,6 +1567,9 @@ body{ padding-bottom:var(--cookie-space, 0px); }
 }
 </style></head>
 <body>
+<!-- Google Tag Manager (noscript) -->
+<noscript><iframe src="https://www.googletagmanager.com/ns.html?id=GTM-T24ZGR86" height="0" width="0" style="display:none;visibility:hidden" title="GTM"></iframe></noscript>
+<!-- End Google Tag Manager (noscript) -->
 <noscript><div role="status" style="position:relative;z-index:3;background:#fff4d6;color:#06113A;padding:10px 18px;text-align:center;font:600 14px/1.4 -apple-system,BlinkMacSystemFont,Segoe UI,sans-serif;border-bottom:1px solid #C99B3F;">The website content remains available, but interactive navigation, forms and policy dialogs require JavaScript.</div></noscript>
 
 
@@ -1947,18 +1971,22 @@ body{ padding-bottom:var(--cookie-space, 0px); }
       <p class="cookie-text">This site uses essential cookies and similar technologies. We may also use privacy-focused analytics to understand website usage and performance. No advertising or cross-site tracking technologies are used. <a href="#compliance" data-route="compliance">Learn more</a></p>
       <div class="cookie-actions">
         <button class="btn btn-ghost" id="cookie-manage" style="font-size:13px;padding:9px 16px;">Manage preferences</button>
-        <button class="btn btn-primary" id="cookie-accept" style="font-size:13px;padding:9px 16px;">Accept</button>
+        <button class="btn btn-ghost" id="cookie-essential" style="font-size:13px;padding:9px 16px;">Essential only</button>
+        <button class="btn btn-primary" id="cookie-accept" style="font-size:13px;padding:9px 16px;">Accept analytics</button>
       </div>
     </div>
   </div>
   <div class="cookie-modal-overlay is-hidden" id="cookie-modal-overlay" role="dialog" aria-modal="true" aria-label="Cookie preferences">
     <div class="cookie-modal">
       <h3>Cookie preferences</h3>
-      <p class="cookie-modal-intro">This site uses essential cookies and similar technologies required for functionality and security. ARIE may also use privacy-focused, cookieless analytics to understand website usage and performance. No advertising or cross-site tracking technologies are used.</p>
+      <p class="cookie-modal-intro">This site uses essential cookies and similar technologies required for functionality and security. ARIE may also use privacy-focused analytics to understand website usage and performance. No advertising or cross-site tracking technologies are used.</p>
       <div class="cookie-type"><h4>Essential cookies</h4><p>Required for the site to function correctly. Cannot be disabled.</p></div>
       <div class="cookie-type"><h4>Analytics and performance</h4><p>Used to understand website usage and technical performance. No personal form information or advertising data is collected.</p></div>
       <div class="cookie-type" style="border-bottom:0;margin-bottom:20px;"><h4>Advertising &amp; tracking</h4><p>Not used on this site.</p></div>
-      <button class="btn btn-primary" id="cookie-modal-accept" style="width:100%;justify-content:center;">Accept &amp; close</button>
+      <div style="display:flex;gap:10px;flex-wrap:wrap;">
+        <button class="btn btn-ghost" id="cookie-modal-essential" style="flex:1 1 160px;justify-content:center;">Essential only</button>
+        <button class="btn btn-primary" id="cookie-modal-accept" style="flex:1 1 160px;justify-content:center;">Accept analytics</button>
+      </div>
     </div>
   </div>
 
@@ -2441,11 +2469,16 @@ body{ padding-bottom:var(--cookie-space, 0px); }
   /* ---------- cookie banner + modal + data-jump ---------- */
   (function(){
     var banner = doc.getElementById('cookie-banner');
-    if(banner && !localStorage.getItem('arie_cookies_ok')) banner.classList.remove('is-hidden');
+    var hasPref = false;
+    try{ hasPref = !!localStorage.getItem('arie_analytics_consent') || localStorage.getItem('arie_cookies_ok')==='1'; }catch(e){}
+    if(banner && !hasPref) banner.classList.remove('is-hidden');
     var overlay = doc.getElementById('cookie-modal-overlay');
-    function acceptAll(){ try{ localStorage.setItem('arie_cookies_ok','1'); }catch(e){} if(banner) banner.classList.add('is-hidden'); if(overlay) overlay.classList.add('is-hidden'); }
+    function acceptAll(){ try{ localStorage.setItem('arie_analytics_consent','granted'); localStorage.setItem('arie_cookies_ok','1'); }catch(e){} try{ if(typeof gtag==='function'){ gtag('consent','update',{analytics_storage:'granted'}); } }catch(e){} if(banner) banner.classList.add('is-hidden'); if(overlay) overlay.classList.add('is-hidden'); }
+    function essentialOnly(){ try{ localStorage.setItem('arie_analytics_consent','denied'); localStorage.removeItem('arie_cookies_ok'); }catch(e){} try{ if(typeof gtag==='function'){ gtag('consent','update',{analytics_storage:'denied'}); } }catch(e){} if(banner) banner.classList.add('is-hidden'); if(overlay) overlay.classList.add('is-hidden'); }
     var aBtn = doc.getElementById('cookie-accept'); if(aBtn) aBtn.addEventListener('click', acceptAll);
     var mBtn = doc.getElementById('cookie-modal-accept'); if(mBtn) mBtn.addEventListener('click', acceptAll);
+    var eBtn = doc.getElementById('cookie-essential'); if(eBtn) eBtn.addEventListener('click', essentialOnly);
+    var meBtn = doc.getElementById('cookie-modal-essential'); if(meBtn) meBtn.addEventListener('click', essentialOnly);
     var mpBtn = doc.getElementById('cookie-manage'); if(mpBtn) mpBtn.addEventListener('click', function(){ if(overlay) overlay.classList.remove('is-hidden'); });
     if(overlay) overlay.addEventListener('click', function(e){ if(e.target===overlay) overlay.classList.add('is-hidden'); });
     doc.addEventListener('keydown', function(e){ if(e.key==='Escape' && overlay && !overlay.classList.contains('is-hidden')) overlay.classList.add('is-hidden'); });
@@ -2544,4 +2577,4 @@ body{ padding-bottom:var(--cookie-space, 0px); }
 
 (function(){var last=null;function f(){try{if(window.va){var s=((location.hash||'#home').replace('#','')||'home').split('?')[0];if(s&&s!==last){last=s;window.va('event',{name:'section_view',section:s});}}}catch(e){}}setInterval(f,700);})();
 </script>
-<script defer src="/_vercel/insights/script.js"></script><script>(function(){var radios=[].slice.call(document.querySelectorAll('input[name="topic"]'));if(!radios.length)return;var note=document.querySelector('[data-account-note]');function upd(){var sel=null;for(var i=0;i<radios.length;i++){if(radios[i].checked){sel=radios[i];break;}}if(note){note.hidden=!(sel&&sel.getAttribute('data-topic')==='account');}}radios.forEach(function(r){r.addEventListener('change',upd);});var m=/[?&]topic=([^&#]+)/.exec(location.search)||/[?&]topic=([^&#]+)/.exec(location.hash);if(m){var slug=decodeURIComponent(m[1]).trim().toLowerCase();for(var j=0;j<radios.length;j++){if(radios[j].getAttribute('data-topic')===slug){radios[j].checked=true;break;}}}upd();})();</script><script>(function(){var banner=document.getElementById('cookie-banner');if(!banner)return;var root=document.documentElement;function visible(){return !banner.classList.contains('is-hidden')&&!banner.hidden&&getComputedStyle(banner).display!=='none'&&banner.offsetHeight>0;}function update(){root.style.setProperty('--cookie-space',visible()?(banner.offsetHeight+16)+'px':'0px');}try{var mo=new MutationObserver(update);mo.observe(banner,{attributes:true,attributeFilter:['class','hidden','style']});}catch(e){}if('ResizeObserver' in window){try{new ResizeObserver(update).observe(banner);}catch(e){}}window.addEventListener('resize',update);setTimeout(update,0);setTimeout(update,400);})();</script></body></html>
+<script defer src="/_vercel/insights/script.js"></script><script defer src="/assets/analytics.v1.js"></script><script>(function(){var radios=[].slice.call(document.querySelectorAll('input[name="topic"]'));if(!radios.length)return;var note=document.querySelector('[data-account-note]');function upd(){var sel=null;for(var i=0;i<radios.length;i++){if(radios[i].checked){sel=radios[i];break;}}if(note){note.hidden=!(sel&&sel.getAttribute('data-topic')==='account');}}radios.forEach(function(r){r.addEventListener('change',upd);});var m=/[?&]topic=([^&#]+)/.exec(location.search)||/[?&]topic=([^&#]+)/.exec(location.hash);if(m){var slug=decodeURIComponent(m[1]).trim().toLowerCase();for(var j=0;j<radios.length;j++){if(radios[j].getAttribute('data-topic')===slug){radios[j].checked=true;break;}}}upd();})();</script><script>(function(){var banner=document.getElementById('cookie-banner');if(!banner)return;var root=document.documentElement;function visible(){return !banner.classList.contains('is-hidden')&&!banner.hidden&&getComputedStyle(banner).display!=='none'&&banner.offsetHeight>0;}function update(){root.style.setProperty('--cookie-space',visible()?(banner.offsetHeight+16)+'px':'0px');}try{var mo=new MutationObserver(update);mo.observe(banner,{attributes:true,attributeFilter:['class','hidden','style']});}catch(e){}if('ResizeObserver' in window){try{new ResizeObserver(update).observe(banner);}catch(e){}}window.addEventListener('resize',update);setTimeout(update,0);setTimeout(update,400);})();</script></body></html>

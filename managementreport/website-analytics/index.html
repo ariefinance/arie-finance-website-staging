@@ -1,0 +1,629 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<title>ARIE Finance — Website Analytics Report (2-page)</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Hanken+Grotesk:wght@400;500;600;700&family=Newsreader:opsz,wght@8..60,500;8..60,600&display=swap" rel="stylesheet">
+<style>
+:root{
+  --navy:#06113A; --navy-2:#0B1748; --indigo:#2E2A8C; --indigo-2:#4940D6;
+  --gold:#C99B3F; --gold-2:#E6CB86; --gold-deep:#7E6120;
+  --canvas:#F4F7FB; --surface:#FFFFFF; --border:#D8E2EE; --border-soft:#E7ECF4;
+  --text:#06113A; --muted:#556074; --muted-2:#7B8598;
+  --pos:#0E7C4A; --neg:#B23A2A; --neutral:#7B8598; --warn:#8A5A00; --warn-bg:#FFF6E3;
+  --sans:"Hanken Grotesk",system-ui,-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+  --serif:"Newsreader",Georgia,"Times New Roman",serif;
+  /* categorical palette — brand-neutral, print-safe */
+  --c1:#06113A; --c2:#2E2A8C; --c3:#4940D6; --c4:#C99B3F; --c5:#6E8FBF; --c6:#9AA9C4; --c7:#3E5B8A;
+}
+*,*::before,*::after{box-sizing:border-box}
+html,body{margin:0;background:#EDEFF4;color:var(--text);font-family:var(--sans);font-size:11px;line-height:1.35}
+h1,h2,h3,h4{margin:0;font-weight:600}
+h1{font-family:var(--serif);font-weight:600}
+.mono-num{font-variant-numeric:tabular-nums}
+a{color:var(--indigo)}
+
+/* Page frames — A4 landscape */
+.sheet{
+  width:297mm; height:210mm; margin:6mm auto; background:var(--surface);
+  padding:8mm 9mm 7mm; box-shadow:0 1px 2px rgba(6,17,58,.08),0 8px 24px rgba(6,17,58,.10);
+  display:grid; grid-template-rows:auto 1fr auto; gap:5mm;
+  break-after:page; page-break-after:always;
+}
+.sheet:last-of-type{page-break-after:auto;break-after:auto}
+
+/* Header */
+.hdr{display:flex;align-items:flex-end;justify-content:space-between;gap:12px;border-bottom:1px solid var(--border);padding-bottom:5mm}
+.hdr .brand{display:flex;align-items:center;gap:10px}
+.hdr .brand .mark{width:40px;height:40px;border-radius:8px;background:var(--navy);color:var(--gold-2);display:grid;place-items:center;font-family:var(--serif);font-size:20px;letter-spacing:.5px}
+.hdr h1{font-size:16px;line-height:1.15}
+.hdr .sub{color:var(--muted);font-size:10.5px;margin-top:2px}
+.hdr .period{text-align:right;font-size:10.5px;color:var(--muted)}
+.hdr .period .now{color:var(--text);font-weight:600;font-size:12px}
+
+/* Footer */
+.ftr{display:flex;justify-content:space-between;align-items:center;color:var(--muted-2);font-size:9.5px;border-top:1px solid var(--border);padding-top:2.5mm}
+
+/* Layout grids */
+.grid{display:grid;gap:5mm}
+.kpi-row{grid-template-columns:repeat(6,1fr)}
+.kpi-row-4{grid-template-columns:repeat(4,1fr)}
+.two-col{grid-template-columns:1.55fr 1fr}
+.three-col{grid-template-columns:1fr 1fr 1fr}
+.row-tight{gap:4mm}
+
+/* Card */
+.card{background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:9px 11px;display:flex;flex-direction:column;min-height:0}
+.card .t{font-size:9.5px;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);font-weight:600}
+.card .v{font-family:var(--serif);font-size:24px;line-height:1.05;color:var(--text);margin-top:3px}
+.card .d{display:flex;align-items:baseline;gap:6px;margin-top:2px;font-size:10px;color:var(--muted)}
+.card .d .delta{font-weight:600}
+.delta.pos{color:var(--pos)}
+.delta.neg{color:var(--neg)}
+.delta.flat{color:var(--neutral)}
+.card .empty{color:var(--warn);background:var(--warn-bg);border-radius:4px;padding:2px 6px;font-weight:600;font-size:10px;display:inline-block;margin-top:4px;align-self:flex-start}
+
+/* Chart panels */
+.panel{background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:9px 11px 10px;display:flex;flex-direction:column;min-height:0}
+.panel .head{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:4px}
+.panel .head h3{font-size:11px;text-transform:uppercase;letter-spacing:.08em;color:var(--muted-2);font-weight:600}
+.panel .head .aside{font-size:9.5px;color:var(--muted-2)}
+.panel .foot-note{font-size:9px;color:var(--muted-2);margin-top:4px}
+.panel svg{display:block;width:100%;height:100%}
+.panel .body{flex:1;min-height:0;display:flex}
+.panel .body > svg{flex:1}
+
+/* Placeholder */
+.ph{border:1px dashed var(--border);border-radius:6px;padding:10px 12px;color:var(--muted);font-size:10px;background:#FAFBFE;display:flex;align-items:center;justify-content:center;text-align:center;flex:1}
+.ph strong{color:var(--warn);font-weight:600}
+
+/* Commentary block */
+.notes{background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:10px 12px;display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.notes h4{font-size:10px;text-transform:uppercase;letter-spacing:.09em;color:var(--muted-2);margin-bottom:4px}
+.notes ol{margin:0;padding-left:16px}
+.notes li{margin-bottom:3px;font-size:10.5px}
+
+/* Funnel */
+.funnel{display:grid;grid-template-columns:1fr auto 1fr auto 1fr;align-items:center;gap:6px;flex:1}
+.funnel .stage{background:linear-gradient(180deg,#F5F8FD,#EAF0F9);border:1px solid var(--border);border-radius:8px;padding:8px 10px;text-align:center}
+.funnel .stage .n{font-family:var(--serif);font-size:22px;color:var(--navy)}
+.funnel .stage .l{font-size:9.5px;text-transform:uppercase;letter-spacing:.08em;color:var(--muted)}
+.funnel .arrow{font-size:9px;color:var(--muted-2);text-align:center;line-height:1.15}
+.funnel .arrow b{display:block;font-size:11px;color:var(--indigo);font-weight:700}
+
+/* REScore dial */
+.res-dial{display:grid;grid-template-columns:auto 1fr;gap:12px;align-items:center;flex:1}
+.res-num{font-family:var(--serif);font-size:44px;line-height:1;color:var(--navy)}
+.res-note{color:var(--muted);font-size:10px;max-width:22ch}
+.wv{display:grid;grid-template-columns:repeat(3,1fr);gap:5px;flex:1}
+.wv .wv-c{background:#FAFBFE;border:1px solid var(--border-soft);border-radius:6px;padding:6px 8px}
+.wv .wv-c .l{font-size:9px;text-transform:uppercase;letter-spacing:.08em;color:var(--muted-2)}
+.wv .wv-c .v{font-family:var(--serif);font-size:16px;color:var(--navy)}
+.wv .wv-c .h{font-size:9px;color:var(--muted-2)}
+
+/* Print */
+@page { size: A4 landscape; margin: 0; }
+@media print {
+  html,body{background:#fff}
+  .sheet{margin:0;box-shadow:none}
+}
+
+/* Toolbar (screen only) */
+.toolbar{max-width:297mm;margin:6mm auto 0;display:flex;justify-content:space-between;align-items:center;color:var(--muted);font-size:10.5px;padding:0 4mm}
+.toolbar .link{color:var(--indigo);text-decoration:none}
+.toolbar .warn{color:var(--warn);background:var(--warn-bg);border-radius:6px;padding:6px 10px}
+@media print { .toolbar{display:none} }
+</style>
+</head>
+<body>
+
+<div class="toolbar">
+  <div><strong>ARIE Finance</strong> — Senior Management Website Analytics Report</div>
+  <div>
+    <span id="data-status">Loading data…</span>
+    &nbsp;·&nbsp;<a class="link" href="./data.example.json">data.example.json</a>
+    &nbsp;·&nbsp;<a class="link" href="./README.md">README</a>
+    &nbsp;·&nbsp;<a class="link" href="#" onclick="window.print();return false">Print / Save as PDF</a>
+  </div>
+</div>
+
+<!-- ================= PAGE 1 ================= -->
+<section class="sheet" id="page-1">
+  <header class="hdr">
+    <div class="brand">
+      <div class="mark">A</div>
+      <div>
+        <h1>Website Performance & Commercial Engagement</h1>
+        <div class="sub">Public marketing site · Vercel Analytics · GA4 events · Google Search Console</div>
+      </div>
+    </div>
+    <div class="period">
+      <div class="now" id="period-now">—</div>
+      <div id="period-compare">—</div>
+    </div>
+  </header>
+
+  <div class="grid" style="grid-template-rows:auto 1fr auto;gap:5mm;min-height:0">
+    <!-- KPI strip -->
+    <div class="grid kpi-row" id="kpis-1"></div>
+
+    <!-- Middle: traffic trend + section interest -->
+    <div class="grid two-col" style="min-height:0">
+      <div class="panel" style="min-height:0">
+        <div class="head"><h3>Traffic trend</h3><span class="aside">Daily · Vercel Web Analytics</span></div>
+        <div class="body" id="traffic-trend"></div>
+      </div>
+      <div class="panel" style="min-height:0">
+        <div class="head"><h3>Website section interest</h3><span class="aside">GA4 <code>section_view</code></span></div>
+        <div class="body" id="sections-chart"></div>
+      </div>
+    </div>
+
+    <!-- Bottom row: referrers / countries / devices / funnel -->
+    <div class="grid" style="grid-template-columns:1.05fr 1fr .8fr 1.25fr;min-height:0">
+      <div class="panel"><div class="head"><h3>Traffic acquisition</h3><span class="aside">Vercel Referrers</span></div><div class="body" id="referrers-chart"></div></div>
+      <div class="panel"><div class="head"><h3>Top countries</h3><span class="aside">Top 5</span></div><div class="body" id="countries-chart"></div></div>
+      <div class="panel"><div class="head"><h3>Device mix</h3><span class="aside">% of visitors</span></div><div class="body" id="devices-chart"></div></div>
+      <div class="panel">
+        <div class="head"><h3>Commercial funnel</h3><span class="aside">GA4 events</span></div>
+        <div class="body" id="funnel-chart"></div>
+      </div>
+    </div>
+  </div>
+
+  <footer class="ftr">
+    <span>Page 1 of 2 · Data: Vercel Web Analytics + GA4 dataLayer</span>
+    <span id="generated-1">Generated —</span>
+  </footer>
+</section>
+
+<!-- ================= PAGE 2 ================= -->
+<section class="sheet" id="page-2">
+  <header class="hdr">
+    <div class="brand">
+      <div class="mark">A</div>
+      <div>
+        <h1>Search Visibility & Website Experience</h1>
+        <div class="sub">Google Search Console · Vercel Speed Insights · Portal feedback</div>
+      </div>
+    </div>
+    <div class="period">
+      <div class="now" id="period-now-2">—</div>
+      <div id="period-compare-2">—</div>
+    </div>
+  </header>
+
+  <div class="grid" style="grid-template-rows:auto 1fr auto auto;gap:5mm;min-height:0">
+    <div class="grid kpi-row-4" id="kpis-2"></div>
+
+    <div class="grid two-col" style="min-height:0">
+      <div class="panel"><div class="head"><h3>Search trend</h3><span class="aside">Daily · Search Console</span></div><div class="body" id="search-trend"></div></div>
+      <div class="grid" style="grid-template-columns:1fr;gap:5mm;min-height:0">
+        <div class="panel"><div class="head"><h3>Top search queries</h3><span class="aside">Clicks</span></div><div class="body" id="queries-chart"></div></div>
+        <div class="panel">
+          <div class="head"><h3>Branded vs non-branded</h3><span class="aside">Clicks share</span></div>
+          <div class="body" id="branded-chart"></div>
+          <div class="foot-note" id="branded-note"></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="grid" style="grid-template-columns:1.35fr 1fr;min-height:0">
+      <div class="panel">
+        <div class="head"><h3>Search opportunities</h3><span class="aside">Pos ≈ 5–20 · CTR upside</span></div>
+        <div class="body" id="opps-chart"></div>
+      </div>
+      <div class="panel">
+        <div class="head"><h3>Website experience</h3><span class="aside">Vercel Speed Insights</span></div>
+        <div class="body" id="experience-chart"></div>
+      </div>
+    </div>
+
+    <div class="grid" style="grid-template-columns:1fr 1.6fr;min-height:0;gap:5mm">
+      <div class="panel">
+        <div class="head"><h3>Portal experience rating</h3><span class="aside">/logout feedback</span></div>
+        <div class="body" id="portal-chart"></div>
+      </div>
+      <div class="notes">
+        <div>
+          <h4>Key observations</h4>
+          <ol id="obs-list"></ol>
+        </div>
+        <div>
+          <h4>Recommended actions</h4>
+          <ol id="act-list"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <footer class="ftr">
+    <span>Page 2 of 2 · Data: Search Console + Vercel Speed Insights + /logout feedback</span>
+    <span id="generated-2">Generated —</span>
+  </footer>
+</section>
+
+<script>
+/* ================================================================
+ * ARIE Finance — Senior Management Website Analytics Report
+ * Pure client-side renderer. Loads ./data.json (falls back to
+ * ./data.example.json for template preview). No external deps.
+ * ================================================================ */
+(function(){
+  'use strict';
+
+  var STATE = document.getElementById('data-status');
+
+  fetch('./data.json', { cache: 'no-store' })
+    .then(function(r){ if(!r.ok) throw new Error('no data.json'); return r.json(); })
+    .catch(function(){
+      STATE.textContent = 'Preview data (data.example.json)';
+      STATE.style.color = 'var(--warn)';
+      return fetch('./data.example.json', { cache: 'no-store' }).then(function(r){ return r.json(); });
+    })
+    .then(render)
+    .catch(function(err){
+      STATE.textContent = 'Failed to load data: ' + err.message;
+      STATE.style.color = 'var(--neg)';
+    });
+
+  // ---------- helpers ----------
+  function fmtInt(n){ if(n==null||isNaN(n)) return '—'; return Math.round(n).toLocaleString('en-GB'); }
+  function fmtNum(n, dp){ if(n==null||isNaN(n)) return '—'; return Number(n).toLocaleString('en-GB',{minimumFractionDigits:dp||0,maximumFractionDigits:dp||0}); }
+  function pct(cur, prev){
+    if(cur==null||prev==null||prev===0) return null;
+    return ((cur-prev)/prev)*100;
+  }
+  function deltaHTML(cur, prev, opts){
+    opts = opts || {};
+    if(cur==null||prev==null) return '<span class="delta flat">—</span> <span>vs prev</span>';
+    var d = pct(cur, prev);
+    if(d==null||!isFinite(d)) return '<span class="delta flat">—</span> <span>vs prev</span>';
+    var good = opts.inverse_good ? d < 0 : d > 0;
+    var cls = Math.abs(d) < 0.5 ? 'flat' : (good ? 'pos' : 'neg');
+    var arrow = Math.abs(d) < 0.5 ? '·' : (d > 0 ? '▲' : '▼');
+    return '<span class="delta ' + cls + '">' + arrow + ' ' + fmtNum(Math.abs(d), 1) + '%</span> <span>vs prev · ' + fmtInt(prev) + (opts.unit||'') + '</span>';
+  }
+  function el(id){ return document.getElementById(id); }
+
+  // ---------- KPI card ----------
+  function kpiCard(title, kpi, opts){
+    opts = opts || {};
+    var wrap = document.createElement('div'); wrap.className = 'card';
+    var t = document.createElement('div'); t.className = 't'; t.textContent = title;
+    var v = document.createElement('div'); v.className = 'v mono-num';
+    var d = document.createElement('div'); d.className = 'd';
+    wrap.appendChild(t); wrap.appendChild(v); wrap.appendChild(d);
+    if(!kpi || kpi.current == null){
+      v.textContent = '—';
+      if(kpi && kpi.empty_note){
+        var e = document.createElement('div'); e.className = 'empty'; e.textContent = kpi.empty_note;
+        wrap.appendChild(e);
+      } else {
+        d.innerHTML = '<span class="delta flat">—</span> <span>Awaiting data</span>';
+      }
+      return wrap;
+    }
+    var unit = (kpi.unit || opts.unit || '');
+    v.textContent = (opts.decimals != null ? fmtNum(kpi.current, opts.decimals) : fmtInt(kpi.current)) + unit;
+    d.innerHTML = deltaHTML(kpi.current, kpi.previous, { unit: unit, inverse_good: kpi.inverse_good || opts.inverse_good });
+    return wrap;
+  }
+
+  // ---------- SVG chart primitives ----------
+  var NS = 'http://www.w3.org/2000/svg';
+  function svg(w, h){
+    var s = document.createElementNS(NS,'svg');
+    s.setAttribute('viewBox','0 0 '+w+' '+h);
+    s.setAttribute('preserveAspectRatio','none');
+    return s;
+  }
+  function svgNS(name, attrs, text){
+    var e = document.createElementNS(NS, name);
+    if(attrs) for(var k in attrs) e.setAttribute(k, attrs[k]);
+    if(text != null) e.textContent = text;
+    return e;
+  }
+  function placeholder(container, msg){
+    container.innerHTML = '';
+    var d = document.createElement('div'); d.className = 'ph'; d.innerHTML = msg;
+    container.appendChild(d);
+  }
+
+  // Line chart: two series, shared linear x
+  function lineChart(container, labels, seriesA, seriesB, opts){
+    opts = opts || {};
+    if(!labels || !labels.length || (allNull(seriesA) && allNull(seriesB))){
+      return placeholder(container, opts.empty || 'Awaiting data');
+    }
+    var W=560, H=170, PL=34, PR=14, PT=12, PB=24;
+    var s = svg(W,H);
+    var maxA = safeMax(seriesA), maxB = safeMax(seriesB);
+    var iw = W-PL-PR, ih = H-PT-PB;
+    function x(i){ return PL + (labels.length===1 ? iw/2 : (i/(labels.length-1))*iw); }
+    function yA(v){ return PT + ih - (v/(maxA||1))*ih; }
+    function yB(v){ return PT + ih - (v/(maxB||1))*ih; }
+    // y grid + labels (series A scale on left, series B on right)
+    for(var g=0; g<=4; g++){
+      var yy = PT + (g/4)*ih;
+      s.appendChild(svgNS('line',{x1:PL,y1:yy,x2:W-PR,y2:yy,stroke:'#EEF1F7','stroke-width':1}));
+      s.appendChild(svgNS('text',{x:PL-4,y:yy+3,'text-anchor':'end','font-size':8,fill:'#7B8598'}, fmtInt(maxA*(4-g)/4)));
+      if(seriesB) s.appendChild(svgNS('text',{x:W-PR+2,y:yy+3,'text-anchor':'start','font-size':8,fill:'#7B8598'}, fmtInt(maxB*(4-g)/4)));
+    }
+    // x labels: first/mid/last only
+    var xi=[0, Math.floor(labels.length/2), labels.length-1];
+    xi.forEach(function(i){ s.appendChild(svgNS('text',{x:x(i),y:H-6,'text-anchor':'middle','font-size':8,fill:'#7B8598'}, shortDate(labels[i]))); });
+    function path(series, yFn){
+      var d = '';
+      series.forEach(function(v,i){
+        if(v==null||isNaN(v)) return;
+        d += (d?' L ':'M ') + x(i) + ' ' + yFn(v);
+      });
+      return d;
+    }
+    // Area for B (impressions or pageviews) — lighter
+    if(seriesB){
+      s.appendChild(svgNS('path',{d: path(seriesB,yB)+ ' L '+x(labels.length-1)+' '+(PT+ih)+' L '+x(0)+' '+(PT+ih)+' Z',
+        fill:'#4940D6','fill-opacity':.08,stroke:'none'}));
+      s.appendChild(svgNS('path',{d:path(seriesB,yB),fill:'none',stroke:'#4940D6','stroke-width':1.4,'stroke-linejoin':'round','stroke-linecap':'round'}));
+    }
+    if(seriesA){
+      s.appendChild(svgNS('path',{d:path(seriesA,yA),fill:'none',stroke:'#06113A','stroke-width':1.8,'stroke-linejoin':'round','stroke-linecap':'round'}));
+    }
+    // Legend
+    var lg = svgNS('g',{transform:'translate('+(PL)+',10)'});
+    if(opts.labelA){ lg.appendChild(svgNS('rect',{x:0,y:-6,width:9,height:2,fill:'#06113A'})); lg.appendChild(svgNS('text',{x:12,y:-3,'font-size':9,fill:'#06113A'}, opts.labelA)); }
+    if(opts.labelB){ lg.appendChild(svgNS('rect',{x:80,y:-6,width:9,height:2,fill:'#4940D6'})); lg.appendChild(svgNS('text',{x:92,y:-3,'font-size':9,fill:'#4940D6'}, opts.labelB)); }
+    s.appendChild(lg);
+    container.innerHTML=''; container.appendChild(s);
+  }
+
+  // Horizontal ranked bar chart
+  function hBarChart(container, rows, opts){
+    opts = opts || {};
+    if(!rows || !rows.length){ return placeholder(container, opts.empty || 'Awaiting data'); }
+    // rows: [{label, value}], sorted descending
+    rows = rows.slice().sort(function(a,b){ return (b.value||0)-(a.value||0); });
+    var max = safeMax(rows.map(function(r){return r.value;})) || 1;
+    var W=560, H = Math.max(90, rows.length*18 + 12);
+    var s = svg(W,H); s.style.height=(rows.length*18+12)+'px';
+    var LBL = opts.labelWidth || 130, PL = LBL+6, PR = 40, PT=4;
+    rows.forEach(function(r,i){
+      var y = PT + i*18;
+      var w = ((r.value||0)/max)*(W-PL-PR);
+      s.appendChild(svgNS('text',{x:LBL,y:y+11,'text-anchor':'end','font-size':10,fill:'#06113A'}, truncate(r.label, 22)));
+      s.appendChild(svgNS('rect',{x:PL,y:y+3,width:w,height:11,rx:2,fill:opts.color||'#2E2A8C','fill-opacity':.85}));
+      s.appendChild(svgNS('text',{x:PL+w+4,y:y+12,'font-size':10,fill:'#06113A'}, fmtInt(r.value)));
+    });
+    container.innerHTML=''; container.appendChild(s);
+  }
+
+  // Donut chart
+  function donut(container, entries, opts){
+    opts = opts || {};
+    var total = entries.reduce(function(a,b){return a+(b.value||0);},0);
+    if(!total){ return placeholder(container, opts.empty || 'Awaiting data'); }
+    var W=220, H=170, cx=90, cy=H/2, R=62, r=38;
+    var s = svg(W,H);
+    var colors = opts.colors || ['#06113A','#2E2A8C','#C99B3F','#4940D6','#6E8FBF','#9AA9C4'];
+    var a0 = -Math.PI/2;
+    entries.forEach(function(e,i){
+      var frac = (e.value||0)/total;
+      var a1 = a0 + frac*Math.PI*2;
+      var large = frac > .5 ? 1 : 0;
+      var x1 = cx + R*Math.cos(a0), y1 = cy + R*Math.sin(a0);
+      var x2 = cx + R*Math.cos(a1), y2 = cy + R*Math.sin(a1);
+      var x3 = cx + r*Math.cos(a1), y3 = cy + r*Math.sin(a1);
+      var x4 = cx + r*Math.cos(a0), y4 = cy + r*Math.sin(a0);
+      var d = 'M '+x1+' '+y1+' A '+R+' '+R+' 0 '+large+' 1 '+x2+' '+y2+
+              ' L '+x3+' '+y3+' A '+r+' '+r+' 0 '+large+' 0 '+x4+' '+y4+' Z';
+      s.appendChild(svgNS('path',{d:d,fill:colors[i%colors.length]}));
+      a0 = a1;
+    });
+    // Center label
+    s.appendChild(svgNS('text',{x:cx,y:cy-2,'text-anchor':'middle','font-size':11,fill:'#7B8598'}, 'Total'));
+    s.appendChild(svgNS('text',{x:cx,y:cy+14,'text-anchor':'middle','font-family':'Newsreader,serif','font-size':18,fill:'#06113A'}, fmtInt(total)));
+    // Legend
+    var lx = 180;
+    entries.forEach(function(e,i){
+      var ly = 24 + i*20;
+      s.appendChild(svgNS('rect',{x:lx-14,y:ly-9,width:10,height:10,rx:2,fill:colors[i%colors.length]}));
+      s.appendChild(svgNS('text',{x:lx,y:ly,'font-size':10,fill:'#06113A'}, e.label));
+      s.appendChild(svgNS('text',{x:lx,y:ly+11,'font-size':9,fill:'#7B8598'}, fmtNum((e.value/total)*100,1)+'% · '+fmtInt(e.value)));
+    });
+    container.innerHTML=''; container.appendChild(s);
+  }
+
+  function safeMax(arr){ var m=0; if(!arr) return 0; for(var i=0;i<arr.length;i++){ if(arr[i]!=null&&!isNaN(arr[i])&&arr[i]>m) m=arr[i]; } return m; }
+  function allNull(arr){ if(!arr) return true; for(var i=0;i<arr.length;i++) if(arr[i]!=null) return false; return true; }
+  function truncate(s,n){ s=String(s||''); return s.length>n ? s.slice(0,n-1)+'…' : s; }
+  function shortDate(s){ if(!s) return ''; var d=String(s).slice(5).replace('-','/'); return d; }
+
+  // ---------- Render ----------
+  function render(data){
+    if(STATE.textContent === 'Loading data…'){ STATE.textContent = 'Live data (data.json)'; STATE.style.color = 'var(--pos)'; }
+    var p = data.period || {};
+    el('period-now').textContent  = p.label || 'Current period';
+    el('period-now-2').textContent = p.label || 'Current period';
+    el('period-compare').textContent  = p.compare_label || '';
+    el('period-compare-2').textContent = p.compare_label || '';
+    var now = new Date().toISOString().slice(0,10);
+    el('generated-1').textContent = 'Generated ' + now;
+    el('generated-2').textContent = 'Generated ' + now;
+
+    // --- Page 1 KPIs ---
+    var k = data.kpis || {};
+    var kpis1 = el('kpis-1'); kpis1.innerHTML='';
+    kpis1.appendChild(kpiCard('Visitors',             k.visitors));
+    kpis1.appendChild(kpiCard('Page views',           k.pageviews));
+    kpis1.appendChild(kpiCard('Search clicks',        k.search_clicks));
+    kpis1.appendChild(kpiCard('Search impressions',   k.search_impr));
+    kpis1.appendChild(kpiCard('Search CTR',           k.search_ctr, {decimals:2, unit:'%'}));
+    kpis1.appendChild(kpiCard('Successful enquiries', k.enquiries));
+
+    // --- Traffic trend ---
+    var t = data.traffic_trend || {};
+    lineChart(el('traffic-trend'), t.labels, t.visitors, t.pageviews, { labelA:'Visitors', labelB:'Page views' });
+
+    // --- Sections ---
+    if(!data.sections || !data.sections.length){
+      placeholder(el('sections-chart'), '<strong>Awaiting GA4 section-level data</strong>');
+    } else {
+      hBarChart(el('sections-chart'), data.sections.map(function(s){return {label:s.name, value:s.value};}), { color:'#06113A', labelWidth:110 });
+    }
+
+    // --- Referrers / countries / devices ---
+    hBarChart(el('referrers-chart'),
+      (data.referrers||[]).map(function(r){return {label:r.source, value:r.value};}),
+      { color:'#2E2A8C', labelWidth:90 });
+    hBarChart(el('countries-chart'),
+      (data.countries||[]).map(function(c){return {label:c.name, value:c.value};}),
+      { color:'#4940D6', labelWidth:110 });
+
+    var dv = data.devices || {};
+    donut(el('devices-chart'),
+      [{label:'Desktop', value:dv.desktop||0},{label:'Mobile', value:dv.mobile||0},{label:'Tablet', value:dv.tablet||0}],
+      { colors:['#06113A','#4940D6','#C99B3F'] });
+
+    // --- Funnel ---
+    renderFunnel(data.funnel || {});
+
+    // --- Page 2 KPIs ---
+    var sk = (data.search && data.search.kpis) || {};
+    var kpis2 = el('kpis-2'); kpis2.innerHTML='';
+    kpis2.appendChild(kpiCard('Clicks',           sk.clicks));
+    kpis2.appendChild(kpiCard('Impressions',      sk.impressions));
+    kpis2.appendChild(kpiCard('CTR',              sk.ctr, {decimals:2, unit:'%'}));
+    kpis2.appendChild(kpiCard('Avg. position',    sk.position, {decimals:1, inverse_good:true}));
+
+    // --- Search trend: prioritise Impressions as the line ---
+    var st = (data.search && data.search.trend) || {};
+    lineChart(el('search-trend'), st.labels, st.impressions, st.clicks, { labelA:'Impressions', labelB:'Clicks' });
+
+    // --- Top queries ---
+    var queries = (data.search && data.search.queries) || [];
+    // exclude any query containing 'adira' (noise per spec)
+    queries = queries.filter(function(q){ return !/adira/i.test(q.q||''); });
+    hBarChart(el('queries-chart'),
+      queries.slice(0,6).map(function(q){return {label:q.q, value:q.clicks};}),
+      { color:'#06113A', labelWidth:170 });
+
+    // --- Branded vs non-branded ---
+    var br = (data.search && data.search.branded) || {};
+    if((br.branded||0)+(br.non_branded||0) === 0){
+      placeholder(el('branded-chart'), 'Awaiting classified query data');
+    } else {
+      donut(el('branded-chart'),
+        [{label:'ARIE branded', value:br.branded||0},{label:'Non-branded', value:br.non_branded||0}],
+        { colors:['#06113A','#C99B3F'] });
+    }
+    el('branded-note').textContent = br.note || 'Query classification reviewed manually each month.';
+
+    // --- Opportunities ---
+    var opps = (data.search && data.search.opportunities) || [];
+    opps = opps.filter(function(q){ return !/adira/i.test(q.q||''); }).slice(0,5);
+    if(!opps.length){
+      placeholder(el('opps-chart'), 'Awaiting opportunity queries (position ~5–20)');
+    } else {
+      hBarChart(el('opps-chart'),
+        opps.map(function(q){return {label:q.q + ' (pos '+fmtNum(q.pos,1)+', CTR '+fmtNum(q.ctr,1)+'%)', value:q.impr};}),
+        { color:'#C99B3F', labelWidth:250 });
+    }
+
+    // --- Website experience ---
+    renderExperience(data.experience || {});
+
+    // --- Portal feedback ---
+    renderPortal(data.portal_feedback || {});
+
+    // --- Commentary ---
+    renderList(el('obs-list'), (data.commentary && data.commentary.observations) || [], 3);
+    renderList(el('act-list'), (data.commentary && data.commentary.actions)      || [], 3);
+  }
+
+  function renderFunnel(f){
+    var host = el('funnel-chart'); host.innerHTML='';
+    var wrap = document.createElement('div'); wrap.className='funnel';
+    var a = f.start_application, b = f.contact_form_start, c = f.contact_form_submit;
+    var stages = [
+      { l:'start_application',    n:a },
+      { l:'contact_form_start',   n:b },
+      { l:'contact_form_submit',  n:c }
+    ];
+    if(a==null && b==null && c==null){
+      placeholder(host, '<strong>No recorded conversions this period</strong>');
+      return;
+    }
+    stages.forEach(function(s, i){
+      if(i){
+        var arr = document.createElement('div'); arr.className='arrow';
+        var prev = stages[i-1].n, cur = s.n;
+        var conv = (prev && cur!=null) ? Math.round((cur/prev)*100) : null;
+        arr.innerHTML = '<b>' + (conv==null ? '—' : conv+'%') + '</b>step conversion';
+        wrap.appendChild(arr);
+      }
+      var st = document.createElement('div'); st.className='stage';
+      var nd = document.createElement('div'); nd.className='n'; nd.textContent = s.n==null ? '—' : fmtInt(s.n);
+      var ld = document.createElement('div'); ld.className='l'; ld.textContent = s.l;
+      st.appendChild(nd); st.appendChild(ld); wrap.appendChild(st);
+    });
+    host.appendChild(wrap);
+  }
+
+  function renderExperience(x){
+    var host = el('experience-chart'); host.innerHTML='';
+    if(!x || x.state === 'collecting' || (x.score==null && (!x.lcp || x.lcp.value==null))){
+      placeholder(host, '<strong>Collecting baseline — insufficient real-user data</strong>');
+      return;
+    }
+    var wrap = document.createElement('div'); wrap.style.display='flex'; wrap.style.flexDirection='column'; wrap.style.flex='1'; wrap.style.gap='8px';
+    var dial = document.createElement('div'); dial.className='res-dial';
+    var big = document.createElement('div'); big.className='res-num mono-num'; big.textContent = x.score != null ? x.score : '—';
+    var note = document.createElement('div');
+    note.innerHTML = '<div style="font-size:9.5px;text-transform:uppercase;letter-spacing:.08em;color:var(--muted-2);font-weight:600">Real Experience Score</div>' +
+                     '<div class="res-note">Composite of LCP, INP and CLS from real user visits.</div>';
+    dial.appendChild(big); dial.appendChild(note); wrap.appendChild(dial);
+    var wv = document.createElement('div'); wv.className='wv';
+    function met(l, v, u, h){
+      var d = document.createElement('div'); d.className='wv-c';
+      d.innerHTML = '<div class="l">'+l+'</div><div class="v mono-num">'+(v==null?'—':fmtNum(v, l==='CLS'?2:(u==='ms'?0:2)))+' <span style="font-size:11px;color:var(--muted-2)">'+u+'</span></div><div class="h">'+h+'</div>';
+      return d;
+    }
+    wv.appendChild(met('LCP', x.lcp && x.lcp.value, (x.lcp && x.lcp.unit)||'s',  'Loading speed'));
+    wv.appendChild(met('INP', x.inp && x.inp.value, (x.inp && x.inp.unit)||'ms', 'Interaction responsiveness'));
+    wv.appendChild(met('CLS', x.cls && x.cls.value, (x.cls && x.cls.unit)||'',   'Visual stability'));
+    wrap.appendChild(wv);
+    host.appendChild(wrap);
+  }
+
+  function renderPortal(pf){
+    var host = el('portal-chart'); host.innerHTML='';
+    var n = (pf && pf.sample) || 0;
+    if(n < 20){
+      var ph = document.createElement('div'); ph.className='ph';
+      ph.innerHTML = '<span><strong>Portal feedback: n='+n+'</strong> — insufficient sample for trend analysis</span>';
+      host.appendChild(ph);
+      return;
+    }
+    var c = pf.counts || {};
+    donut(host,
+      [{label:'Excellent', value:c.excellent||0},{label:'Good', value:c.good||0},{label:'Needs attention', value:c.needs_attention||0}],
+      { colors:['#0E7C4A','#C99B3F','#B23A2A'] });
+  }
+
+  function renderList(ol, items, max){
+    ol.innerHTML = '';
+    if(!items || !items.length){
+      var li = document.createElement('li'); li.style.color='var(--muted)'; li.textContent='Awaiting commentary input.';
+      ol.appendChild(li); return;
+    }
+    items.slice(0, max || 3).forEach(function(t){ var li = document.createElement('li'); li.textContent = t; ol.appendChild(li); });
+  }
+})();
+</script>
+</body>
+</html>

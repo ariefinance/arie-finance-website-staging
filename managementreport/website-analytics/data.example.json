@@ -1,0 +1,123 @@
+{
+  "period": {
+    "label": "30 Aug – 26 Sep 2026 (28 days)",
+    "compare_label": "vs 2 Aug – 29 Aug 2026",
+    "current": { "start": "2026-08-30", "end": "2026-09-26" },
+    "previous": { "start": "2026-08-02", "end": "2026-08-29" }
+  },
+
+  "kpis": {
+    "visitors":      { "current": 1284, "previous": 1102 },
+    "pageviews":     { "current": 3117, "previous": 2740 },
+    "search_clicks": { "current": 96,   "previous": 71   },
+    "search_impr":   { "current": 8420, "previous": 7130 },
+    "search_ctr":    { "current": 1.14, "previous": 1.00, "unit": "%" },
+    "enquiries":     { "current": null, "previous": null,
+                       "empty_note": "Awaiting first recorded conversion" }
+  },
+
+  "traffic_trend": {
+    "labels":   ["2026-08-30","2026-08-31","2026-09-01","2026-09-02","2026-09-03","2026-09-04","2026-09-05","2026-09-06","2026-09-07","2026-09-08","2026-09-09","2026-09-10","2026-09-11","2026-09-12","2026-09-13","2026-09-14","2026-09-15","2026-09-16","2026-09-17","2026-09-18","2026-09-19","2026-09-20","2026-09-21","2026-09-22","2026-09-23","2026-09-24","2026-09-25","2026-09-26"],
+    "visitors": [42,51,48,60,55,49,44,47,50,58,63,52,49,44,46,54,60,66,58,50,47,45,55,61,64,58,52,48],
+    "pageviews":[98,120,110,142,131,118,102,110,118,140,150,124,116,104,110,128,140,152,136,118,110,108,132,146,152,140,124,116]
+  },
+
+  "referrers": [
+    { "source": "Google",      "value": 612 },
+    { "source": "Direct",      "value": 384 },
+    { "source": "LinkedIn",    "value":  92 },
+    { "source": "Bing",        "value":  46 },
+    { "source": "DuckDuckGo",  "value":  32 },
+    { "source": "ChatGPT",     "value":  18 }
+  ],
+
+  "countries": [
+    { "name": "Mauritius",     "value": 402 },
+    { "name": "United Kingdom","value": 218 },
+    { "name": "France",        "value": 164 },
+    { "name": "South Africa",  "value": 121 },
+    { "name": "United States", "value":  98 }
+  ],
+
+  "devices": { "desktop": 61, "mobile": 34, "tablet": 5 },
+
+  "sections": [
+    { "name": "Home",           "value": 1284 },
+    { "name": "Services",       "value":  612 },
+    { "name": "Direct Clients", "value":  340 },
+    { "name": "Introducers",    "value":  221 },
+    { "name": "About",          "value":  198 },
+    { "name": "Team",           "value":  142 },
+    { "name": "Careers",        "value":   88 },
+    { "name": "Contact",        "value":  256 },
+    { "name": "Compliance",     "value":  104 }
+  ],
+
+  "funnel": {
+    "start_application":   84,
+    "contact_form_start":  31,
+    "contact_form_submit":  9
+  },
+
+  "search": {
+    "kpis": {
+      "clicks":      { "current": 96,   "previous": 71   },
+      "impressions": { "current": 8420, "previous": 7130 },
+      "ctr":         { "current": 1.14, "previous": 1.00, "unit": "%" },
+      "position":    { "current": 12.4, "previous": 14.1, "inverse_good": true }
+    },
+    "trend": {
+      "labels":      ["2026-08-30","2026-08-31","2026-09-01","2026-09-02","2026-09-03","2026-09-04","2026-09-05","2026-09-06","2026-09-07","2026-09-08","2026-09-09","2026-09-10","2026-09-11","2026-09-12","2026-09-13","2026-09-14","2026-09-15","2026-09-16","2026-09-17","2026-09-18","2026-09-19","2026-09-20","2026-09-21","2026-09-22","2026-09-23","2026-09-24","2026-09-25","2026-09-26"],
+      "clicks":      [2,4,3,5,4,3,2,3,4,4,5,3,3,2,3,4,5,6,4,3,3,3,4,5,5,4,3,3],
+      "impressions": [220,260,240,300,285,260,235,245,260,290,320,280,265,240,255,285,310,340,300,270,255,250,290,320,335,310,285,270]
+    },
+    "queries": [
+      { "q": "arie finance",                           "clicks": 42, "impr": 620,  "ctr": 6.8, "pos": 4.1 },
+      { "q": "ariefinance mauritius",                  "clicks": 14, "impr": 210,  "ctr": 6.7, "pos": 4.5 },
+      { "q": "mauritius payment intermediary licence", "clicks":  9, "impr": 640,  "ctr": 1.4, "pos": 11.2 },
+      { "q": "multi-currency account mauritius",       "clicks":  7, "impr": 512,  "ctr": 1.4, "pos": 12.8 },
+      { "q": "fsc mauritius payment services",         "clicks":  6, "impr": 480,  "ctr": 1.3, "pos": 13.4 },
+      { "q": "international payment provider mauritius","clicks": 5, "impr": 410,  "ctr": 1.2, "pos": 14.9 }
+    ],
+    "branded": {
+      "branded": 68,
+      "non_branded": 28,
+      "note": "Query classification reviewed manually each month."
+    },
+    "opportunities": [
+      { "q": "mauritius payment intermediary licence", "clicks": 9,  "impr": 640, "ctr": 1.4, "pos": 11.2 },
+      { "q": "multi-currency account mauritius",       "clicks": 7,  "impr": 512, "ctr": 1.4, "pos": 12.8 },
+      { "q": "fsc mauritius payment services",         "clicks": 6,  "impr": 480, "ctr": 1.3, "pos": 13.4 },
+      { "q": "international payment provider mauritius","clicks": 5, "impr": 410, "ctr": 1.2, "pos": 14.9 },
+      { "q": "payment services provider africa",       "clicks": 4,  "impr": 380, "ctr": 1.1, "pos": 17.6 }
+    ]
+  },
+
+  "experience": {
+    "state":  "collecting",
+    "score":  null,
+    "lcp":    { "value": null, "unit": "s"  },
+    "inp":    { "value": null, "unit": "ms" },
+    "cls":    { "value": null, "unit": ""   },
+    "ttfb":   { "value": null, "unit": "ms" },
+    "fcp":    { "value": null, "unit": "s"  }
+  },
+
+  "portal_feedback": {
+    "sample": 12,
+    "counts": { "needs_attention": 1, "good": 6, "excellent": 5 }
+  },
+
+  "commentary": {
+    "observations": [
+      "Search impressions rose 18% period-on-period while CTR held above 1%, indicating stronger organic discovery.",
+      "Direct traffic (30% of visits) confirms sales-team briefings and offline referrals are driving intent to the site.",
+      "Introducers and Direct Clients sections received 561 combined section-views — the strongest commercial-intent surfaces after Home."
+    ],
+    "actions": [
+      "Refresh the top 5 non-branded queries with a short answer block on the relevant section to lift CTR from ~1.3% toward the branded 6.7%.",
+      "Add a soft prompt on the Introducers section pointing straight to the contact form's Introducer topic to raise the 11% start-to-submit funnel yield.",
+      "Once Speed Insights baseline lands, set an internal LCP target of ≤2.5s on mobile before the next report cycle."
+    ]
+  }
+}

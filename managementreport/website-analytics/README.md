@@ -37,7 +37,7 @@ month from a single JSON file. The template is served at
    | `referrers` | Vercel Web Analytics → Referrers, top rows in this order: Google, Direct, LinkedIn, Bing, DuckDuckGo, ChatGPT. Omit rows with zero. |
    | `countries` | Vercel Web Analytics → Countries, top 5. |
    | `devices` | Vercel Web Analytics → Devices, expressed as `%`. |
-   | `sections` | GA4 → Events → `section_view` grouped by `section` parameter. Nine public sections: Home, Services, Direct Clients, Introducers, About, Team, Careers, Contact, Compliance. |
+   | `sections` | GA4 → Events → `section_view` grouped by `section_name` parameter. Nine public sections: Home, Services, Direct Clients, Introducers, About, Team, Careers, Contact, Compliance. |
    | `funnel` | GA4 → Events count for `start_application`, `contact_form_start`, `contact_form_submit` over the window. |
    | `search.kpis` | Search Console totals for the window (clicks, impressions, CTR%, avg. position). `position.inverse_good: true` tells the template that lower is better. |
    | `search.trend` | Search Console daily clicks + impressions (28 points). |

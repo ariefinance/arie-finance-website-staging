@@ -38,8 +38,9 @@ a{color:var(--indigo)}
 
 /* Header */
 .hdr{display:flex;align-items:flex-end;justify-content:space-between;gap:12px;border-bottom:1px solid var(--border);padding-bottom:5mm}
-.hdr .brand{display:flex;align-items:center;gap:10px}
-.hdr .brand .mark{width:40px;height:40px;border-radius:8px;background:var(--navy);color:var(--gold-2);display:grid;place-items:center;font-family:var(--serif);font-size:20px;letter-spacing:.5px}
+.hdr .brand{display:flex;align-items:center;gap:12px}
+.hdr .brand .logo{display:block;flex:0 0 auto}
+.hdr .brand .logo svg{display:block;height:26px;width:auto}
 .hdr h1{font-size:16px;line-height:1.15}
 .hdr .sub{color:var(--muted);font-size:10.5px;margin-top:2px}
 .hdr .period{text-align:right;font-size:10.5px;color:var(--muted)}
@@ -147,7 +148,7 @@ a{color:var(--indigo)}
 <section class="sheet" id="page-1">
   <header class="hdr">
     <div class="brand">
-      <div class="mark">A</div>
+      <span class="logo" aria-label="ARIE Finance"><svg width="112" height="27" viewBox="0 0 396 94" fill="none" xmlns="http://www.w3.org/2000/svg" role="img"><title>ARIE Finance</title><path d="M11.0614 80.4441L127.778 11.2672C131.539 9.03804 136.402 10.7353 137.959 14.8209L161.821 77.4418C163.579 82.0553 160.171 87.0001 155.234 87.0001L127.149 87.0001C125.138 87.0001 123.222 86.1406 121.885 84.6381L105.648 66.3987C103.515 64.0025 100.033 63.349 97.1764 64.8086L55.2553 86.2282C54.2624 86.7355 53.1633 87.0001 52.0482 87.0001L12.8583 87.0001C9.27394 87.0001 7.97797 82.2716 11.0614 80.4441Z" fill="url(#arie-lg-a)"/><path d="M88.1037 86.508C86.5213 86.508 85.2012 85.2031 85.6183 83.6766C86.1064 81.8899 87.0528 80.2432 88.3855 78.9106C90.4004 76.8957 93.1333 75.7637 95.9829 75.7637C98.8324 75.7637 101.565 76.8957 103.58 78.9106C104.913 80.2432 105.859 81.8899 106.347 83.6766C106.764 85.2031 105.444 86.508 103.862 86.508L88.1037 86.508Z" fill="#131313"/><path d="M238.682 42.875H214.744L210.713 51H197.775L220.244 8.0625H233.182L255.65 51H242.713L238.682 42.875ZM218.9 34.5H234.588L226.775 18.6875L218.9 34.5ZM274.275 51H262.682V8.0625H291.744C294.869 8.0625 297.515 8.38542 299.682 9.03125C301.869 9.67708 303.64 10.5938 304.994 11.7812C306.369 12.9688 307.359 14.4062 307.963 16.0938C308.588 17.7604 308.9 19.625 308.9 21.6875C308.9 23.5 308.64 25.0833 308.119 26.4375C307.619 27.7917 306.932 28.9583 306.057 29.9375C305.203 30.8958 304.203 31.7083 303.057 32.375C301.911 33.0417 300.703 33.5938 299.432 34.0312L313.494 51H299.932L286.932 35.1875H274.275V51ZM297.182 21.625C297.182 20.7917 297.067 20.0833 296.838 19.5C296.63 18.9167 296.255 18.4479 295.713 18.0938C295.171 17.7188 294.442 17.4479 293.525 17.2812C292.63 17.1146 291.505 17.0312 290.15 17.0312H274.275V26.2188H290.15C291.505 26.2188 292.63 26.1354 293.525 25.9688C294.442 25.8021 295.171 25.5417 295.713 25.1875C296.255 24.8125 296.63 24.3333 296.838 23.75C297.067 23.1667 297.182 22.4583 297.182 21.625ZM321.807 51V8.0625H333.4V51H321.807ZM346.869 51V8.0625H390.338V17.2188H358.775V24.3125H388.713V33.4688H358.775V41.8438H390.775V51H346.869ZM206.905 67.5815V71.4326H221.294V76.1538H206.905V85H200.927V62.8604H222.084V67.5815H206.905ZM227.192 85V62.8604H233.17V85H227.192ZM261.03 85L246.093 69.7891V85H240.115V62.8604H246.608L261.562 78.1357V62.8604H267.507V85H261.03ZM292.225 80.8105H279.882L277.804 85H271.133L282.718 62.8604H289.389L300.975 85H294.304L292.225 80.8105ZM282.025 76.4922H290.114L286.086 68.3389L282.025 76.4922ZM325.515 85L310.578 69.7891V85H304.6V62.8604H311.094L326.047 78.1357V62.8604H331.993V85H325.515ZM363.317 83.4854C362.544 83.8076 361.765 84.0977 360.981 84.3555C360.196 84.6133 359.385 84.8335 358.547 85.0161C357.71 85.2095 356.823 85.3545 355.889 85.4512C354.965 85.5479 353.971 85.5962 352.908 85.5962C350.652 85.5962 348.573 85.3545 346.672 84.8711C344.781 84.3877 343.148 83.6626 341.773 82.6958C340.409 81.7183 339.346 80.5044 338.583 79.0542C337.82 77.5933 337.439 75.8906 337.439 73.9463C337.439 72.002 337.82 70.3047 338.583 68.8545C339.346 67.3936 340.409 66.1797 341.773 65.2129C343.148 64.2354 344.781 63.5049 346.672 63.0215C348.573 62.5381 350.652 62.2964 352.908 62.2964C353.971 62.2964 354.965 62.3447 355.889 62.4414C356.823 62.5381 357.71 62.6831 358.547 62.8765C359.385 63.0591 360.196 63.2793 360.981 63.5371C361.765 63.7949 362.544 64.085 363.317 64.4072V69.7891C362.705 69.4561 362.06 69.1284 361.383 68.8062C360.707 68.4731 359.96 68.1777 359.144 67.9199C358.327 67.6514 357.43 67.4365 356.453 67.2754C355.475 67.1035 354.374 67.0176 353.149 67.0176C351.27 67.0176 349.707 67.2109 348.461 67.5977C347.225 67.9844 346.237 68.5 345.496 69.1445C344.754 69.7891 344.233 70.5303 343.933 71.3682C343.632 72.1953 343.482 73.0547 343.482 73.9463C343.482 74.5371 343.546 75.1226 343.675 75.7026C343.804 76.272 344.019 76.8145 344.319 77.3301C344.62 77.835 345.012 78.3022 345.496 78.7319C345.979 79.1616 346.581 79.5322 347.3 79.8438C348.02 80.1553 348.858 80.4023 349.814 80.585C350.781 80.7568 351.893 80.8428 353.149 80.8428C354.374 80.8428 355.475 80.7676 356.453 80.6172C357.43 80.4561 358.327 80.2466 359.144 79.9888C359.96 79.731 360.707 79.4409 361.383 79.1187C362.06 78.7856 362.705 78.4473 363.317 78.1035V83.4854ZM368.892 85V62.8604H391.306V67.5815H375.031V71.2393H390.468V75.9604H375.031V80.2788H391.531V85H368.892Z" fill="#131313"/><defs><linearGradient id="arie-lg-a" x1="82.7315" y1="87.0001" x2="82.7315" y2="6.99987" gradientUnits="userSpaceOnUse"><stop stop-color="#201485"/><stop offset="1" stop-color="#0F0566"/></linearGradient></defs></svg></span>
       <div>
         <h1>Website Performance & Commercial Engagement</h1>
         <div class="sub">Public marketing site · Vercel Analytics · GA4 events · Google Search Console</div>
@@ -170,7 +171,7 @@ a{color:var(--indigo)}
         <div class="body" id="traffic-trend"></div>
       </div>
       <div class="panel" style="min-height:0">
-        <div class="head"><h3>Website section interest</h3><span class="aside">GA4 <code>section_view</code></span></div>
+        <div class="head"><h3>Most viewed website sections</h3><span class="aside">GA4 <code>section_view</code></span></div>
         <div class="body" id="sections-chart"></div>
       </div>
     </div>
@@ -181,7 +182,7 @@ a{color:var(--indigo)}
       <div class="panel"><div class="head"><h3>Top countries</h3><span class="aside">Top 5</span></div><div class="body" id="countries-chart"></div></div>
       <div class="panel"><div class="head"><h3>Device mix</h3><span class="aside">% of visitors</span></div><div class="body" id="devices-chart"></div></div>
       <div class="panel">
-        <div class="head"><h3>Commercial funnel</h3><span class="aside">GA4 events</span></div>
+        <div class="head"><h3>Website enquiry journey</h3><span class="aside">GA4 events</span></div>
         <div class="body" id="funnel-chart"></div>
       </div>
     </div>
@@ -197,7 +198,7 @@ a{color:var(--indigo)}
 <section class="sheet" id="page-2">
   <header class="hdr">
     <div class="brand">
-      <div class="mark">A</div>
+      <span class="logo" aria-label="ARIE Finance"><svg width="112" height="27" viewBox="0 0 396 94" fill="none" xmlns="http://www.w3.org/2000/svg" role="img"><title>ARIE Finance</title><path d="M11.0614 80.4441L127.778 11.2672C131.539 9.03804 136.402 10.7353 137.959 14.8209L161.821 77.4418C163.579 82.0553 160.171 87.0001 155.234 87.0001L127.149 87.0001C125.138 87.0001 123.222 86.1406 121.885 84.6381L105.648 66.3987C103.515 64.0025 100.033 63.349 97.1764 64.8086L55.2553 86.2282C54.2624 86.7355 53.1633 87.0001 52.0482 87.0001L12.8583 87.0001C9.27394 87.0001 7.97797 82.2716 11.0614 80.4441Z" fill="url(#arie-lg-b)"/><path d="M88.1037 86.508C86.5213 86.508 85.2012 85.2031 85.6183 83.6766C86.1064 81.8899 87.0528 80.2432 88.3855 78.9106C90.4004 76.8957 93.1333 75.7637 95.9829 75.7637C98.8324 75.7637 101.565 76.8957 103.58 78.9106C104.913 80.2432 105.859 81.8899 106.347 83.6766C106.764 85.2031 105.444 86.508 103.862 86.508L88.1037 86.508Z" fill="#131313"/><path d="M238.682 42.875H214.744L210.713 51H197.775L220.244 8.0625H233.182L255.65 51H242.713L238.682 42.875ZM218.9 34.5H234.588L226.775 18.6875L218.9 34.5ZM274.275 51H262.682V8.0625H291.744C294.869 8.0625 297.515 8.38542 299.682 9.03125C301.869 9.67708 303.64 10.5938 304.994 11.7812C306.369 12.9688 307.359 14.4062 307.963 16.0938C308.588 17.7604 308.9 19.625 308.9 21.6875C308.9 23.5 308.64 25.0833 308.119 26.4375C307.619 27.7917 306.932 28.9583 306.057 29.9375C305.203 30.8958 304.203 31.7083 303.057 32.375C301.911 33.0417 300.703 33.5938 299.432 34.0312L313.494 51H299.932L286.932 35.1875H274.275V51ZM297.182 21.625C297.182 20.7917 297.067 20.0833 296.838 19.5C296.63 18.9167 296.255 18.4479 295.713 18.0938C295.171 17.7188 294.442 17.4479 293.525 17.2812C292.63 17.1146 291.505 17.0312 290.15 17.0312H274.275V26.2188H290.15C291.505 26.2188 292.63 26.1354 293.525 25.9688C294.442 25.8021 295.171 25.5417 295.713 25.1875C296.255 24.8125 296.63 24.3333 296.838 23.75C297.067 23.1667 297.182 22.4583 297.182 21.625ZM321.807 51V8.0625H333.4V51H321.807ZM346.869 51V8.0625H390.338V17.2188H358.775V24.3125H388.713V33.4688H358.775V41.8438H390.775V51H346.869ZM206.905 67.5815V71.4326H221.294V76.1538H206.905V85H200.927V62.8604H222.084V67.5815H206.905ZM227.192 85V62.8604H233.17V85H227.192ZM261.03 85L246.093 69.7891V85H240.115V62.8604H246.608L261.562 78.1357V62.8604H267.507V85H261.03ZM292.225 80.8105H279.882L277.804 85H271.133L282.718 62.8604H289.389L300.975 85H294.304L292.225 80.8105ZM282.025 76.4922H290.114L286.086 68.3389L282.025 76.4922ZM325.515 85L310.578 69.7891V85H304.6V62.8604H311.094L326.047 78.1357V62.8604H331.993V85H325.515ZM363.317 83.4854C362.544 83.8076 361.765 84.0977 360.981 84.3555C360.196 84.6133 359.385 84.8335 358.547 85.0161C357.71 85.2095 356.823 85.3545 355.889 85.4512C354.965 85.5479 353.971 85.5962 352.908 85.5962C350.652 85.5962 348.573 85.3545 346.672 84.8711C344.781 84.3877 343.148 83.6626 341.773 82.6958C340.409 81.7183 339.346 80.5044 338.583 79.0542C337.82 77.5933 337.439 75.8906 337.439 73.9463C337.439 72.002 337.82 70.3047 338.583 68.8545C339.346 67.3936 340.409 66.1797 341.773 65.2129C343.148 64.2354 344.781 63.5049 346.672 63.0215C348.573 62.5381 350.652 62.2964 352.908 62.2964C353.971 62.2964 354.965 62.3447 355.889 62.4414C356.823 62.5381 357.71 62.6831 358.547 62.8765C359.385 63.0591 360.196 63.2793 360.981 63.5371C361.765 63.7949 362.544 64.085 363.317 64.4072V69.7891C362.705 69.4561 362.06 69.1284 361.383 68.8062C360.707 68.4731 359.96 68.1777 359.144 67.9199C358.327 67.6514 357.43 67.4365 356.453 67.2754C355.475 67.1035 354.374 67.0176 353.149 67.0176C351.27 67.0176 349.707 67.2109 348.461 67.5977C347.225 67.9844 346.237 68.5 345.496 69.1445C344.754 69.7891 344.233 70.5303 343.933 71.3682C343.632 72.1953 343.482 73.0547 343.482 73.9463C343.482 74.5371 343.546 75.1226 343.675 75.7026C343.804 76.272 344.019 76.8145 344.319 77.3301C344.62 77.835 345.012 78.3022 345.496 78.7319C345.979 79.1616 346.581 79.5322 347.3 79.8438C348.02 80.1553 348.858 80.4023 349.814 80.585C350.781 80.7568 351.893 80.8428 353.149 80.8428C354.374 80.8428 355.475 80.7676 356.453 80.6172C357.43 80.4561 358.327 80.2466 359.144 79.9888C359.96 79.731 360.707 79.4409 361.383 79.1187C362.06 78.7856 362.705 78.4473 363.317 78.1035V83.4854ZM368.892 85V62.8604H391.306V67.5815H375.031V71.2393H390.468V75.9604H375.031V80.2788H391.531V85H368.892Z" fill="#131313"/><defs><linearGradient id="arie-lg-b" x1="82.7315" y1="87.0001" x2="82.7315" y2="6.99987" gradientUnits="userSpaceOnUse"><stop stop-color="#201485"/><stop offset="1" stop-color="#0F0566"/></linearGradient></defs></svg></span>
       <div>
         <h1>Search Visibility & Website Experience</h1>
         <div class="sub">Google Search Console · Vercel Speed Insights · Portal feedback</div>
@@ -421,6 +422,9 @@ a{color:var(--indigo)}
     if(!total){ return placeholder(container, opts.empty || 'Awaiting data'); }
     var W=220, H=170, cx=90, cy=H/2, R=62, r=38;
     var s = svg(W,H);
+    // Donut geometry must stay circular even when the container's aspect
+    // differs from the SVG viewBox — override the default "none" stretch.
+    s.setAttribute('preserveAspectRatio','xMidYMid meet');
     var colors = opts.colors || ['#06113A','#2E2A8C','#C99B3F','#4940D6','#6E8FBF','#9AA9C4'];
     var a0 = -Math.PI/2;
     entries.forEach(function(e,i){
@@ -474,7 +478,7 @@ a{color:var(--indigo)}
     kpis1.appendChild(kpiCard('Page views',           k.pageviews));
     kpis1.appendChild(kpiCard('Search clicks',        k.search_clicks));
     kpis1.appendChild(kpiCard('Search impressions',   k.search_impr));
-    kpis1.appendChild(kpiCard('Search CTR',           k.search_ctr, {decimals:2, unit:'%'}));
+    kpis1.appendChild(kpiCard('Google click-through rate', k.search_ctr, {decimals:2, unit:'%'}));
     kpis1.appendChild(kpiCard('Successful enquiries', k.enquiries));
 
     // --- Traffic trend ---
@@ -483,7 +487,7 @@ a{color:var(--indigo)}
 
     // --- Sections ---
     if(!data.sections || !data.sections.length){
-      placeholder(el('sections-chart'), '<strong>Awaiting GA4 section-level data</strong>');
+      placeholder(el('sections-chart'), '<strong>Section engagement data will appear in the next reporting cycle</strong>');
     } else {
       hBarChart(el('sections-chart'), data.sections.map(function(s){return {label:s.name, value:s.value};}), { color:'#06113A', labelWidth:110 });
     }
@@ -509,8 +513,8 @@ a{color:var(--indigo)}
     var kpis2 = el('kpis-2'); kpis2.innerHTML='';
     kpis2.appendChild(kpiCard('Clicks',           sk.clicks));
     kpis2.appendChild(kpiCard('Impressions',      sk.impressions));
-    kpis2.appendChild(kpiCard('CTR',              sk.ctr, {decimals:2, unit:'%'}));
-    kpis2.appendChild(kpiCard('Avg. position',    sk.position, {decimals:1, inverse_good:true}));
+    kpis2.appendChild(kpiCard('Google click-through rate', sk.ctr, {decimals:2, unit:'%'}));
+    kpis2.appendChild(kpiCard('Average Google ranking',    sk.position, {decimals:1, inverse_good:true}));
 
     // --- Search trend: prioritise Impressions as the line ---
     var st = (data.search && data.search.trend) || {};
@@ -586,9 +590,9 @@ a{color:var(--indigo)}
     var wrap = document.createElement('div'); wrap.className='funnel';
     var a = f.start_application, b = f.contact_form_start, c = f.contact_form_submit;
     var stages = [
-      { l:'start_application',    n:a },
-      { l:'contact_form_start',   n:b },
-      { l:'contact_form_submit',  n:c }
+      { l:'Clicked Start Application', n:a },
+      { l:'Started contact form',      n:b },
+      { l:'Submitted enquiry',         n:c }
     ];
     if(a==null && b==null && c==null){
       placeholder(host, '<strong>No recorded conversions this period</strong>');
@@ -613,7 +617,7 @@ a{color:var(--indigo)}
   function renderExperience(x){
     var host = el('experience-chart'); host.innerHTML='';
     if(!x || x.state === 'collecting' || (x.score==null && (!x.lcp || x.lcp.value==null))){
-      placeholder(host, '<strong>Collecting baseline — insufficient real-user data</strong>');
+      placeholder(host, '<strong>Website performance baseline is being collected</strong>');
       return;
     }
     var wrap = document.createElement('div'); wrap.style.display='flex'; wrap.style.flexDirection='column'; wrap.style.flex='1'; wrap.style.gap='8px';

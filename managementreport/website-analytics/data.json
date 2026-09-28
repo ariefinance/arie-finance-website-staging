@@ -1,0 +1,136 @@
+{
+  "period": {
+    "label": "30 Aug – 26 Sep 2026 (28 days)",
+    "compare_label": "vs 2 Aug – 29 Aug 2026",
+    "current": { "start": "2026-08-30", "end": "2026-09-26" },
+    "previous": { "start": "2026-08-02", "end": "2026-08-29" }
+  },
+
+  "kpis": {
+    "visitors": { "current": 547, "previous": 408 },
+    "pageviews": { "current": 719, "previous": 519 },
+    "search_clicks": { "current": 57, "previous": null },
+    "search_impr": { "current": 918, "previous": null },
+    "search_ctr": { "current": 6.2, "previous": null, "unit": "%" },
+    "enquiries": {
+      "current": null,
+      "previous": null,
+      "empty_note": "Awaiting first recorded conversion"
+    }
+  },
+
+  "traffic_trend": {
+    "labels": ["2026-08-30","2026-08-31","2026-09-01","2026-09-02","2026-09-03","2026-09-04","2026-09-05","2026-09-06","2026-09-07","2026-09-08","2026-09-09","2026-09-10","2026-09-11","2026-09-12","2026-09-13","2026-09-14","2026-09-15","2026-09-16","2026-09-17","2026-09-18","2026-09-19","2026-09-20","2026-09-21","2026-09-22","2026-09-23","2026-09-24","2026-09-25","2026-09-26"],
+    "visitors": [5,12,44,18,17,22,7,9,18,24,24,22,21,6,8,17,16,36,23,27,14,17,16,22,32,24,27,19],
+    "pageviews": [5,14,56,20,21,26,7,9,23,28,48,28,28,7,9,19,20,51,37,30,17,18,22,24,33,28,29,62]
+  },
+
+  "referrers": [
+    { "source": "Google", "value": 91 },
+    { "source": "Bing", "value": 10 },
+    { "source": "LinkedIn", "value": 8 },
+    { "source": "DuckDuckGo", "value": 4 },
+    { "source": "ChatGPT", "value": 3 },
+    { "source": "Gmail", "value": 2 }
+  ],
+
+  "countries": [
+    { "name": "United Kingdom", "value": 123 },
+    { "name": "Singapore", "value": 113 },
+    { "name": "Mauritius", "value": 95 },
+    { "name": "United States", "value": 87 },
+    { "name": "China", "value": 21 }
+  ],
+
+  "devices": {
+    "desktop": 82,
+    "mobile": 18,
+    "tablet": 0
+  },
+
+  "sections": [],
+
+  "funnel": {
+    "start_application": 2,
+    "contact_form_start": 2,
+    "contact_form_submit": null
+  },
+
+  "search": {
+    "kpis": {
+      "clicks": { "current": 57, "previous": null },
+      "impressions": { "current": 918, "previous": null },
+      "ctr": { "current": 6.2, "previous": null, "unit": "%" },
+      "position": { "current": 19.4, "previous": null }
+    },
+
+    "trend": {
+      "labels": ["2026-08-30","2026-08-31","2026-09-01","2026-09-02","2026-09-03","2026-09-04","2026-09-05","2026-09-06","2026-09-07","2026-09-08","2026-09-09","2026-09-10","2026-09-11","2026-09-12","2026-09-13","2026-09-14","2026-09-15","2026-09-16","2026-09-17","2026-09-18","2026-09-19","2026-09-20","2026-09-21","2026-09-22","2026-09-23","2026-09-24","2026-09-25","2026-09-26"],
+      "clicks": [null,null,null,null,null,null,null,null,null,3,4,6,4,0,2,2,5,6,4,2,0,0,0,4,5,6,2,2],
+      "impressions": [null,null,null,null,null,null,null,null,null,52,35,39,109,30,24,93,73,43,50,69,16,21,68,54,41,23,47,31]
+    },
+
+    "queries": [
+      { "q": "arie finance", "clicks": 22, "impressions": 53, "ctr": 41.5, "pos": 1.0 },
+      { "q": "arie bank", "clicks": 2, "impressions": 14, "ctr": 14.3, "pos": 1.1 },
+      { "q": "arie capital", "clicks": 1, "impressions": 11, "ctr": 9.1, "pos": 7.1 },
+      { "q": "ariya business finance", "clicks": 0, "impressions": 25, "ctr": 0.0, "pos": 45.0 },
+      { "q": "ariya finance", "clicks": 0, "impressions": 13, "ctr": 0.0, "pos": 43.6 },
+      { "q": "arie group", "clicks": 0, "impressions": 11, "ctr": 0.0, "pos": 3.4 },
+      { "q": "arie company", "clicks": 0, "impressions": 6, "ctr": 0.0, "pos": 4.2 }
+    ],
+
+    "branded": {
+      "branded": 25,
+      "non_branded": 32,
+      "note": "Query classification reviewed manually each month."
+    },
+
+    "opportunities": []
+  },
+
+  "experience": {
+    "state": "collecting",
+    "score": null,
+    "lcp": { "value": null, "unit": "s" },
+    "inp": { "value": null, "unit": "ms" },
+    "cls": { "value": null, "unit": "" },
+    "ttfb": { "value": null, "unit": "ms" },
+    "fcp": { "value": null, "unit": "s" }
+  },
+
+  "portal_feedback": {
+    "sample": 4,
+    "counts": {
+      "needs_attention": 0,
+      "good": 2,
+      "excellent": 2
+    }
+  },
+
+  "commentary": {
+    "observations": [
+      "Visitors grew 34% period-on-period (547 vs 408) with pageviews up 39% (719 vs 519), driven primarily by organic search — Google referred 91 unique visitors.",
+      "Google Search Console recorded 57 clicks from 918 impressions at 6.2% CTR in its first 19 days of data (property verified from 8 Sep), with the branded query \"arie finance\" capturing 22 clicks at 41.5% CTR at position 1.0.",
+      "UK (123), Singapore (113), and Mauritius (95) are the top 3 visitor markets with 82% desktop traffic. Commercial funnel events represent a partial-period baseline and should not yet be treated as a full 28-day conversion rate."
+    ],
+
+    "actions": [
+      {
+        "finding": "Non-branded search discovery remains limited compared with branded search.",
+        "action": "Identify 2–3 genuine non-branded search themes worth strengthening in the next reporting cycle.",
+        "priority": "Medium"
+      },
+      {
+        "finding": "Some ARIE-related queries already rank but attract relatively few clicks.",
+        "action": "Review title/meta relevance only for the strongest existing search opportunities.",
+        "priority": "Medium"
+      },
+      {
+        "finding": "Commercial funnel data currently covers only a partial tracking period.",
+        "action": "Monitor only — make no funnel optimisation changes until a full reporting cycle is available.",
+        "priority": "Monitor"
+      }
+    ]
+  }
+}

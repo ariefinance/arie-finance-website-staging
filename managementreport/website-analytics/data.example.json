@@ -115,9 +115,21 @@
       "Introducers and Direct Clients sections received 561 combined section-views — the strongest commercial-intent surfaces after Home."
     ],
     "actions": [
-      "Refresh the top 5 non-branded queries with a short answer block on the relevant section to lift CTR from ~1.3% toward the branded 6.7%.",
-      "Add a soft prompt on the Introducers section pointing straight to the contact form's Introducer topic to raise the 11% start-to-submit funnel yield.",
-      "Once Speed Insights baseline lands, set an internal LCP target of ≤2.5s on mobile before the next report cycle."
+      {
+        "finding":  "Non-branded search visibility remains limited compared with branded discovery.",
+        "action":   "Identify 2–3 genuine non-branded search themes worth strengthening in the next reporting cycle.",
+        "priority": "Medium"
+      },
+      {
+        "finding":  "Some ARIE-related queries have visible rankings but limited clicks.",
+        "action":   "Review title/meta relevance only for the strongest existing search opportunities.",
+        "priority": "Medium"
+      },
+      {
+        "finding":  "Commercial funnel data currently covers only a partial tracking period.",
+        "action":   "Monitor only — make no funnel optimisation changes until a full reporting cycle is available.",
+        "priority": "Monitor"
+      }
     ]
   }
 }

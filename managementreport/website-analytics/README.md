@@ -46,8 +46,8 @@ month from a single JSON file. The template is served at
    | `search.opportunities` | Search Console rows at position ≈ 5–20 with impressions >= a few hundred and CTR clearly below the branded CTR. |
    | `experience` | Vercel → Speed Insights. While no baseline exists, keep `state: "collecting"` and all metric values `null`. Once populated: `score` = Real Experience Score, `lcp` in `s`, `inp` in `ms`, `cls` unitless. |
    | `portal_feedback` | Count events `portal_experience: Needs attention / Good / Excellent` fired from `/logout` (Vercel Analytics → Custom Events) for the window. If total sample `< 20`, the panel renders the insufficient-sample indicator instead of a chart. |
-   | `commentary.observations` | Exactly 3, one sentence each. |
-   | `commentary.actions` | Exactly 3, one sentence each. |
+   | `commentary.observations` | Up to 3, one sentence each. |
+   | `commentary.actions` | Up to 3 objects `{ finding, action, priority }`. `priority` is one of `High`, `Medium`, `Monitor`. Only surface an action when the data shows a clear issue/opportunity, the fix is specific and proportionate, and could materially move a management-relevant metric. If the data is not mature enough, use a single `Monitor` row (or leave the array empty — the panel then shows `Monitor — no action required yet.`). No owner field: the same person handles both the report and the website. |
 
 3. **Preview locally**
    ```

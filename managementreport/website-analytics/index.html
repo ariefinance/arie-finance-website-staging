@@ -561,7 +561,7 @@ a{color:var(--indigo)}
     host.innerHTML = '';
     if(!items || !items.length){
       var e = document.createElement('div'); e.className='act-empty'; e.style.gridColumn='1 / -1';
-      e.textContent = 'Monitor — no action required yet.';
+      e.textContent = 'No action required this period.';
       host.appendChild(e); return;
     }
     ['Finding','Recommended action','Priority'].forEach(function(h){

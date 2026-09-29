@@ -162,8 +162,21 @@ tbody tr:last-child td{border-bottom:0}
    with the content covers the "scroll" shadow only when the user has reached
    the right end, so the hint appears exactly when more columns are off-screen
    and disappears when there is nothing more to reveal. */
+.tblnav{display:flex;justify-content:flex-end;align-items:center;
+  gap:10px;padding:8px 12px;background:var(--surface);
+  border:1px solid var(--rule);border-bottom:0;border-top:0}
+.tblnav[hidden]{display:none}
+.tblnav .hint{font-size:12px;color:var(--mute)}
+.tblnav-btn{display:inline-flex;align-items:center;gap:6px;
+  background:var(--gold-wash);color:var(--gold);
+  border:1px solid var(--gold-line);border-radius:8px;
+  padding:8px 14px;font-size:13px;font-weight:600;cursor:pointer;
+  letter-spacing:.1px;transition:background .15s,border-color .15s,transform .05s}
+.tblnav-btn:hover{background:#F7EBCD;border-color:var(--gold)}
+.tblnav-btn:active{transform:translateY(1px)}
+.tblnav-btn:focus-visible{outline:2px solid var(--gold);outline-offset:2px}
 .tablewrap{border:1px solid var(--rule);border-radius:0 0 10px 10px;
-  overflow-x:auto;overflow-y:auto;max-height:70vh;
+  overflow-x:auto;overflow-y:visible;
   /* Always-visible, chunky native scrollbars so horizontal navigation is easy
      to discover — no JS, no synced secondary bar. Styling the WebKit
      scrollbar also disables macOS overlay-fade behaviour, which was the
@@ -184,7 +197,7 @@ tbody tr:last-child td{border-bottom:0}
 .tablewrap::-webkit-scrollbar-thumb:hover { background:var(--mute); }
 .tablewrap::-webkit-scrollbar-corner { background:var(--surface-2); }
 #grid{min-width:1480px}
-#grid th{position:sticky;top:0;z-index:3;background:var(--surface-2)}
+#grid th{position:sticky;top:var(--site-hdr,0px);z-index:3;background:var(--surface-2)}
 /* Sticky Company column so the row is still identifiable when the user
    scrolls right to see the later columns. The header cell is sticky in
    BOTH axes (top + left) so it sits above every other cell at the corner. */
@@ -589,7 +602,11 @@ select.inp{min-width:104px}
     <button class="gbtn" id="bulk-delete">Delete selected</button>
     <button class="gbtn" id="bulk-clear">Clear selection</button>
   </div>
-  <div class="tablewrap">
+  <div class="tblnav" id="tblnav" hidden>
+    <span class="hint" id="tblnav-hint">More columns available</span>
+    <button type="button" class="tblnav-btn" id="col-toggle" aria-controls="tablewrap" aria-expanded="false">Show more columns →</button>
+  </div>
+  <div class="tablewrap" id="tablewrap">
     <table id="grid"><thead><tr id="grid-head"></tr></thead><tbody id="grid-body"></tbody></table>
   </div>
   <div class="pager">
@@ -1534,6 +1551,7 @@ function renderPipeline(){
   const bar = document.getElementById("bulkbar");
   bar.style.display = view.sel.size ? "flex" : "none";
   document.getElementById("bulk-count").textContent = view.sel.size + " selected";
+  document.dispatchEvent(new CustomEvent("grid:rendered"));
 }
 function opt(list, val){ return list.map(o => `<option value="${esc(o)}" ${o === val ? "selected" : ""}>${o === "" ? "—" : esc(o)}</option>`).join(""); }
 
@@ -2242,6 +2260,53 @@ function boot(){
 }
 boot().then(gateHide).catch(function(){ gateShow(""); });
 setInterval(syncPull, 12000);
+
+/* ---- Site-header offset for sticky table header ---------------------- */
+(function siteHdrOffset(){
+  var hdr = document.querySelector('header');
+  if (!hdr) return;
+  var apply = function(){
+    document.documentElement.style.setProperty('--site-hdr', hdr.offsetHeight + 'px');
+  };
+  apply();
+  window.addEventListener('resize', apply);
+  if (typeof ResizeObserver === 'function') new ResizeObserver(apply).observe(hdr);
+})();
+
+/* ---- Horizontal column-navigation toggle ----------------------------- */
+(function colNav(){
+  var wrap = document.getElementById('tablewrap');
+  var nav  = document.getElementById('tblnav');
+  var btn  = document.getElementById('col-toggle');
+  var hint = document.getElementById('tblnav-hint');
+  if (!wrap || !nav || !btn) return;
+  var SHOW = 'Show more columns →';
+  var BACK = '← Back to main columns';
+  var EPS  = 8;
+  var maxLeft = function(){ return wrap.scrollWidth - wrap.clientWidth; };
+  var hasOverflow = function(){ return maxLeft() > 2; };
+  var refresh = function(){
+    var over = hasOverflow();
+    nav.hidden = !over;
+    if (!over) { btn.setAttribute('aria-expanded','false'); return; }
+    var atRight = wrap.scrollLeft >= (maxLeft() - EPS);
+    var scrolled = wrap.scrollLeft > EPS;
+    btn.textContent = scrolled ? BACK : SHOW;
+    btn.setAttribute('aria-expanded', scrolled ? 'true' : 'false');
+    if (hint) hint.textContent = atRight
+      ? 'Viewing later columns'
+      : (scrolled ? 'Scroll or click to jump back' : 'More columns available');
+  };
+  btn.addEventListener('click', function(){
+    if (!hasOverflow()) return;
+    var target = wrap.scrollLeft > EPS ? 0 : maxLeft();
+    wrap.scrollTo({ left: target, behavior: 'smooth' });
+  });
+  wrap.addEventListener('scroll', refresh, { passive: true });
+  window.addEventListener('resize', refresh);
+  document.addEventListener('grid:rendered', refresh);
+  refresh();
+})();
 </script>
 </body>
 </html>

@@ -1551,6 +1551,7 @@ function renderPipeline(){
   const bar = document.getElementById("bulkbar");
   bar.style.display = view.sel.size ? "flex" : "none";
   document.getElementById("bulk-count").textContent = view.sel.size + " selected";
+  document.dispatchEvent(new CustomEvent("grid:rendered"));
 }
 function opt(list, val){ return list.map(o => `<option value="${esc(o)}" ${o === val ? "selected" : ""}>${o === "" ? "—" : esc(o)}</option>`).join(""); }
 
@@ -2303,14 +2304,7 @@ setInterval(syncPull, 12000);
   });
   wrap.addEventListener('scroll', refresh, { passive: true });
   window.addEventListener('resize', refresh);
-  if (typeof ResizeObserver === 'function') {
-    var ro = new ResizeObserver(refresh);
-    ro.observe(wrap);
-    if (wrap.firstElementChild) ro.observe(wrap.firstElementChild);
-  }
-  /* Grid renders after boot; poll briefly, then rely on observers. */
-  var tries = 0;
-  var t = setInterval(function(){ refresh(); if (++tries > 20) clearInterval(t); }, 250);
+  document.addEventListener('grid:rendered', refresh);
   refresh();
 })();
 </script>

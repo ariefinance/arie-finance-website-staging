@@ -2308,6 +2308,38 @@ setInterval(syncPull, 12000);
   document.addEventListener('grid:rendered', refresh);
   refresh();
 })();
+
+/* ---- Freeze the column-header row below the site header + toggle band --
+   .tablewrap has overflow-x:auto, which makes it the sticky ancestor for
+   both axes; with max-height gone it has no vertical scroll, so a plain
+   `top: var(--site-hdr)` on <th> just shifted the row down without ever
+   docking. Instead, translate the header <tr> down by however much the
+   table has scrolled past the dock line — <th> keeps its own background
+   and z-index, so rows scroll under it cleanly, and each <th>'s own
+   sticky-left (the Company column) is unaffected because we translate
+   the parent <tr>, not any horizontal-scroll ancestor. */
+(function stickyHead(){
+  var wrap    = document.getElementById('tablewrap');
+  var nav     = document.getElementById('tblnav');
+  var headRow = document.getElementById('grid-head');
+  if (!wrap || !headRow) return;
+  var refresh = function(){
+    var rect = wrap.getBoundingClientRect();
+    var siteH = parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--site-hdr')) || 0;
+    var navH  = (nav && !nav.hidden) ? nav.offsetHeight : 0;
+    var line  = siteH + navH;
+    var rowH  = headRow.getBoundingClientRect().height;
+    var diff  = Math.max(0, line - rect.top);
+    /* Stop before the header would escape past the bottom of .tablewrap. */
+    var maxDiff = Math.max(0, rect.height - rowH);
+    if (diff > maxDiff) diff = maxDiff;
+    headRow.style.transform = diff ? 'translateY(' + diff + 'px)' : '';
+  };
+  window.addEventListener('scroll', refresh, { passive: true });
+  window.addEventListener('resize', refresh);
+  document.addEventListener('grid:rendered', refresh);
+  refresh();
+})();
 </script>
 </body>
 </html>

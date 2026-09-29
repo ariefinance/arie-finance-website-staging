@@ -164,17 +164,18 @@ tbody tr:last-child td{border-bottom:0}
    and disappears when there is nothing more to reveal. */
 .tblnav{display:flex;justify-content:flex-end;align-items:center;
   gap:10px;padding:8px 12px;background:var(--surface);
-  border:1px solid var(--rule);border-bottom:0;border-top:0}
+  border:1px solid var(--rule);border-bottom:0;border-top:0;
+  position:sticky;top:var(--site-hdr,0px);z-index:15}
 .tblnav[hidden]{display:none}
 .tblnav .hint{font-size:12px;color:var(--mute)}
 .tblnav-btn{display:inline-flex;align-items:center;gap:6px;
-  background:var(--gold-wash);color:var(--gold);
-  border:1px solid var(--gold-line);border-radius:8px;
+  background:var(--navy);color:#fff;
+  border:1px solid var(--navy-deep);border-radius:8px;
   padding:8px 14px;font-size:13px;font-weight:600;cursor:pointer;
   letter-spacing:.1px;transition:background .15s,border-color .15s,transform .05s}
-.tblnav-btn:hover{background:#F7EBCD;border-color:var(--gold)}
+.tblnav-btn:hover{background:var(--navy-soft);border-color:var(--navy-soft)}
 .tblnav-btn:active{transform:translateY(1px)}
-.tblnav-btn:focus-visible{outline:2px solid var(--gold);outline-offset:2px}
+.tblnav-btn:focus-visible{outline:2px solid var(--navy);outline-offset:2px}
 .tablewrap{border:1px solid var(--rule);border-radius:0 0 10px 10px;
   overflow-x:auto;overflow-y:visible;
   /* Always-visible, chunky native scrollbars so horizontal navigation is easy
@@ -197,7 +198,7 @@ tbody tr:last-child td{border-bottom:0}
 .tablewrap::-webkit-scrollbar-thumb:hover { background:var(--mute); }
 .tablewrap::-webkit-scrollbar-corner { background:var(--surface-2); }
 #grid{min-width:1480px}
-#grid th{position:sticky;top:var(--site-hdr,0px);z-index:3;background:var(--surface-2)}
+#grid th{position:sticky;top:0;z-index:3;background:var(--surface-2)}
 /* Sticky Company column so the row is still identifiable when the user
    scrolls right to see the later columns. The header cell is sticky in
    BOTH axes (top + left) so it sits above every other cell at the corner. */

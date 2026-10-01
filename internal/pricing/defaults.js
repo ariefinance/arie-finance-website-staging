@@ -122,7 +122,7 @@
     }, partial || {});
   }
 
-  window.ARIE_DEFAULTS = { VERSION: '0.6.0', SCHEMA_VERSION: 2, indicative, client, welcome, account, uid,
+  window.ARIE_DEFAULTS = { VERSION: '0.6.1', SCHEMA_VERSION: 3, indicative, client, welcome, account, uid,
     FOOTER: { web: 'www.ariefinance.com', email: 'customercare@ariefinance.com', phone: '+230 468 6497' },
     REGULATOR: 'Regulated by the Financial Services Commission (Mauritius)',
     LICENCE: 'Payment Intermediary Services Licence · GB25205028'

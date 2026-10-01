@@ -158,7 +158,7 @@
 
   // Returns an array of sheet HTML strings.
   function feeSheets(doc) {
-    const left = 'Private &amp; Confidential' + (doc.clientFields && doc.preparedFor ? ' · Prepared for ' + esc(doc.preparedFor) : '');
+    const left = 'Private &amp; Confidential';
     // Header and top block are measured together so their stacking matches the real page exactly.
     const hdrH = measure(header()).height;
     const footH = measure(footer(left + pageNo(1, 2)), true).height;

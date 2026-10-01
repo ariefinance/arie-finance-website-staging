@@ -96,7 +96,7 @@
       steps: [
         { title: 'When making a payment', body: 'Where supporting documents are required for an outgoing transaction, please upload them on the ARIE Finance platform when creating the payment.\nSupporting documents may be requested for incoming transactions and should be provided promptly on request.' },
         { title: 'Keep your information current', body: 'Please notify ARIE Finance promptly of material changes to your legal status, ownership, control, directors, Authorised Users, contact details, business activities, expected payment activity, regulatory status or financial standing, and of any insolvency, winding-up or strike-off event.\nPlease use the prescribed format where applicable.' },
-        { title: 'Need assistance?', body: 'ARIE FINANCE CLIENT CARE\ncustomercare@ariefinance.com\n+230 5468 6497' }
+        { title: 'Need assistance?', body: 'ARIE FINANCE CLIENT CARE\ncustomercare@ariefinance.com\n+230 468 6497' }
       ],
       governsTitle: 'For reference · Which document governs what',
       governs: [
@@ -123,7 +123,7 @@
   }
 
   window.ARIE_DEFAULTS = { VERSION: '0.6.0', SCHEMA_VERSION: 2, indicative, client, welcome, account, uid,
-    FOOTER: { web: 'www.ariefinance.com', email: 'customercare@ariefinance.com', phone: '+230 5468 6497' },
+    FOOTER: { web: 'www.ariefinance.com', email: 'customercare@ariefinance.com', phone: '+230 468 6497' },
     REGULATOR: 'Regulated by the Financial Services Commission (Mauritius)',
     LICENCE: 'Payment Intermediary Services Licence · GB25205028'
   };

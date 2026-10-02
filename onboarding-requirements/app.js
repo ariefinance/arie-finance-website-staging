@@ -475,7 +475,7 @@
       }
       fmtAns('oy', 'Company more than one year old');
       fmtAns('ba', 'Existing bank account');
-      fmtAns('li', 'Regulatory licence');
+      fmtAns('li', 'Regulatory / operating licence');
       if (cp.length) out += '<div>' + cp.join(' · ') + '</div>';
       out += '</div>';
 

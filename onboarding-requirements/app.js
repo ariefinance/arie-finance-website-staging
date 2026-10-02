@@ -491,7 +491,7 @@
       sN++;
       var its = visible(d.k, c, type === 'personalised');
       var ppn = PPN[d.k];
-      out += '<div style="margin-bottom:16px;break-inside:avoid;page-break-inside:avoid">';
+      out += '<div style="margin-bottom:16px">';
       out += '<div style="display:flex;align-items:center;gap:10px;margin-bottom:' + (ppn ? '4' : '10') + 'px">' +
         '<div style="font-size:9px;font-weight:700;color:#b8a070;letter-spacing:1px">' + (sN < 10 ? '0' : '') + sN + '</div>' +
         '<div style="font-size:12px;font-weight:600;color:#06113A">' + esc(d.l) + '</div>' +
@@ -541,15 +541,30 @@
     }
   }
 
+  // html2canvas + jsPDF are vendored locally and driven directly. The
+  // previous html2pdf.bundle.min.js wrapper placed the source inside a
+  // hidden overlay whose layout behaved inconsistently for longer content
+  // (observed: for the Generic variant, the rendered canvas placed all
+  // content in a sliver at the bottom and page 1 came out blank).
+  // Driving html2canvas on an off-screen but fully-rendered container is
+  // deterministic.
   function printPdf(type) {
-    if (typeof window.html2pdf !== 'function') {
+    var hc = window.html2canvas;
+    var jsPDFCtor = (window.jspdf && window.jspdf.jsPDF) || window.jsPDF;
+    if (typeof hc !== 'function' || typeof jsPDFCtor !== 'function') {
       alert('PDF generation is unavailable in this browser. Please contact ARIE Finance.');
       return;
     }
     var container = document.createElement('div');
-    container.style.cssText = 'position:fixed;left:-9999px;top:0;width:170mm;';
+    // Offscreen but fully rendered — html2canvas treats visibility:hidden
+    // and display:none as "skip", so hiding has to be positional.
+    container.style.cssText =
+      'position:fixed;left:-10000px;top:0;width:170mm;' +
+      'background:#FAF9F6;color:#1a1a1a;font-family:\'DM Sans\',system-ui,sans-serif;' +
+      'pointer-events:none;';
     container.innerHTML = printHtml(type);
     document.body.appendChild(container);
+
     var safe = safeFilenamePart(state.companyName);
     var fname = type === 'generic'
       ? 'ARIE_Onboarding_Requirements_Checklist.pdf'
@@ -557,21 +572,53 @@
 
     function cleanup() { try { document.body.removeChild(container); } catch (e) { /* ignore */ } }
 
-    window.html2pdf()
-      .set({
-        margin: [15, 20, 22, 20], // extra bottom margin reserved for the per-page footer
-        filename: fname,
-        image: { type: 'jpeg', quality: 0.98 },
-        html2canvas: { scale: 2, useCORS: true, backgroundColor: '#FAF9F6' },
-        jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' },
-        pagebreak: { mode: ['avoid-all', 'css', 'legacy'] }
+    // Give web-fonts a chance to load before rasterising, so measured heights
+    // match the intended layout.
+    var fontsReady = (document.fonts && document.fonts.ready) || Promise.resolve();
+    fontsReady
+      .then(function () {
+        return hc(container, { scale: 2, useCORS: true, backgroundColor: '#FAF9F6', logging: false });
       })
-      .from(container)
-      .toPdf()
-      .get('pdf')
-      .then(function (pdf) { try { addFooters(pdf); } catch (e) { /* footer is best-effort */ } })
-      .save()
-      .then(cleanup, function () { cleanup(); alert('PDF generation failed. Please try again.'); });
+      .then(function (canvas) {
+        var pdf = new jsPDFCtor({ unit: 'mm', format: 'a4', orientation: 'portrait' });
+        var marginTop = 15, marginLeft = 20, marginRight = 20, marginBottom = 22;
+        var pageW = pdf.internal.pageSize.getWidth();   // 210mm
+        var pageH = pdf.internal.pageSize.getHeight();  // 297mm
+        var contentWmm = pageW - marginLeft - marginRight;    // 170mm
+        var contentHmm = pageH - marginTop - marginBottom;    // 260mm
+        // Full image size (mm): width is fixed to the content width,
+        // height is the canvas height scaled to that width.
+        var imgWmm = contentWmm;
+        var imgHmm = canvas.height * imgWmm / canvas.width;
+        // Place the full image on the first page, then shift it up on each
+        // subsequent page so the next slice appears at the top of the content
+        // area. Any image bleeding below the content area is clipped by
+        // addImage because we re-add the same image shifted — simplest
+        // multi-page strategy that always covers all content.
+        var y = marginTop;
+        var remaining = imgHmm;
+        var imgData = canvas.toDataURL('image/jpeg', 0.95);
+        var page = 1;
+        while (remaining > 0) {
+          if (page > 1) { pdf.addPage(); y = marginTop - (imgHmm - remaining); }
+          pdf.addImage(imgData, 'JPEG', marginLeft, y, imgWmm, imgHmm);
+          // Mask anything below the content area with a white rectangle so
+          // the image above the next page's slice doesn't show.
+          pdf.setFillColor(255, 255, 255);
+          pdf.rect(0, marginTop + contentHmm, pageW, pageH - (marginTop + contentHmm), 'F');
+          pdf.rect(0, 0, pageW, marginTop, 'F');
+          remaining -= contentHmm;
+          page++;
+        }
+        try { addFooters(pdf); } catch (e) { /* footer is best-effort */ }
+        pdf.save(fname);
+        cleanup();
+      })
+      .catch(function (err) {
+        cleanup();
+        try { console.error('PDF generation failed:', err); } catch (e) { /* ignore */ }
+        alert('PDF generation failed. Please try again.');
+      });
   }
 
   // ---------- wiring ----------

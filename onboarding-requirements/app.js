@@ -547,9 +547,9 @@
       return;
     }
     var container = document.createElement('div');
-    container.style.cssText = 'position:fixed;left:-9999px;top:0;width:170mm;';
+    container.style.cssText = 'width:170mm;';
     container.innerHTML = printHtml(type);
-    document.body.appendChild(container);
+    /* detached - html2pdf clones the node, no need to attach it to the live DOM */
     var safe = safeFilenamePart(state.companyName);
     var fname = type === 'generic'
       ? 'ARIE_Onboarding_Requirements_Checklist.pdf'

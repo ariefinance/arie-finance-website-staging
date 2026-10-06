@@ -43,6 +43,9 @@
   .tb{display:flex;flex-wrap:wrap;gap:6px;border:1px solid var(--line);border-bottom:0;border-radius:6px 6px 0 0;padding:8px;background:#FAFAF8;}
   .tb button{font-size:12px;font-weight:600;color:var(--navy);background:#fff;border:1px solid var(--line);border-radius:4px;padding:6px 10px;min-width:34px;}
   .editor{min-height:240px;border:1px solid var(--line);border-radius:0 0 6px 6px;padding:14px 16px;background:#fff;font-size:15px;line-height:1.7;overflow-wrap:break-word;}
+  .editor.is-empty::before{content:attr(data-ph);color:#9a968c;pointer-events:none;}
+  #sum-count{font-weight:600;color:var(--meta);}
+  #sum-count.over{color:var(--err);}
   .editor h2{font-size:21px;margin:18px 0 8px;color:var(--navy);}
   .editor h3{font-size:18px;margin:14px 0 6px;color:var(--navy);}
   .editor p{margin:0 0 12px;}.editor ul,.editor ol{margin:0 0 12px 22px;}
@@ -108,56 +111,35 @@
         <h1 id="editor-title">New article</h1>
         <p class="sub" id="editor-sub">Write the article, preview it, confirm internal approval, then publish.</p>
 
-        <label for="f-title">Title</label>
-        <input id="f-title" type="text" maxlength="160" autocomplete="off">
+        <label for="f-title">Article title</label>
+        <input id="f-title" type="text" maxlength="160" autocomplete="off" placeholder="e.g. Understanding international payment delays">
 
-        <div class="row">
-          <div>
-            <label for="f-category">Category</label>
-            <select id="f-category">
-              <option value="Guides">Guides</option>
-              <option value="Updates">Updates</option>
-              <option value="ARIE News">ARIE News</option>
-            </select>
-          </div>
-          <div>
-            <label for="f-slug">Slug (URL)</label>
-            <input id="f-slug" type="text" autocomplete="off">
-            <p class="hint" id="slug-hint">Auto-generated from the title. Editable before first publish.</p>
-          </div>
-        </div>
+        <label for="f-category">Category</label>
+        <select id="f-category">
+          <option value="Guides">Guides</option>
+          <option value="Updates">Updates</option>
+          <option value="ARIE News">ARIE News</option>
+        </select>
+        <p class="hint">Shown as a label on the article and Insights page.</p>
 
-        <label for="f-summary">Summary (2–3 sentences)</label>
-        <textarea id="f-summary" maxlength="400"></textarea>
+        <label for="f-summary">Short summary</label>
+        <textarea id="f-summary"></textarea>
+        <p class="hint">2–3 sentences. Shown on the Insights page, homepage and sharing email — so make it read well on its own. <span id="sum-count">0 / 400</span></p>
 
-        <label>Article body</label>
+        <label>Article content</label>
         <div class="tb" role="toolbar" aria-label="Formatting">
-          <button type="button" data-cmd="p" title="Paragraph">¶</button>
-          <button type="button" data-cmd="h2" title="Heading 2">H2</button>
-          <button type="button" data-cmd="h3" title="Heading 3">H3</button>
-          <button type="button" data-cmd="bold" title="Bold"><b>B</b></button>
-          <button type="button" data-cmd="italic" title="Italic"><i>I</i></button>
-          <button type="button" data-cmd="ul" title="Bullet list">• List</button>
-          <button type="button" data-cmd="ol" title="Numbered list">1. List</button>
-          <button type="button" data-cmd="quote" title="Quote">&ldquo; &rdquo;</button>
-          <button type="button" data-cmd="link" title="Add link">Link</button>
-          <button type="button" data-cmd="unlink" title="Remove link">Unlink</button>
+          <button type="button" data-cmd="p" title="Paragraph">Paragraph</button>
+          <button type="button" data-cmd="h2" title="Heading">Heading</button>
+          <button type="button" data-cmd="h3" title="Subheading">Subheading</button>
+          <button type="button" data-cmd="bold" title="Bold"><b>Bold</b></button>
+          <button type="button" data-cmd="italic" title="Italic"><i>Italic</i></button>
+          <button type="button" data-cmd="ul" title="Bullet list">Bullets</button>
+          <button type="button" data-cmd="ol" title="Numbered list">Numbered list</button>
+          <button type="button" data-cmd="quote" title="Quote">Quote</button>
+          <button type="button" data-cmd="link" title="Add link">Add link</button>
+          <button type="button" data-cmd="unlink" title="Remove link">Remove link</button>
         </div>
-        <div id="editor" class="editor" contenteditable="true" aria-label="Article body"></div>
-        <p class="note">Formatting allowed: headings, paragraphs, bold, italic, lists, links, quotes. Anything else is removed when the article is saved.</p>
-
-        <div class="row">
-          <div>
-            <label for="f-image">Lead image URL (optional)</label>
-            <input id="f-image" type="url" placeholder="https://…" autocomplete="off">
-            <p class="hint">Optional. Use a full https:// image URL. (File upload is a later enhancement — see ADMIN.md.)</p>
-          </div>
-          <div>
-            <label for="f-image-alt">Image alt text</label>
-            <input id="f-image-alt" type="text" maxlength="200" autocomplete="off">
-            <p class="hint">Required if an image URL is set.</p>
-          </div>
-        </div>
+        <div id="editor" class="editor is-empty" contenteditable="true" aria-label="Article content" data-ph="Write or paste the approved article here."></div>
 
         <div id="review-wrap" class="hidden" style="margin-top:16px;">
           <label style="display:flex;gap:9px;align-items:flex-start;font-weight:500;color:var(--ink);font-size:13px;">
@@ -210,7 +192,6 @@
   }
   function toast(el,msg,isErr){ el.textContent=msg||''; el.className='toast'+(isErr?' err':''); }
   function esc(s){return String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');}
-  function slugify(s){return String(s||'').toLowerCase().trim().replace(/['’"]/g,'').replace(/[^a-z0-9]+/g,'-').replace(/^-+|-+$/g,'').slice(0,80);}
   function fmtDate(iso){ if(!/^\d{4}-\d{2}-\d{2}$/.test(iso||''))return ''; var M=['January','February','March','April','May','June','July','August','September','October','November','December']; var p=iso.split('-'); return (+p[2])+' '+M[(+p[1])-1]+' '+p[0]; }
 
   var ERR={invalid_password:'Incorrect password.',too_many_attempts:'Too many attempts. Wait a few minutes and try again.',
@@ -279,29 +260,41 @@
   }
 
   // ---------- editor ----------
-  var slugEdited=false;
-  $('#f-title').addEventListener('input',function(){
-    if(state.mode==='create' && !slugEdited){ $('#f-slug').value=slugify($('#f-title').value); }
+  function bodyText(){ return ($('#editor').textContent||'').replace(/ /g,' ').trim(); }
+  function refreshEditorState(){
+    // placeholder toggle
+    $('#editor').classList.toggle('is-empty', bodyText().length===0);
+    // summary counter
+    var len=$('#f-summary').value.length;
+    var c=$('#sum-count'); c.textContent=len+' / 400'; c.classList.toggle('over', len>400);
     gate();
-  });
-  $('#f-slug').addEventListener('input',function(){ slugEdited=true; $('#f-slug').value=slugify($('#f-slug').value); });
-  $('#f-summary').addEventListener('input',gate);
+  }
+  $('#f-title').addEventListener('input',gate);
+  $('#f-summary').addEventListener('input',refreshEditorState);
   $('#f-confirm').addEventListener('change',gate);
-  $('#editor').addEventListener('input',gate);
+  $('#editor').addEventListener('input',refreshEditorState);
   $('#f-category').addEventListener('change',function(){ $('#review-wrap').classList.toggle('hidden', !($('#f-category').value==='Guides' && state.mode==='edit')); });
 
-  function gate(){ $('#btn-publish').disabled = !$('#f-confirm').checked; }
+  // Publish/Update is enabled only when every required field is complete.
+  function gate(){
+    var ok = $('#f-title').value.trim().length>0
+      && ['Guides','Updates','ARIE News'].indexOf($('#f-category').value)>=0
+      && $('#f-summary').value.trim().length>0
+      && $('#f-summary').value.length<=400
+      && bodyText().length>0
+      && $('#f-confirm').checked;
+    $('#btn-publish').disabled = !ok;
+  }
 
   function newArticle(){
-    state={mode:'create',slug:'',published:null}; slugEdited=false;
+    state={mode:'create',slug:'',published:null};
     $('#editor-title').textContent='New article';
-    $('#editor-sub').textContent='Write the article, preview it, confirm internal approval, then publish.';
-    $('#f-title').value='';$('#f-category').value='Guides';$('#f-slug').value='';$('#f-slug').disabled=false;
-    $('#f-summary').value='';$('#editor').innerHTML='<p></p>';$('#f-image').value='';$('#f-image-alt').value='';
+    $('#editor-sub').textContent='Write the article, preview it, confirm it has been approved, then publish.';
+    $('#f-title').value='';$('#f-category').value='Guides';
+    $('#f-summary').value='';$('#editor').innerHTML='';
     $('#f-confirm').checked=false;$('#review-wrap').classList.add('hidden');$('#f-review').checked=false;
     $('#post-actions').classList.add('hidden');$('#btn-publish').textContent='Publish article';
-    $('#slug-hint').textContent='Auto-generated from the title. Editable before first publish.';
-    toast($('#editor-toast'),''); gate(); show('view-editor'); $('#f-title').focus();
+    toast($('#editor-toast'),''); refreshEditorState(); show('view-editor'); $('#f-title').focus();
   }
   $('#new-article').addEventListener('click',newArticle);
   $('#btn-cancel').addEventListener('click',function(){ show('view-list'); loadList(); });
@@ -311,18 +304,15 @@
     if(r.status===401){ show('view-login'); return; }
     if(!r.ok || !r.json.meta){ toast($('#list-toast'),msg(r.json.error),true); return; }
     var m=r.json.meta;
-    state={mode:'edit',slug:m.slug,published:m.published}; slugEdited=false;
+    state={mode:'edit',slug:m.slug,published:m.published};
     $('#editor-title').textContent='Edit article';
-    $('#editor-sub').textContent='Editing does not change the live article until you click Update.';
+    $('#editor-sub').textContent='Editing does not change the live article until you click Update. The article’s web address stays the same.';
     $('#f-title').value=m.title||'';$('#f-category').value=m.category||'Guides';
-    $('#f-slug').value=m.slug||'';$('#f-slug').disabled=false;
-    $('#slug-hint').textContent='Changing the slug changes the article URL.';
-    $('#f-summary').value=m.summary||'';$('#editor').innerHTML=r.json.body||'<p></p>';
-    $('#f-image').value=m.image||'';$('#f-image-alt').value=m.imageAlt||'';
+    $('#f-summary').value=m.summary||'';$('#editor').innerHTML=r.json.body||'';
     $('#f-confirm').checked=false;
     $('#review-wrap').classList.toggle('hidden', m.category!=='Guides'); $('#f-review').checked=false;
     $('#post-actions').classList.add('hidden');$('#btn-publish').textContent='Update article';
-    toast($('#editor-toast'),''); gate(); show('view-editor'); $('#f-title').focus();
+    toast($('#editor-toast'),''); refreshEditorState(); show('view-editor'); $('#f-title').focus();
   }
 
   // toolbar
@@ -340,14 +330,13 @@
       else if(c==='ol') document.execCommand('insertOrderedList');
       else if(c==='unlink') document.execCommand('unlink');
       else if(c==='link'){ var u=prompt('Link URL (https://…):',''); if(u){ if(!/^https?:\/\//i.test(u)&&!/^mailto:/i.test(u)) u='https://'+u; document.execCommand('createLink',false,u);} }
-      gate();
+      refreshEditorState();
     });
   });
 
   function collect(){
     return {title:$('#f-title').value.trim(),category:$('#f-category').value,
-      summary:$('#f-summary').value.trim(),slug:slugify($('#f-slug').value),
-      body:$('#editor').innerHTML,image:$('#f-image').value.trim(),imageAlt:$('#f-image-alt').value.trim()};
+      summary:$('#f-summary').value.trim(),body:$('#editor').innerHTML};
   }
 
   // preview — render with the real stylesheet
@@ -355,7 +344,7 @@
     var d=collect();
     var reviewed = (d.category==='Guides' && state.mode==='edit' && $('#f-review').checked && state.published && state.published < new Date().toISOString().slice(0,10));
     var pub = state.published || new Date().toISOString().slice(0,10);
-    var fig = d.image? '<figure class="ins-article__figure"><img src="'+esc(d.image)+'" alt="'+esc(d.imageAlt||d.title)+'"></figure>':'';
+    var fig = '';
     var rev = reviewed? '<div class="ins-article__reviewed">Last reviewed '+esc(fmtDate(new Date().toISOString().slice(0,10)))+'</div>':'';
     var html='<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">'+
       '<link href="https://fonts.googleapis.com/css2?family=Hanken+Grotesk:wght@400;500;600;700&family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,500;1,6..72,400&display=swap" rel="stylesheet">'+
@@ -376,12 +365,13 @@
     var d=collect();
     if(!d.title){ return toast($('#editor-toast'),msg('bad_title'),true); }
     if(!d.summary){ return toast($('#editor-toast'),msg('bad_summary'),true); }
-    if(d.image && !d.imageAlt){ return toast($('#editor-toast'),msg('image_alt_required'),true); }
+    // Image fields are intentionally not sent by the writer UI, so the backend
+    // auto-generates the slug on create and preserves any image on update.
     var payload;
     if(state.mode==='create'){
-      payload={action:'create',title:d.title,category:d.category,summary:d.summary,slug:d.slug,body:d.body,image:d.image,imageAlt:d.imageAlt,confirm:$('#f-confirm').checked};
+      payload={action:'create',title:d.title,category:d.category,summary:d.summary,body:d.body,confirm:$('#f-confirm').checked};
     } else {
-      payload={action:'update',slug:state.slug,newSlug:d.slug,title:d.title,category:d.category,summary:d.summary,body:d.body,image:d.image,imageAlt:d.imageAlt,confirm:$('#f-confirm').checked,recordReview:$('#f-review').checked};
+      payload={action:'update',slug:state.slug,title:d.title,category:d.category,summary:d.summary,body:d.body,confirm:$('#f-confirm').checked,recordReview:$('#f-review').checked};
     }
     $('#btn-publish').disabled=true; toast($('#editor-toast'),'Publishing…');
     var r=await api('/publish',{method:'POST',body:payload});

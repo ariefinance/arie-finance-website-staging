@@ -155,11 +155,25 @@ function escapeAttr(s) { return escapeHtml(s); }
 // "</script>" (or any tag) in the data from breaking out of the element.
 function jsonForScript(obj) { return JSON.stringify(obj).replace(/</g, '\\u003c'); }
 function slugify(s) {
-  return String(s || '').toLowerCase().trim()
-    .replace(/['’"]/g, '')
+  return String(s || '')
+    .normalize('NFKD').replace(/[̀-ͯ]/g, '')  // strip accents (café -> cafe)
+    .toLowerCase().trim()
+    .replace(/['’‘"“”]/g, '')
     .replace(/[^a-z0-9]+/g, '-')
     .replace(/^-+|-+$/g, '')
-    .slice(0, 80);
+    .slice(0, 80)
+    .replace(/-+$/, '');  // avoid a trailing dash left by the slice
+}
+// A unique, valid slug derived from the title. Auto-suffixes (-2, -3, …) on
+// collision and falls back to "article" when the title yields nothing usable.
+// `taken` is a Set of slugs already in use (manifest slugs + reserved names).
+function uniqueSlug(title, taken) {
+  let base = slugify(title);
+  if (!validSlug(base)) base = 'article';
+  if (!taken.has(base)) return base;
+  let n = 2;
+  while (taken.has(base + '-' + n)) n++;
+  return base + '-' + n;
 }
 function validSlug(s) { return typeof s === 'string' && /^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(s) && s.length <= 80; }
 function validDate(s) { return typeof s === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(s) && !Number.isNaN(Date.parse(s + 'T00:00:00Z')); }
@@ -525,7 +539,7 @@ module.exports = {
   env, configured,
   constEq, mintToken, verifyToken, setCookie, sessionToken, isAuthed,
   cookieSecure, readBody, clientIp, sameOrigin, sendSecurityHeaders,
-  escapeHtml, slugify, validSlug, validDate, todayISO, formatDate,
+  escapeHtml, slugify, uniqueSlug, validSlug, validDate, todayISO, formatDate,
   sanitizeBody, bodyHasContent,
   gh, getHead, getFile, commitAll,
   readManifest, sortArticles, manifestJSON,

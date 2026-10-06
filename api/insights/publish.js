@@ -68,23 +68,29 @@ module.exports = async function handler(req, res) {
     const category = String(body.category || '').trim();
     const summary = String(body.summary || '').trim();
     const confirm = body.confirm === true;
-    const image = body.image ? String(body.image).trim() : '';
+    // Image is managed only through the backend in V1 (the writer UI omits it).
+    // "Provided" means the caller explicitly sent an image field; otherwise we
+    // preserve whatever the article already has (never silently delete it).
+    const imageProvided = Object.prototype.hasOwnProperty.call(body, 'image');
+    const image = imageProvided && body.image ? String(body.image).trim() : '';
     const imageAlt = body.imageAlt ? String(body.imageAlt).trim() : '';
 
     if (!title || title.length > 160) return res.status(400).json({ ok: false, error: 'bad_title' });
     if (!L.CATEGORIES.includes(category)) return res.status(400).json({ ok: false, error: 'bad_category' });
     if (!summary || summary.length > 400) return res.status(400).json({ ok: false, error: 'bad_summary' });
-    if (!validImage(image)) return res.status(400).json({ ok: false, error: 'bad_image' });
-    if (image && !imageAlt) return res.status(400).json({ ok: false, error: 'image_alt_required' });
+    if (imageProvided && !validImage(image)) return res.status(400).json({ ok: false, error: 'bad_image' });
+    if (imageProvided && image && !imageAlt) return res.status(400).json({ ok: false, error: 'image_alt_required' });
     if (!confirm) return res.status(400).json({ ok: false, error: 'confirm_required' });
 
     const cleanBody = L.sanitizeBody(body.body);
     if (!L.bodyHasContent(cleanBody)) return res.status(400).json({ ok: false, error: 'empty_body' });
 
     if (action === 'create') {
-      const slug = L.slugify(body.slug || title);
-      if (!L.validSlug(slug) || L.RESERVED.has(slug)) return res.status(400).json({ ok: false, error: 'bad_slug' });
-      if (manifest.some((a) => a.slug === slug)) return res.status(409).json({ ok: false, error: 'slug_exists' });
+      // Slug is derived automatically from the title (the writer never sees it):
+      // accent-normalised, auto-suffixed on collision, "article" fallback.
+      const taken = new Set(manifest.map((a) => a.slug));
+      for (const r of L.RESERVED) taken.add(r);
+      const slug = L.uniqueSlug(title, taken);
       const meta = { slug, title, category, summary, published: L.todayISO(), lastReviewed: null, image: image || null, imageAlt: image ? imageAlt : null };
       const next = manifest.concat([meta]);
       const entries = await rebuildEntries(branch, next);
@@ -94,19 +100,12 @@ module.exports = async function handler(req, res) {
       return res.status(200).json({ ok: true, slug, url: `${L.SITE}/insights/${slug}/` });
     }
 
-    // update
-    const oldSlug = String(body.slug || '');
-    if (!L.validSlug(oldSlug)) return res.status(400).json({ ok: false, error: 'bad_slug' });
-    const existing = manifest.find((a) => a.slug === oldSlug);
+    // update — the slug/URL is LOCKED to the existing article; the title may
+    // change but the published URL never does.
+    const slug = String(body.slug || '');
+    if (!L.validSlug(slug)) return res.status(400).json({ ok: false, error: 'bad_slug' });
+    const existing = manifest.find((a) => a.slug === slug);
     if (!existing) return res.status(404).json({ ok: false, error: 'not_found' });
-
-    // Slug may be intentionally changed; default to preserving it.
-    let newSlug = oldSlug;
-    if (body.newSlug) {
-      newSlug = L.slugify(body.newSlug);
-      if (!L.validSlug(newSlug) || L.RESERVED.has(newSlug)) return res.status(400).json({ ok: false, error: 'bad_slug' });
-      if (newSlug !== oldSlug && manifest.some((a) => a.slug === newSlug)) return res.status(409).json({ ok: false, error: 'slug_exists' });
-    }
 
     const published = existing.published; // preserve original publication date
     let lastReviewed = existing.lastReviewed || null;
@@ -118,14 +117,17 @@ module.exports = async function handler(req, res) {
     }
     if (category !== 'Guides') lastReviewed = null;
 
-    const meta = { slug: newSlug, title, category, summary, published, lastReviewed, image: image || null, imageAlt: image ? imageAlt : null };
-    const next = manifest.map((a) => (a.slug === oldSlug ? meta : a));
+    // Preserve existing image metadata unless the caller explicitly provides it.
+    const finalImage = imageProvided ? (image || null) : (existing.image || null);
+    const finalImageAlt = imageProvided ? (image ? imageAlt : null) : (existing.imageAlt || null);
+
+    const meta = { slug, title, category, summary, published, lastReviewed, image: finalImage, imageAlt: finalImageAlt };
+    const next = manifest.map((a) => (a.slug === slug ? meta : a));
     const entries = await rebuildEntries(branch, next);
-    entries.push({ path: `insights/${newSlug}/index.html`, content: L.renderArticle(meta, cleanBody) });
-    if (newSlug !== oldSlug) entries.push({ path: `insights/${oldSlug}/index.html`, delete: true });
+    entries.push({ path: `insights/${slug}/index.html`, content: L.renderArticle(meta, cleanBody) });
     const out = await L.commitAll(branch, head, `Update ARIE Insights: ${title}`, entries);
     if (out.conflict) return res.status(409).json({ ok: false, error: 'conflict' });
-    return res.status(200).json({ ok: true, slug: newSlug, url: `${L.SITE}/insights/${newSlug}/` });
+    return res.status(200).json({ ok: true, slug, url: `${L.SITE}/insights/${slug}/` });
   } catch (err) {
     return res.status(500).json({ ok: false, error: 'server_error' });
   }

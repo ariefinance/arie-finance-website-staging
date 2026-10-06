@@ -204,6 +204,14 @@
     copyRich(emailHTML(), emailPlain(), 'Formatted email copied — paste into Outlook or Gmail.');
   });
 
+  // Prefill from query params (?title=&summary=&url=) — e.g. opened from the Publisher.
+  try{
+    var q=new URLSearchParams(location.search);
+    if(q.get('title')) title.value=q.get('title');
+    if(q.get('summary')) summary.value=q.get('summary');
+    if(q.get('url')) url.value=q.get('url');
+  }catch(e){}
+
   ['input','change'].forEach(function(ev){
     [title,summary,url,logo].forEach(function(el){ el.addEventListener(ev, render); });
   });

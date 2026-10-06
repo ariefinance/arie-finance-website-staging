@@ -1,8 +1,14 @@
 # Publishing an ARIE Insights article
 
-ARIE Insights is a **manual, static** blog. No CMS, no build step, no database.
-Each article is a plain HTML folder served by Vercel, exactly like the other
-standalone ARIE pages (Pricing, Onboarding Requirements, Management Report).
+> **Primary workflow: the Publisher.** Non-technical staff should publish via the
+> password-protected Publisher at **`/insights/admin/`** — no GitHub, HTML or
+> Markdown. See **`insights/ADMIN.md`** for setup and the operational workflow.
+> The manual steps below remain as a fallback/reference for developers.
+
+ARIE Insights is a **static** blog. No CMS platform, no database. Each article is
+a plain HTML folder served by Vercel, exactly like the other standalone ARIE
+pages (Pricing, Onboarding Requirements, Management Report). The Publisher
+(`/insights/admin/`) automates the manual steps below via one atomic GitHub commit.
 
 Target cadence: ~2 articles/month. The steps below take a few minutes.
 

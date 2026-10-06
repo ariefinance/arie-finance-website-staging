@@ -1,0 +1,406 @@
+<!doctype html>
+<html lang="en">
+<!-- ARIE Insights Publisher — password-gated admin UI.
+     Static page; contains NO secrets. All actions require a valid server
+     session (HttpOnly cookie) verified by /api/insights/*. noindex/no-store. -->
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="robots" content="noindex, nofollow">
+<title>ARIE Insights Publisher</title>
+<link rel="icon" type="image/png" href="/favicon.png">
+<style>
+  :root{--navy:#06113A;--ink:#16151F;--slate:#3A4256;--meta:#6B6456;--label:#6B5D30;
+    --line:#E8E4DA;--wash:#F6F1E6;--bom:#F9F6EF;--gold:#C99B3F;--ok:#0B6B3A;--err:#B4231F;}
+  *{margin:0;padding:0;box-sizing:border-box;}
+  body{font-family:system-ui,-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;color:var(--ink);background:#F4F3EF;line-height:1.55;}
+  a{color:var(--navy);}
+  .bar{background:var(--navy);color:#fff;padding:14px 22px;display:flex;align-items:center;justify-content:space-between;gap:12px;}
+  .bar strong{font-size:14px;font-weight:600;letter-spacing:.4px;}
+  .bar .right{display:flex;gap:10px;align-items:center;}
+  .wrap{max-width:860px;margin:0 auto;padding:24px 20px 60px;}
+  .card{background:#fff;border:1px solid var(--line);border-radius:8px;padding:22px;margin-bottom:20px;}
+  h1{font-size:18px;font-weight:600;color:var(--navy);margin-bottom:4px;}
+  .sub{font-size:13px;color:var(--meta);margin-bottom:18px;}
+  label{display:block;font-size:12px;font-weight:600;color:var(--slate);margin:16px 0 6px;}
+  input[type=text],input[type=url],input[type=password],textarea,select{
+    width:100%;font:inherit;font-size:14px;color:var(--ink);border:1px solid var(--line);border-radius:6px;padding:9px 11px;background:#fff;}
+  input:focus,textarea:focus,select:focus,[contenteditable]:focus{outline:2px solid var(--navy);outline-offset:1px;border-color:var(--navy);}
+  textarea{min-height:72px;resize:vertical;}
+  .hint{font-size:11px;color:var(--meta);margin-top:5px;}
+  .row{display:flex;gap:14px;flex-wrap:wrap;}
+  .row>div{flex:1;min-width:200px;}
+  button{font:inherit;font-size:13px;font-weight:600;color:#fff;background:var(--navy);border:0;border-radius:6px;padding:10px 16px;cursor:pointer;}
+  button.secondary{background:#fff;color:var(--navy);border:1px solid var(--navy);}
+  button.ghost{background:none;color:#fff;border:1px solid rgba(255,255,255,.4);}
+  button.danger{background:#fff;color:var(--err);border:1px solid var(--err);}
+  button:hover{opacity:.92;}button:disabled{opacity:.45;cursor:not-allowed;}
+  button:focus-visible,a:focus-visible{outline:2px solid var(--gold);outline-offset:2px;}
+  .btns{display:flex;flex-wrap:wrap;gap:10px;margin-top:22px;}
+  .toast{min-height:20px;margin-top:12px;font-size:13px;font-weight:600;color:var(--ok);}
+  .toast.err{color:var(--err);}
+  /* toolbar + editor */
+  .tb{display:flex;flex-wrap:wrap;gap:6px;border:1px solid var(--line);border-bottom:0;border-radius:6px 6px 0 0;padding:8px;background:#FAFAF8;}
+  .tb button{font-size:12px;font-weight:600;color:var(--navy);background:#fff;border:1px solid var(--line);border-radius:4px;padding:6px 10px;min-width:34px;}
+  .editor{min-height:240px;border:1px solid var(--line);border-radius:0 0 6px 6px;padding:14px 16px;background:#fff;font-size:15px;line-height:1.7;overflow-wrap:break-word;}
+  .editor h2{font-size:21px;margin:18px 0 8px;color:var(--navy);}
+  .editor h3{font-size:18px;margin:14px 0 6px;color:var(--navy);}
+  .editor p{margin:0 0 12px;}.editor ul,.editor ol{margin:0 0 12px 22px;}
+  .editor blockquote{margin:12px 0;padding:8px 14px;border-left:3px solid var(--gold);background:var(--wash);font-style:italic;}
+  .editor a{color:var(--navy);text-decoration:underline;}
+  /* article list */
+  table{width:100%;border-collapse:collapse;font-size:14px;}
+  th,td{text-align:left;padding:10px 8px;border-bottom:1px solid var(--line);vertical-align:top;}
+  th{font-size:11px;letter-spacing:.8px;text-transform:uppercase;color:var(--meta);}
+  td .acts{display:flex;gap:8px;flex-wrap:wrap;}
+  td .acts button, td .acts a{font-size:12px;padding:6px 10px;border-radius:4px;text-decoration:none;}
+  .pill{display:inline-block;font-size:11px;font-weight:600;letter-spacing:.6px;text-transform:uppercase;color:var(--label);}
+  .confirm-row{display:flex;gap:9px;align-items:flex-start;margin-top:20px;padding:14px;background:var(--bom);border:1px solid var(--line);border-radius:6px;}
+  .confirm-row input{margin-top:3px;flex-shrink:0;}
+  .confirm-row label{margin:0;font-weight:500;color:var(--ink);font-size:13px;}
+  .note{font-size:12px;color:var(--meta);margin-top:8px;line-height:1.6;}
+  .hidden{display:none!important;}
+  /* modal */
+  .modal{position:fixed;inset:0;background:rgba(6,17,58,.55);display:flex;align-items:flex-start;justify-content:center;padding:30px 14px;overflow:auto;z-index:50;}
+  .modal .inner{width:100%;max-width:760px;background:#fff;border-radius:8px;overflow:hidden;}
+  .modal .mh{display:flex;align-items:center;justify-content:space-between;padding:12px 18px;border-bottom:1px solid var(--line);background:#FAFAF8;}
+  .modal iframe{width:100%;height:70vh;border:0;background:#fff;}
+  @media(max-width:560px){.bar strong{font-size:13px;}.wrap{padding:16px 14px 50px;}}
+</style>
+</head>
+<body>
+  <div class="bar">
+    <strong>ARIE Insights Publisher</strong>
+    <div class="right">
+      <span id="branch-tag" class="hint" style="color:rgba(255,255,255,.6);"></span>
+      <button id="logout" class="ghost hidden" type="button">Log out</button>
+    </div>
+  </div>
+
+  <div class="wrap">
+    <!-- LOGIN -->
+    <div id="view-login" class="card hidden" style="max-width:420px;margin:40px auto;">
+      <h1>Sign in</h1>
+      <p class="sub">Enter the ARIE Insights admin password.</p>
+      <form id="login-form">
+        <label for="pw">Password</label>
+        <input id="pw" type="password" autocomplete="current-password" required>
+        <div class="btns"><button type="submit">Sign in</button></div>
+        <div class="toast" id="login-toast" role="status" aria-live="polite"></div>
+      </form>
+    </div>
+
+    <!-- LIST -->
+    <div id="view-list" class="hidden">
+      <div class="card">
+        <div style="display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;">
+          <div><h1>Published articles</h1><p class="sub" style="margin:0;">Manage ARIE Insights. No GitHub, HTML or Markdown required.</p></div>
+          <button id="new-article" type="button">+ New article</button>
+        </div>
+        <div id="list-body" style="margin-top:16px;"></div>
+        <div class="toast" id="list-toast" role="status" aria-live="polite"></div>
+      </div>
+    </div>
+
+    <!-- EDITOR -->
+    <div id="view-editor" class="hidden">
+      <div class="card">
+        <h1 id="editor-title">New article</h1>
+        <p class="sub" id="editor-sub">Write the article, preview it, confirm internal approval, then publish.</p>
+
+        <label for="f-title">Title</label>
+        <input id="f-title" type="text" maxlength="160" autocomplete="off">
+
+        <div class="row">
+          <div>
+            <label for="f-category">Category</label>
+            <select id="f-category">
+              <option value="Guides">Guides</option>
+              <option value="Updates">Updates</option>
+              <option value="ARIE News">ARIE News</option>
+            </select>
+          </div>
+          <div>
+            <label for="f-slug">Slug (URL)</label>
+            <input id="f-slug" type="text" autocomplete="off">
+            <p class="hint" id="slug-hint">Auto-generated from the title. Editable before first publish.</p>
+          </div>
+        </div>
+
+        <label for="f-summary">Summary (2–3 sentences)</label>
+        <textarea id="f-summary" maxlength="400"></textarea>
+
+        <label>Article body</label>
+        <div class="tb" role="toolbar" aria-label="Formatting">
+          <button type="button" data-cmd="p" title="Paragraph">¶</button>
+          <button type="button" data-cmd="h2" title="Heading 2">H2</button>
+          <button type="button" data-cmd="h3" title="Heading 3">H3</button>
+          <button type="button" data-cmd="bold" title="Bold"><b>B</b></button>
+          <button type="button" data-cmd="italic" title="Italic"><i>I</i></button>
+          <button type="button" data-cmd="ul" title="Bullet list">• List</button>
+          <button type="button" data-cmd="ol" title="Numbered list">1. List</button>
+          <button type="button" data-cmd="quote" title="Quote">&ldquo; &rdquo;</button>
+          <button type="button" data-cmd="link" title="Add link">Link</button>
+          <button type="button" data-cmd="unlink" title="Remove link">Unlink</button>
+        </div>
+        <div id="editor" class="editor" contenteditable="true" aria-label="Article body"></div>
+        <p class="note">Formatting allowed: headings, paragraphs, bold, italic, lists, links, quotes. Anything else is removed when the article is saved.</p>
+
+        <div class="row">
+          <div>
+            <label for="f-image">Lead image URL (optional)</label>
+            <input id="f-image" type="url" placeholder="https://…" autocomplete="off">
+            <p class="hint">Optional. Use a full https:// image URL. (File upload is a later enhancement — see ADMIN.md.)</p>
+          </div>
+          <div>
+            <label for="f-image-alt">Image alt text</label>
+            <input id="f-image-alt" type="text" maxlength="200" autocomplete="off">
+            <p class="hint">Required if an image URL is set.</p>
+          </div>
+        </div>
+
+        <div id="review-wrap" class="hidden" style="margin-top:16px;">
+          <label style="display:flex;gap:9px;align-items:flex-start;font-weight:500;color:var(--ink);font-size:13px;">
+            <input id="f-review" type="checkbox" style="width:auto;margin-top:3px;">
+            Record this update as an editorial review today (Guides only — sets “Last reviewed”).
+          </label>
+        </div>
+
+        <div class="confirm-row">
+          <input id="f-confirm" type="checkbox">
+          <label for="f-confirm">I confirm this article has completed ARIE’s internal review and is approved for publication.</label>
+        </div>
+
+        <div class="btns">
+          <button id="btn-preview" class="secondary" type="button">Preview</button>
+          <button id="btn-publish" type="button" disabled>Publish article</button>
+          <button id="btn-cancel" class="secondary" type="button">Cancel</button>
+        </div>
+        <div class="toast" id="editor-toast" role="status" aria-live="polite"></div>
+
+        <div id="post-actions" class="hidden" style="margin-top:16px;padding-top:16px;border-top:1px solid var(--line);">
+          <p class="sub" style="margin-bottom:10px;">Published.</p>
+          <div class="btns" style="margin-top:0;">
+            <a id="act-view" class="secondary" style="padding:10px 16px;border-radius:6px;text-decoration:none;display:inline-block;" target="_blank" rel="noopener">View article</a>
+            <a id="act-email" class="secondary" style="padding:10px 16px;border-radius:6px;text-decoration:none;display:inline-block;" target="_blank" rel="noopener">Prepare email</a>
+            <button id="act-copy" class="secondary" type="button">Copy article link</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Preview modal -->
+  <div id="preview-modal" class="modal hidden">
+    <div class="inner">
+      <div class="mh"><strong style="font-size:13px;">Preview</strong><button id="preview-close" class="secondary" type="button">Close</button></div>
+      <iframe id="preview-frame" title="Article preview"></iframe>
+    </div>
+  </div>
+
+<script>
+(function(){
+  var $=function(s){return document.querySelector(s);};
+  var API='/api/insights';
+  var state={mode:'create',slug:'',published:null};
+
+  function show(view){
+    ['view-login','view-list','view-editor'].forEach(function(v){ $('#'+v).classList.toggle('hidden', v!==view); });
+    $('#logout').classList.toggle('hidden', view==='view-login');
+  }
+  function toast(el,msg,isErr){ el.textContent=msg||''; el.className='toast'+(isErr?' err':''); }
+  function esc(s){return String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');}
+  function slugify(s){return String(s||'').toLowerCase().trim().replace(/['’"]/g,'').replace(/[^a-z0-9]+/g,'-').replace(/^-+|-+$/g,'').slice(0,80);}
+  function fmtDate(iso){ if(!/^\d{4}-\d{2}-\d{2}$/.test(iso||''))return ''; var M=['January','February','March','April','May','June','July','August','September','October','November','December']; var p=iso.split('-'); return (+p[2])+' '+M[(+p[1])-1]+' '+p[0]; }
+
+  var ERR={invalid_password:'Incorrect password.',too_many_attempts:'Too many attempts. Wait a few minutes and try again.',
+    unauthenticated:'Your session has expired. Please sign in again.',forbidden_origin:'Request blocked. Reload the Publisher and try again.',
+    unconfigured:'The Publisher is not configured yet. Contact the site administrator.',bad_title:'Enter an article title.',
+    bad_category:'Choose a category.',bad_summary:'Enter a summary (up to 400 characters).',empty_body:'Add article content.',
+    confirm_required:'Confirm that the article has completed internal review.',bad_slug:'The slug is invalid. Use letters, numbers and dashes.',
+    slug_exists:'An article with that slug already exists.',bad_image:'The image URL must be a full https:// link.',
+    image_alt_required:'Add alt text for the image.',conflict:'The website changed while you were editing. Reload the Publisher and try again.',
+    not_found:'That article could not be found.',too_large:'The article is too large.',server_error:'Publishing failed. No website changes were made.'};
+  function msg(code){return ERR[code]||'Something went wrong. Please try again.';}
+
+  async function api(path,opts){
+    opts=opts||{};
+    var r=await fetch(API+path,{method:opts.method||'GET',credentials:'same-origin',
+      headers:opts.body?{'Content-Type':'application/json'}:undefined,
+      body:opts.body?JSON.stringify(opts.body):undefined});
+    var j=null; try{j=await r.json();}catch(e){}
+    return {ok:r.ok,status:r.status,json:j||{}};
+  }
+
+  // ---------- auth ----------
+  async function boot(){
+    var r=await api('/session');
+    if(r.json && r.json.authenticated){ enterApp(); }
+    else { show('view-login'); $('#pw').focus(); }
+  }
+  $('#login-form').addEventListener('submit',async function(e){
+    e.preventDefault(); toast($('#login-toast'),'');
+    var r=await api('/login',{method:'POST',body:{password:$('#pw').value}});
+    if(r.ok && r.json.ok){ $('#pw').value=''; enterApp(); }
+    else toast($('#login-toast'),msg(r.json.error),true);
+  });
+  $('#logout').addEventListener('click',async function(){ await api('/logout',{method:'POST'}); show('view-login'); $('#pw').focus(); });
+
+  function enterApp(){ show('view-list'); loadList(); }
+
+  // ---------- list ----------
+  async function loadList(){
+    toast($('#list-toast'),'');
+    var r=await api('/articles');
+    if(r.status===401){ show('view-login'); return; }
+    if(!r.ok){ toast($('#list-toast'),msg(r.json.error),true); return; }
+    var arts=r.json.articles||[];
+    if(!arts.length){ $('#list-body').innerHTML='<p class="sub" style="margin:0;">No articles yet. Click “New article” to publish the first one.</p>'; return; }
+    var rows=arts.map(function(a){
+      return '<tr><td><span class="pill">'+esc(a.category)+'</span><br><strong>'+esc(a.title)+'</strong></td>'+
+        '<td>'+esc(fmtDate(a.published))+(a.lastReviewed?'<br><span class="hint">Reviewed '+esc(fmtDate(a.lastReviewed))+'</span>':'')+'</td>'+
+        '<td><div class="acts">'+
+          '<button class="secondary" data-edit="'+esc(a.slug)+'" type="button">Edit</button>'+
+          '<a class="secondary" href="/insights/'+esc(a.slug)+'/" target="_blank" rel="noopener" style="border:1px solid var(--navy);color:var(--navy);">View</a>'+
+          '<button class="danger" data-unpub="'+esc(a.slug)+'" type="button">Unpublish</button>'+
+        '</div></td></tr>';
+    }).join('');
+    $('#list-body').innerHTML='<table><thead><tr><th>Article</th><th>Published</th><th>Actions</th></tr></thead><tbody>'+rows+'</tbody></table>';
+    $('#list-body').querySelectorAll('[data-edit]').forEach(function(b){ b.addEventListener('click',function(){ openEditor(b.getAttribute('data-edit')); }); });
+    $('#list-body').querySelectorAll('[data-unpub]').forEach(function(b){ b.addEventListener('click',function(){ unpublish(b.getAttribute('data-unpub')); }); });
+  }
+
+  async function unpublish(slug){
+    if(!confirm('Remove this article from the public ARIE website?')) return;
+    var r=await api('/publish',{method:'POST',body:{action:'unpublish',slug:slug}});
+    if(r.ok && r.json.ok){ toast($('#list-toast'),'Article unpublished.'); loadList(); }
+    else if(r.status===401){ show('view-login'); }
+    else toast($('#list-toast'),msg(r.json.error),true);
+  }
+
+  // ---------- editor ----------
+  var slugEdited=false;
+  $('#f-title').addEventListener('input',function(){
+    if(state.mode==='create' && !slugEdited){ $('#f-slug').value=slugify($('#f-title').value); }
+    gate();
+  });
+  $('#f-slug').addEventListener('input',function(){ slugEdited=true; $('#f-slug').value=slugify($('#f-slug').value); });
+  $('#f-summary').addEventListener('input',gate);
+  $('#f-confirm').addEventListener('change',gate);
+  $('#editor').addEventListener('input',gate);
+  $('#f-category').addEventListener('change',function(){ $('#review-wrap').classList.toggle('hidden', !($('#f-category').value==='Guides' && state.mode==='edit')); });
+
+  function gate(){ $('#btn-publish').disabled = !$('#f-confirm').checked; }
+
+  function newArticle(){
+    state={mode:'create',slug:'',published:null}; slugEdited=false;
+    $('#editor-title').textContent='New article';
+    $('#editor-sub').textContent='Write the article, preview it, confirm internal approval, then publish.';
+    $('#f-title').value='';$('#f-category').value='Guides';$('#f-slug').value='';$('#f-slug').disabled=false;
+    $('#f-summary').value='';$('#editor').innerHTML='<p></p>';$('#f-image').value='';$('#f-image-alt').value='';
+    $('#f-confirm').checked=false;$('#review-wrap').classList.add('hidden');$('#f-review').checked=false;
+    $('#post-actions').classList.add('hidden');$('#btn-publish').textContent='Publish article';
+    $('#slug-hint').textContent='Auto-generated from the title. Editable before first publish.';
+    toast($('#editor-toast'),''); gate(); show('view-editor'); $('#f-title').focus();
+  }
+  $('#new-article').addEventListener('click',newArticle);
+  $('#btn-cancel').addEventListener('click',function(){ show('view-list'); loadList(); });
+
+  async function openEditor(slug){
+    var r=await api('/articles?slug='+encodeURIComponent(slug));
+    if(r.status===401){ show('view-login'); return; }
+    if(!r.ok || !r.json.meta){ toast($('#list-toast'),msg(r.json.error),true); return; }
+    var m=r.json.meta;
+    state={mode:'edit',slug:m.slug,published:m.published}; slugEdited=false;
+    $('#editor-title').textContent='Edit article';
+    $('#editor-sub').textContent='Editing does not change the live article until you click Update.';
+    $('#f-title').value=m.title||'';$('#f-category').value=m.category||'Guides';
+    $('#f-slug').value=m.slug||'';$('#f-slug').disabled=false;
+    $('#slug-hint').textContent='Changing the slug changes the article URL.';
+    $('#f-summary').value=m.summary||'';$('#editor').innerHTML=r.json.body||'<p></p>';
+    $('#f-image').value=m.image||'';$('#f-image-alt').value=m.imageAlt||'';
+    $('#f-confirm').checked=false;
+    $('#review-wrap').classList.toggle('hidden', m.category!=='Guides'); $('#f-review').checked=false;
+    $('#post-actions').classList.add('hidden');$('#btn-publish').textContent='Update article';
+    toast($('#editor-toast'),''); gate(); show('view-editor'); $('#f-title').focus();
+  }
+
+  // toolbar
+  document.querySelectorAll('.tb [data-cmd]').forEach(function(b){
+    b.addEventListener('mousedown',function(e){ e.preventDefault(); });
+    b.addEventListener('click',function(){
+      var c=b.getAttribute('data-cmd'); $('#editor').focus();
+      if(c==='p') document.execCommand('formatBlock',false,'P');
+      else if(c==='h2') document.execCommand('formatBlock',false,'H2');
+      else if(c==='h3') document.execCommand('formatBlock',false,'H3');
+      else if(c==='quote') document.execCommand('formatBlock',false,'BLOCKQUOTE');
+      else if(c==='bold') document.execCommand('bold');
+      else if(c==='italic') document.execCommand('italic');
+      else if(c==='ul') document.execCommand('insertUnorderedList');
+      else if(c==='ol') document.execCommand('insertOrderedList');
+      else if(c==='unlink') document.execCommand('unlink');
+      else if(c==='link'){ var u=prompt('Link URL (https://…):',''); if(u){ if(!/^https?:\/\//i.test(u)&&!/^mailto:/i.test(u)) u='https://'+u; document.execCommand('createLink',false,u);} }
+      gate();
+    });
+  });
+
+  function collect(){
+    return {title:$('#f-title').value.trim(),category:$('#f-category').value,
+      summary:$('#f-summary').value.trim(),slug:slugify($('#f-slug').value),
+      body:$('#editor').innerHTML,image:$('#f-image').value.trim(),imageAlt:$('#f-image-alt').value.trim()};
+  }
+
+  // preview — render with the real stylesheet
+  $('#btn-preview').addEventListener('click',function(){
+    var d=collect();
+    var reviewed = (d.category==='Guides' && state.mode==='edit' && $('#f-review').checked && state.published && state.published < new Date().toISOString().slice(0,10));
+    var pub = state.published || new Date().toISOString().slice(0,10);
+    var fig = d.image? '<figure class="ins-article__figure"><img src="'+esc(d.image)+'" alt="'+esc(d.imageAlt||d.title)+'"></figure>':'';
+    var rev = reviewed? '<div class="ins-article__reviewed">Last reviewed '+esc(fmtDate(new Date().toISOString().slice(0,10)))+'</div>':'';
+    var html='<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">'+
+      '<link href="https://fonts.googleapis.com/css2?family=Hanken+Grotesk:wght@400;500;600;700&family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,500;1,6..72,400&display=swap" rel="stylesheet">'+
+      '<link rel="stylesheet" href="/insights/insights.css"></head><body><div class="page">'+
+      '<article class="ins-article"><span class="ins-cat ins-article__cat">'+esc(d.category)+'</span>'+
+      '<h1>'+esc(d.title||'Untitled')+'</h1><p class="ins-article__summary">'+esc(d.summary)+'</p>'+
+      '<div class="ins-article__meta'+(reviewed?' ins-article__meta--tight':'')+'">Published '+esc(fmtDate(pub))+'</div>'+rev+fig+
+      '<div class="article-body">'+d.body+'</div>'+
+      '<div class="ins-disclaimer"><p class="ins-disclaimer__label">Information Disclaimer</p><p class="ins-disclaimer__text">This material is provided for general information only and does not constitute financial, investment, legal or tax advice. ARIE Finance Ltd does not provide foreign exchange brokerage services. Readers should seek appropriate professional advice before taking any action based on information contained in these articles.</p></div>'+
+      '<div class="ins-cta"><p>Discuss your international payment requirements</p><a href="#">Speak to ARIE Finance</a></div>'+
+      '<div class="ins-back"><a href="#">&larr; Back to Insights</a></div></article></div></body></html>';
+    $('#preview-frame').srcdoc=html; $('#preview-modal').classList.remove('hidden');
+  });
+  $('#preview-close').addEventListener('click',function(){ $('#preview-modal').classList.add('hidden'); });
+
+  // publish / update
+  $('#btn-publish').addEventListener('click',async function(){
+    var d=collect();
+    if(!d.title){ return toast($('#editor-toast'),msg('bad_title'),true); }
+    if(!d.summary){ return toast($('#editor-toast'),msg('bad_summary'),true); }
+    if(d.image && !d.imageAlt){ return toast($('#editor-toast'),msg('image_alt_required'),true); }
+    var payload;
+    if(state.mode==='create'){
+      payload={action:'create',title:d.title,category:d.category,summary:d.summary,slug:d.slug,body:d.body,image:d.image,imageAlt:d.imageAlt,confirm:$('#f-confirm').checked};
+    } else {
+      payload={action:'update',slug:state.slug,newSlug:d.slug,title:d.title,category:d.category,summary:d.summary,body:d.body,image:d.image,imageAlt:d.imageAlt,confirm:$('#f-confirm').checked,recordReview:$('#f-review').checked};
+    }
+    $('#btn-publish').disabled=true; toast($('#editor-toast'),'Publishing…');
+    var r=await api('/publish',{method:'POST',body:payload});
+    $('#btn-publish').disabled=!$('#f-confirm').checked;
+    if(r.ok && r.json.ok){
+      toast($('#editor-toast'), state.mode==='create'?'Article published.':'Article updated.');
+      var url=r.json.url;
+      $('#act-view').href=url;
+      $('#act-email').href='/insights/_email-helper.html?title='+encodeURIComponent(d.title)+'&summary='+encodeURIComponent(d.summary)+'&url='+encodeURIComponent(url);
+      $('#act-copy').onclick=function(){ navigator.clipboard && navigator.clipboard.writeText(url); toast($('#editor-toast'),'Link copied.'); };
+      $('#post-actions').classList.remove('hidden');
+      state.mode='edit'; state.slug=r.json.slug;
+    } else if(r.status===401){ show('view-login'); }
+    else toast($('#editor-toast'),msg(r.json.error),true);
+  });
+
+  // show branch tag (non-secret, informational)
+  boot();
+})();
+</script>
+</body>
+</html>

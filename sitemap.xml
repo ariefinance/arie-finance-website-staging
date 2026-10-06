@@ -10,11 +10,8 @@
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
-  <!-- Add one <url> per published article, e.g.
-  <url>
-    <loc>https://www.ariefinance.com/insights/article-slug/</loc>
-    <changefreq>monthly</changefreq>
-    <priority>0.6</priority>
-  </url>
-  Do NOT add /insights/_template/ or any unpublished/draft page. -->
+  <!-- Article URLs below are maintained automatically by the Publisher
+       (/insights/admin/). Do not hand-edit between the markers. -->
+  <!-- ARIE_INSIGHTS_SITEMAP_START -->
+<!-- ARIE_INSIGHTS_SITEMAP_END -->
 </urlset>

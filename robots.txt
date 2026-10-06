@@ -7,5 +7,6 @@ Disallow: /salestracker/
 Disallow: /logout/
 Disallow: /insights/_template/
 Disallow: /insights/_email-template.html
+Disallow: /insights/_email-helper.html
 
 Sitemap: https://www.ariefinance.com/sitemap.xml

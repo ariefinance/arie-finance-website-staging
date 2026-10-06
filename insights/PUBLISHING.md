@@ -159,10 +159,29 @@ entry from `insights/index.html`, the homepage block and `sitemap.xml`, then com
 
 ---
 
-## Sharing by email (future "Copy Formatted Email")
+## Sharing a published article by email
 
-`_email-template.html` is the approved email layout. For now a relationship manager
-can open it, replace `{{TITLE}}`, `{{SUMMARY}}` and `{{ARTICLE_URL}}`, copy the
-rendered email, paste into Outlook/Gmail, add a personal note and send. Subject line:
-`ARIE Insights: <title>`. A one-click "Copy Formatted Email" button can be added
-later; the template is already structured for it. No email platform is involved.
+Use the internal **Email Helper** — no HTML editing required. It is an operational
+tool only: `noindex`, never linked from the public site, and not in the sitemap.
+
+After an article is **published and live**:
+
+1. Open `insights/_email-helper.html` (internal use; on the deployed site it is at
+   `/insights/_email-helper.html`).
+2. Enter / paste:
+   - the article **title**
+   - the article **summary** (2–3 sentences)
+   - the **live article URL** (the full published `https://…` link — not a draft/preview)
+3. Click:
+   - **Copy Subject**  → `ARIE Insights: <title>`
+   - **Copy Formatted Email**  → places the rich email (HTML + plain-text fallback) on the clipboard
+   - **Copy Article Link**  → the article URL
+4. Paste into **Outlook** or **Gmail** — you will see a formatted email, not code.
+5. Add your personal relationship-manager introduction / signature.
+6. Send through ARIE’s approved email process.
+
+No sending, SMTP, mailing lists, newsletter or analytics are involved — everything
+happens in the browser.
+
+`_email-template.html` remains as the underlying reference layout for the helper;
+relationship managers do not need to touch it.

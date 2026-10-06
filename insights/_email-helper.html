@@ -1,0 +1,214 @@
+<!doctype html>
+<html lang="en">
+<!-- =====================================================================
+     ARIE INSIGHTS — EMAIL HELPER  (INTERNAL OPERATIONAL TOOL)
+
+     Not a public page. noindex/nofollow + no-store, never linked from the
+     site or sitemap. Lets a relationship manager prepare the share email for
+     a PUBLISHED article without editing any HTML:
+
+       1. Paste the article title, summary and live URL.
+       2. Copy Subject / Copy Formatted Email / Copy Article Link.
+       3. Paste into Outlook or Gmail, add a personal note, send.
+
+     No sending, SMTP, lists, newsletter, database or analytics. All in the
+     browser. The underlying layout mirrors insights/_email-template.html.
+     ===================================================================== -->
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<title>ARIE Insights — Email Helper (internal)</title>
+<link rel="icon" type="image/png" href="/favicon.png">
+<style>
+  :root{--navy:#06113A;--ink:#16151F;--slate:#3A4256;--meta:#6B6456;--line:#E8E4DA;--wash:#F6F1E6;--gold:#C99B3F;}
+  *{margin:0;padding:0;box-sizing:border-box;}
+  body{font-family:system-ui,-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;color:var(--ink);background:#F4F3EF;line-height:1.55;}
+  .bar{background:var(--navy);color:#fff;padding:14px 24px;}
+  .bar strong{font-size:14px;font-weight:600;letter-spacing:.3px;}
+  .bar span{display:block;font-size:12px;color:#AEB3C0;margin-top:2px;}
+  .wrap{max-width:1040px;margin:0 auto;padding:24px;display:grid;grid-template-columns:minmax(300px,1fr) minmax(320px,640px);gap:24px;align-items:start;}
+  @media(max-width:860px){.wrap{grid-template-columns:1fr;}}
+  .card{background:#fff;border:1px solid var(--line);border-radius:8px;padding:20px;}
+  .card h2{font-size:13px;font-weight:600;letter-spacing:1.2px;text-transform:uppercase;color:var(--meta);margin-bottom:14px;}
+  label{display:block;font-size:12px;font-weight:600;color:var(--slate);margin:14px 0 6px;}
+  label:first-of-type{margin-top:0;}
+  input,textarea{width:100%;font:inherit;font-size:14px;color:var(--ink);border:1px solid var(--line);border-radius:6px;padding:9px 11px;background:#fff;}
+  input:focus,textarea:focus{outline:2px solid var(--navy);outline-offset:1px;border-color:var(--navy);}
+  textarea{min-height:84px;resize:vertical;}
+  .hint{font-size:11px;color:var(--meta);margin-top:5px;}
+  .btns{display:flex;flex-wrap:wrap;gap:10px;margin-top:20px;}
+  button{font:inherit;font-size:13px;font-weight:600;color:#fff;background:var(--navy);border:0;border-radius:6px;padding:10px 16px;cursor:pointer;}
+  button.secondary{background:#fff;color:var(--navy);border:1px solid var(--navy);}
+  button:hover{opacity:.92;}
+  button:focus-visible{outline:2px solid var(--gold);outline-offset:2px;}
+  button:disabled{opacity:.45;cursor:not-allowed;}
+  .toast{min-height:20px;margin-top:12px;font-size:13px;color:#0B6B3A;font-weight:600;}
+  .toast.err{color:#B4231F;}
+  .subject-line{margin-top:16px;padding:10px 12px;background:#FAFAF8;border:1px dashed var(--line);border-radius:6px;font-size:13px;color:var(--slate);word-break:break-word;}
+  .preview-head{display:flex;align-items:baseline;justify-content:space-between;margin-bottom:10px;}
+  .preview-head span{font-size:11px;color:var(--meta);}
+  iframe{width:100%;height:560px;border:1px solid var(--line);border-radius:8px;background:#f4f3ef;}
+  .note{font-size:11px;color:var(--meta);margin-top:10px;line-height:1.6;}
+</style>
+</head>
+<body>
+  <div class="bar"><strong>ARIE Insights — Email Helper</strong><span>Internal tool · not a public page · use only for published articles</span></div>
+
+  <div class="wrap">
+    <!-- Inputs -->
+    <div class="card">
+      <h2>Article details</h2>
+      <label for="f-title">Article title</label>
+      <input id="f-title" type="text" placeholder="e.g. Understanding SWIFT Payments" autocomplete="off">
+
+      <label for="f-summary">Summary (2–3 sentences)</label>
+      <textarea id="f-summary" placeholder="The short summary shown on the article."></textarea>
+
+      <label for="f-url">Live article URL</label>
+      <input id="f-url" type="url" placeholder="https://www.ariefinance.com/insights/article-slug/" autocomplete="off">
+      <p class="hint">Must be the full, published https:// URL — not a draft or preview link.</p>
+
+      <label for="f-logo">Logo image URL (optional)</label>
+      <input id="f-logo" type="url" placeholder="Leave blank to use the ARIE FINANCE text wordmark" autocomplete="off">
+      <p class="hint">Optional hosted PNG logo. If blank, an email-safe text wordmark is used.</p>
+
+      <div class="subject-line" id="subject-out">Subject: <span id="subject-text">ARIE Insights: …</span></div>
+
+      <div class="btns">
+        <button type="button" id="b-subject" class="secondary">Copy Subject</button>
+        <button type="button" id="b-email">Copy Formatted Email</button>
+        <button type="button" id="b-link" class="secondary">Copy Article Link</button>
+      </div>
+      <div class="toast" id="toast" role="status" aria-live="polite"></div>
+      <p class="note">Copy Formatted Email places a rich email (HTML + plain-text fallback) on your clipboard. Paste into Outlook desktop, Outlook Web or Gmail — you will see a formatted email, not code — then add your personal note and send through ARIE’s approved process.</p>
+    </div>
+
+    <!-- Live preview -->
+    <div class="card">
+      <div class="preview-head"><h2 style="margin:0;">Preview</h2><span>updates as you type</span></div>
+      <iframe id="preview" title="Email preview" sandbox=""></iframe>
+    </div>
+  </div>
+
+  <!-- hidden element used for the rich-copy fallback -->
+  <div id="rich-fallback" contenteditable="true" aria-hidden="true" style="position:fixed;left:-9999px;top:0;white-space:normal;"></div>
+
+<script>
+(function(){
+  var $ = function(id){ return document.getElementById(id); };
+  var title=$('f-title'), summary=$('f-summary'), url=$('f-url'), logo=$('f-logo');
+  var toast=$('toast'), subjectText=$('subject-text'), preview=$('preview');
+
+  function esc(s){ return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+  function val(el){ return (el.value||'').trim(); }
+
+  function subject(){ return 'ARIE Insights: ' + (val(title) || '…'); }
+
+  function emailHTML(){
+    var t = esc(val(title) || 'Article title');
+    var s = esc(val(summary) || 'A short two to three sentence summary of the article.');
+    var u = val(url) || 'https://www.ariefinance.com/insights/';
+    var uAttr = esc(u);
+    var logoUrl = val(logo);
+    var ident = logoUrl
+      ? '<img src="'+esc(logoUrl)+'" alt="ARIE Finance" width="120" style="display:block;margin:0 auto;border:0;height:auto;">'
+      : '<div style="font-family:\'Hanken Grotesk\',Arial,Helvetica,sans-serif;font-size:20px;font-weight:700;letter-spacing:3px;color:#06113A;">ARIE&nbsp;FINANCE</div>';
+    return '' +
+'<table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="background:#f4f3ef;">' +
+'<tr><td align="center" style="padding:24px 12px;">' +
+'<table role="presentation" width="600" cellpadding="0" cellspacing="0" border="0" style="width:600px;max-width:100%;background:#ffffff;border-radius:8px;overflow:hidden;">' +
+'<tr><td align="center" style="padding:28px 32px 0;">' + ident +
+'<div style="width:40px;height:1px;line-height:1px;font-size:0;background:#C99B3F;margin:18px auto 0;">&nbsp;</div>' +
+'</td></tr>' +
+'<tr><td style="padding:28px 32px 28px;">' +
+'<h1 style="margin:0 0 14px;font-family:\'Newsreader\',Georgia,\'Times New Roman\',serif;font-size:24px;font-weight:400;line-height:1.3;color:#06113A;">'+t+'</h1>' +
+'<p style="margin:0 0 24px;font-family:\'Hanken Grotesk\',Arial,Helvetica,sans-serif;font-size:15px;line-height:1.65;color:#3A4256;">'+s+'</p>' +
+'<table role="presentation" cellpadding="0" cellspacing="0" border="0" align="center" style="margin:0 auto;"><tr>' +
+'<td align="center" bgcolor="#06113A" style="border-radius:4px;">' +
+'<a href="'+uAttr+'" style="display:inline-block;font-family:\'Hanken Grotesk\',Arial,Helvetica,sans-serif;font-size:14px;font-weight:600;color:#ffffff;text-decoration:none;padding:12px 32px;border-radius:4px;">Read the Full Article</a>' +
+'</td></tr></table>' +
+'</td></tr>' +
+'<tr><td style="padding:20px 32px;background:#FAFAF8;border-top:1px solid #E8E4DA;">' +
+'<p style="margin:0 0 6px;font-family:\'Hanken Grotesk\',Arial,Helvetica,sans-serif;font-size:11px;line-height:1.7;color:#6B6456;text-align:center;">ARIE Finance Ltd is a licensed Payment Intermediary Services company regulated by the Financial Services Commission of Mauritius. Licence No. GB25205028. ARIE Finance Ltd is not a bank. Client funds are held in safeguarded accounts and are not covered by any deposit guarantee scheme.</p>' +
+'<p style="margin:0 0 8px;font-family:\'Hanken Grotesk\',Arial,Helvetica,sans-serif;font-size:11px;line-height:1.7;color:#6B6456;text-align:center;">This email is for general information only and does not constitute financial advice.</p>' +
+'<p style="margin:0;font-family:\'Hanken Grotesk\',Arial,Helvetica,sans-serif;font-size:11px;line-height:1.7;color:#6B6456;text-align:center;">' +
+'<a href="https://www.ariefinance.com/" style="color:#6B6456;text-decoration:none;">ariefinance.com</a>&nbsp;&middot;&nbsp;' +
+'<a href="mailto:customercare@ariefinance.com" style="color:#6B6456;text-decoration:none;">customercare@ariefinance.com</a>' +
+'</p></td></tr>' +
+'</table></td></tr></table>';
+  }
+
+  function emailPlain(){
+    var t = val(title) || 'Article title';
+    var s = val(summary) || 'A short summary of the article.';
+    var u = val(url) || 'https://www.ariefinance.com/insights/';
+    return t + '\n\n' + s + '\n\nRead the full article: ' + u + '\n\n' +
+      '—\nARIE Finance Ltd is a licensed Payment Intermediary Services company regulated by the Financial Services Commission of Mauritius. Licence No. GB25205028. ARIE Finance Ltd is not a bank. Client funds are held in safeguarded accounts and are not covered by any deposit guarantee scheme. This email is for general information only and does not constitute financial advice.\n' +
+      'ariefinance.com · customercare@ariefinance.com';
+  }
+
+  function render(){
+    subjectText.textContent = subject().replace(/^ARIE Insights: /,'ARIE Insights: ');
+    preview.srcdoc = '<!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"></head><body style="margin:0;">' + emailHTML() + '</body></html>';
+  }
+
+  function showToast(msg, isErr){
+    toast.textContent = msg; toast.className = 'toast' + (isErr ? ' err' : '');
+    if(!isErr){ clearTimeout(showToast._t); showToast._t = setTimeout(function(){ toast.textContent=''; }, 4000); }
+  }
+
+  function copyText(text, okMsg){
+    if(navigator.clipboard && navigator.clipboard.writeText){
+      navigator.clipboard.writeText(text).then(function(){ showToast(okMsg); }, function(){ legacyText(text, okMsg); });
+    } else { legacyText(text, okMsg); }
+  }
+  function legacyText(text, okMsg){
+    try{
+      var ta=document.createElement('textarea'); ta.value=text;
+      ta.style.position='fixed'; ta.style.left='-9999px'; document.body.appendChild(ta);
+      ta.select(); var ok=document.execCommand('copy'); document.body.removeChild(ta);
+      showToast(ok ? okMsg : 'Copy failed — please copy manually.', !ok);
+    }catch(e){ showToast('Copy failed — please copy manually.', true); }
+  }
+
+  function copyRich(html, plain, okMsg){
+    if(window.ClipboardItem && navigator.clipboard && navigator.clipboard.write){
+      var item = new ClipboardItem({
+        'text/html': new Blob([html], {type:'text/html'}),
+        'text/plain': new Blob([plain], {type:'text/plain'})
+      });
+      navigator.clipboard.write([item]).then(function(){ showToast(okMsg); }, function(){ legacyRich(html, plain, okMsg); });
+    } else { legacyRich(html, plain, okMsg); }
+  }
+  function legacyRich(html, plain, okMsg){
+    try{
+      var holder=$('rich-fallback'); holder.innerHTML=html;
+      var range=document.createRange(); range.selectNodeContents(holder);
+      var sel=window.getSelection(); sel.removeAllRanges(); sel.addRange(range);
+      var ok=document.execCommand('copy'); sel.removeAllRanges(); holder.innerHTML='';
+      showToast(ok ? okMsg : 'Rich copy unsupported — the plain text was not copied either. Use the preview.', !ok);
+    }catch(e){ showToast('Rich copy unsupported in this browser.', true); }
+  }
+
+  $('b-subject').addEventListener('click', function(){
+    if(!val(title)){ showToast('Enter the article title first.', true); return; }
+    copyText(subject(), 'Subject copied.');
+  });
+  $('b-link').addEventListener('click', function(){
+    if(!val(url)){ showToast('Enter the live article URL first.', true); return; }
+    copyText(val(url), 'Article link copied.');
+  });
+  $('b-email').addEventListener('click', function(){
+    if(!val(title) || !val(summary) || !val(url)){ showToast('Enter title, summary and URL first.', true); return; }
+    copyRich(emailHTML(), emailPlain(), 'Formatted email copied — paste into Outlook or Gmail.');
+  });
+
+  ['input','change'].forEach(function(ev){
+    [title,summary,url,logo].forEach(function(el){ el.addEventListener(ev, render); });
+  });
+  render();
+})();
+</script>
+</body>
+</html>

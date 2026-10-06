@@ -8,7 +8,7 @@
   },
   "dependencies": {
     "nodemailer": "^9.0.3",
-    "sanitize-html": "^2.18.0",
+    "sanitize-html": "2.17.0",
     "saxes": "^6.0.0",
     "yauzl": "^3.4.0"
   }

@@ -1,0 +1,249 @@
+/* ============================================================
+   ARIE Insights — shared stylesheet
+   Single source of truth for the Insights listing and all article
+   pages. Edit styling here once; every article inherits it.
+   Design reproduced from the approved ARIE Insights visual spec.
+   ============================================================ */
+
+:root {
+  --navy:   #06113A;   /* primary / headings / buttons            */
+  --ink:    #16151F;   /* article body copy                       */
+  --slate:  #3A4256;   /* summaries / supporting text             */
+  --meta:   #6B6456;   /* dates, meta, disclaimer (warm grey)     */
+  --label:  #6B5D30;   /* category / eyebrow labels (dark gold)   */
+  --subink: #454E66;   /* BoM sub-line                            */
+  --line:   #E8E4DA;   /* hairline rules                          */
+  --bom:    #F9F6EF;   /* market-data strip background            */
+  --wash:   #F6F1E6;   /* blockquote + CTA background             */
+  --gold:   #C99B3F;   /* decorative accents only (never body)    */
+  --serif:  'Newsreader', Georgia, 'Times New Roman', serif;
+  --sans:   'Hanken Grotesk', system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+}
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+html { -webkit-text-size-adjust: 100%; }
+body {
+  font-family: var(--sans);
+  color: var(--ink);
+  background: #fff;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+  line-height: 1.6;
+}
+img { display: block; max-width: 100%; }
+
+a { color: var(--navy); }
+a:focus-visible,
+button:focus-visible { outline: 2px solid var(--navy); outline-offset: 2px; border-radius: 3px; }
+
+.page { min-height: 100vh; display: flex; flex-direction: column; }
+.wrap { max-width: 680px; margin: 0 auto; }
+
+/* ---------- Header ---------- */
+.ins-header {
+  background: #fff;
+  border-bottom: 1px solid var(--line);
+  position: sticky; top: 0; z-index: 100;
+}
+.ins-header__inner {
+  max-width: 1080px; margin: 0 auto; padding: 0 32px;
+  display: flex; align-items: center; justify-content: space-between;
+  height: 60px;
+}
+.ins-header__logo { display: block; line-height: 0; }
+.ins-header__logo img { height: 28px; width: auto; display: block; }
+.ins-header__contact {
+  font-family: var(--sans); font-size: 13px; font-weight: 600;
+  color: #fff; background: var(--navy);
+  padding: 8px 20px; border-radius: 4px;
+  text-decoration: none; letter-spacing: 0.3px; white-space: nowrap;
+}
+.ins-header__contact:hover { background: #0b1748; }
+
+/* ---------- Title block ---------- */
+.ins-title { padding: 48px 32px 36px; border-bottom: 1px solid var(--line); }
+.ins-title h1 {
+  font-family: var(--serif); font-size: 38px; font-weight: 400;
+  color: var(--navy); margin-bottom: 12px; line-height: 1.2;
+}
+.ins-title p { font-size: 16px; color: var(--slate); line-height: 1.65; }
+
+/* ---------- Bank of Mauritius market-data strip ---------- */
+.ins-bom { border-bottom: 1px solid var(--line); background: var(--bom); }
+.ins-bom__inner {
+  max-width: 680px; margin: 0 auto; padding: 20px 32px;
+  display: flex; align-items: center; justify-content: space-between;
+  flex-wrap: wrap; gap: 12px;
+}
+.ins-bom__eyebrow {
+  font-size: 10px; font-weight: 600; letter-spacing: 2px;
+  text-transform: uppercase; color: var(--label);
+  display: block; margin-bottom: 4px;
+}
+.ins-bom__title { font-size: 14px; color: var(--navy); font-weight: 500; }
+.ins-bom__sub { display: block; font-size: 13px; color: var(--subink); margin-top: 2px; }
+.ins-bom__link {
+  font-size: 13px; font-weight: 600; color: var(--navy);
+  text-decoration: none; white-space: nowrap;
+}
+.ins-bom__link:hover { text-decoration: underline; }
+
+/* ---------- Shared label / eyebrow ---------- */
+.ins-eyebrow {
+  font-size: 10px; font-weight: 600; letter-spacing: 2px;
+  text-transform: uppercase; color: var(--meta);
+  display: block; margin-bottom: 16px;
+}
+.ins-cat {
+  font-size: 11px; font-weight: 600; letter-spacing: 1.5px;
+  text-transform: uppercase; color: var(--label);
+  display: block;
+}
+
+/* ---------- Latest insight ---------- */
+.ins-latest { border-bottom: 1px solid var(--line); }
+.ins-latest__inner { max-width: 680px; margin: 0 auto; padding: 32px; }
+.ins-latest__card { display: block; text-decoration: none; }
+.ins-latest__card .ins-cat { margin-bottom: 10px; }
+.ins-latest__card h2 {
+  font-family: var(--serif); font-size: 26px; font-weight: 400;
+  color: var(--navy); line-height: 1.3; margin-bottom: 10px;
+}
+.ins-latest__card p { font-size: 15px; color: var(--slate); line-height: 1.65; margin-bottom: 10px; }
+.ins-date { font-size: 13px; color: var(--meta); }
+
+/* ---------- Article list ---------- */
+.ins-list { flex: 1; }
+.ins-list__inner { max-width: 680px; margin: 0 auto; padding: 0 32px; }
+.ins-item {
+  display: block; padding: 24px 0;
+  border-bottom: 1px solid var(--line); text-decoration: none;
+}
+.ins-item .ins-cat { margin-bottom: 6px; }
+.ins-item h2 {
+  font-family: var(--serif); font-size: 21px; font-weight: 500;
+  color: var(--navy); line-height: 1.3; margin-bottom: 6px;
+}
+.ins-item p { font-size: 14px; color: var(--slate); line-height: 1.6; margin-bottom: 8px; }
+.ins-latest__card:hover h2,
+.ins-item:hover h2 { text-decoration: underline; }
+
+/* ---------- Empty state (no articles yet) ---------- */
+.ins-empty { flex: 1; }
+.ins-empty__inner { max-width: 680px; margin: 0 auto; padding: 56px 32px 72px; }
+.ins-empty h2 {
+  font-family: var(--serif); font-size: 24px; font-weight: 400;
+  color: var(--navy); line-height: 1.3; margin-bottom: 12px;
+}
+.ins-empty p { font-size: 16px; color: var(--slate); line-height: 1.65; }
+
+/* ---------- Article page ---------- */
+.ins-article {
+  max-width: 700px; margin: 0 auto; padding: 40px 32px 48px;
+  width: 100%;
+}
+.ins-article__cat { margin-bottom: 12px; }
+.ins-article h1 {
+  font-family: var(--serif); font-size: 34px; font-weight: 400;
+  color: var(--navy); line-height: 1.25; margin-bottom: 14px;
+}
+.ins-article__summary { font-size: 17px; color: var(--slate); line-height: 1.6; margin-bottom: 16px; }
+.ins-article__meta { font-size: 13px; color: var(--meta); margin-bottom: 32px; }
+.ins-article__meta--tight { margin-bottom: 4px; }
+.ins-article__reviewed { font-size: 13px; color: var(--meta); margin-bottom: 32px; }
+
+/* optional lead image */
+.ins-article__figure { margin: 0 0 32px; }
+.ins-article__figure img { width: 100%; height: auto; border-radius: 6px; }
+.ins-article__figure figcaption { font-size: 13px; color: var(--meta); margin-top: 8px; }
+
+/* ---------- Article body (authors write plain HTML) ---------- */
+.article-body { font-family: var(--sans); }
+.article-body h2 {
+  font-family: var(--serif); font-size: 24px; font-weight: 500;
+  color: var(--navy); margin: 36px 0 14px; line-height: 1.3;
+}
+.article-body h3 {
+  font-family: var(--serif); font-size: 20px; font-weight: 500;
+  color: var(--navy); margin: 28px 0 10px; line-height: 1.35;
+}
+.article-body p { margin: 0 0 18px; color: var(--ink); line-height: 1.75; font-size: 17px; }
+.article-body ul,
+.article-body ol { margin: 0 0 18px; padding-left: 24px; color: var(--ink); line-height: 1.75; font-size: 17px; }
+.article-body li { margin-bottom: 8px; }
+.article-body blockquote {
+  margin: 28px 0; padding: 20px 24px; border-left: 3px solid var(--gold);
+  background: var(--wash); font-style: italic; color: var(--slate);
+  border-radius: 0 4px 4px 0; font-size: 17px; line-height: 1.65;
+}
+.article-body a { color: var(--navy); text-decoration: underline; }
+.article-body strong { font-weight: 700; color: var(--ink); }
+.article-body em { font-style: italic; }
+
+/* tables */
+.article-body table {
+  width: 100%; border-collapse: collapse; margin: 24px 0;
+  font-size: 15px; line-height: 1.5;
+}
+.article-body th,
+.article-body td {
+  text-align: left; padding: 10px 14px;
+  border: 1px solid var(--line); vertical-align: top; color: var(--ink);
+}
+.article-body th { background: var(--wash); font-weight: 600; color: var(--navy); }
+.ins-article__tablewrap { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+
+/* ---------- Disclaimer ---------- */
+.ins-disclaimer { margin-top: 48px; padding: 24px 0; border-top: 1px solid var(--line); }
+.ins-disclaimer__label {
+  font-size: 11px; font-weight: 600; letter-spacing: 1.5px;
+  text-transform: uppercase; color: var(--meta); margin-bottom: 8px;
+}
+.ins-disclaimer__text { font-size: 13px; color: var(--meta); line-height: 1.7; }
+
+/* ---------- CTA ---------- */
+.ins-cta { margin-top: 36px; padding: 32px; background: var(--wash); border-radius: 6px; text-align: center; }
+.ins-cta p { font-family: var(--serif); font-size: 20px; font-weight: 400; color: var(--navy); margin-bottom: 16px; }
+.ins-cta a {
+  display: inline-block; font-family: var(--sans); font-size: 14px; font-weight: 600;
+  color: #fff; background: var(--navy); padding: 12px 28px; border-radius: 4px; text-decoration: none;
+}
+.ins-cta a:hover { background: #0b1748; }
+
+/* ---------- Back link ---------- */
+.ins-back { margin-top: 32px; text-align: center; }
+.ins-back a { font-size: 14px; color: var(--meta); text-decoration: none; }
+.ins-back a:hover { text-decoration: underline; }
+
+/* ---------- Footer (contrast-corrected for WCAG AA on navy) ---------- */
+.ins-footer { background: var(--navy); color: #fff; padding: 44px 32px 28px; }
+.ins-footer__inner { max-width: 640px; margin: 0 auto; text-align: center; }
+.ins-footer__logo { margin-bottom: 20px; display: flex; justify-content: center; line-height: 0; }
+.ins-footer__logo img { height: 26px; width: auto; }
+.ins-footer__reg { font-size: 12px; color: #D6D9E0; line-height: 1.75; margin-bottom: 20px; }
+.ins-footer__links { display: flex; justify-content: center; gap: 24px; margin-bottom: 20px; flex-wrap: wrap; }
+.ins-footer__links a { font-size: 12px; color: #E6E8EC; text-decoration: none; }
+.ins-footer__links a:hover { text-decoration: underline; }
+.ins-footer__base { border-top: 1px solid rgba(255,255,255,0.12); padding-top: 16px; }
+.ins-footer__base p { font-size: 11px; color: #AEB3C0; }
+
+/* ---------- Mobile (≈390px target) ---------- */
+@media (max-width: 640px) {
+  .ins-header__inner { padding: 0 20px; }
+  .ins-title { padding: 36px 20px 28px; }
+  .ins-title h1 { font-size: 30px; }
+  .ins-bom__inner { padding: 16px 20px; }
+  .ins-latest__inner { padding: 28px 20px; }
+  .ins-list__inner,
+  .ins-empty__inner { padding-left: 20px; padding-right: 20px; }
+  .ins-latest__card h2 { font-size: 23px; }
+  .ins-article { padding: 32px 20px 44px; }
+  .ins-article h1 { font-size: 28px; }
+  .ins-article__summary { font-size: 16px; }
+  .article-body p,
+  .article-body ul,
+  .article-body ol,
+  .article-body blockquote { font-size: 16px; }
+  .ins-footer { padding: 36px 20px 24px; }
+}

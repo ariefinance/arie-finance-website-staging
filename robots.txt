@@ -5,5 +5,7 @@ Disallow: /internal/
 Disallow: /managementreport/
 Disallow: /salestracker/
 Disallow: /logout/
+Disallow: /insights/_template/
+Disallow: /insights/_email-template.html
 
 Sitemap: https://www.ariefinance.com/sitemap.xml

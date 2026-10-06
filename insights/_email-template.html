@@ -1,0 +1,82 @@
+<!doctype html>
+<html lang="en">
+<!-- =====================================================================
+     ARIE INSIGHTS — EMAIL TEMPLATE  (REFERENCE, NOT A PUBLIC PAGE)
+
+     Purpose: the HTML a relationship manager will later copy via a future
+     "Copy Formatted Email" action, then paste into Outlook / Gmail and add a
+     personal note. It is NOT an email-sending platform — no SMTP, no lists.
+
+     Rules baked in (keep them):
+       - Table-based layout + INLINE styles only (Outlook desktop uses Word's
+         engine: no flexbox/grid, no <style> in <head> relied upon).
+       - ~600px max width, fluid down to mobile.
+       - Absolute https://www.ariefinance.com/... URLs for link and any image.
+       - Readable with images OFF (text identification + summary carry it).
+       - No JavaScript. No related articles, no second CTA, no newsletter.
+
+     Tokens to replace per article:
+       {{TITLE}}  {{SUMMARY}}  {{ARTICLE_URL}}   (and optionally {{LOGO_PNG_URL}})
+     Subject line to copy separately:  ARIE Insights: {{TITLE}}
+     ===================================================================== -->
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<title>ARIE Insights email template</title>
+</head>
+<body style="margin:0;padding:0;background:#f4f3ef;">
+  <!-- Outer wrapper -->
+  <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="background:#f4f3ef;">
+    <tr>
+      <td align="center" style="padding:24px 12px;">
+        <!-- 600px card -->
+        <table role="presentation" width="600" cellpadding="0" cellspacing="0" border="0" style="width:600px;max-width:100%;background:#ffffff;border-radius:8px;overflow:hidden;">
+
+          <!-- Identification (text wordmark — always renders; swap to a hosted PNG via {{LOGO_PNG_URL}} if desired) -->
+          <tr>
+            <td align="center" style="padding:28px 32px 0;">
+              <!-- Option A (default, image-independent): text wordmark -->
+              <div style="font-family:'Hanken Grotesk',Arial,Helvetica,sans-serif;font-size:20px;font-weight:700;letter-spacing:3px;color:#06113A;">ARIE&nbsp;FINANCE</div>
+              <!-- Option B (optional): hosted PNG logo
+              <img src="{{LOGO_PNG_URL}}" alt="ARIE Finance" width="120" style="display:block;margin:0 auto;border:0;height:auto;">
+              -->
+              <div style="width:40px;height:1px;line-height:1px;font-size:0;background:#C99B3F;margin:18px auto 0;">&nbsp;</div>
+            </td>
+          </tr>
+
+          <!-- Content -->
+          <tr>
+            <td style="padding:28px 32px 28px;">
+              <h1 style="margin:0 0 14px;font-family:'Newsreader',Georgia,'Times New Roman',serif;font-size:24px;font-weight:400;line-height:1.3;color:#06113A;">{{TITLE}}</h1>
+              <p style="margin:0 0 24px;font-family:'Hanken Grotesk',Arial,Helvetica,sans-serif;font-size:15px;line-height:1.65;color:#3A4256;">{{SUMMARY}}</p>
+              <!-- Button -->
+              <table role="presentation" cellpadding="0" cellspacing="0" border="0" align="center" style="margin:0 auto;">
+                <tr>
+                  <td align="center" bgcolor="#06113A" style="border-radius:4px;">
+                    <a href="{{ARTICLE_URL}}" style="display:inline-block;font-family:'Hanken Grotesk',Arial,Helvetica,sans-serif;font-size:14px;font-weight:600;color:#ffffff;text-decoration:none;padding:12px 32px;border-radius:4px;">Read the Full Article</a>
+                  </td>
+                </tr>
+              </table>
+            </td>
+          </tr>
+
+          <!-- Footer / regulatory identification -->
+          <tr>
+            <td style="padding:20px 32px;background:#FAFAF8;border-top:1px solid #E8E4DA;">
+              <p style="margin:0 0 6px;font-family:'Hanken Grotesk',Arial,Helvetica,sans-serif;font-size:11px;line-height:1.7;color:#6B6456;text-align:center;">ARIE Finance Ltd is a licensed Payment Intermediary Services company regulated by the Financial Services Commission of Mauritius. Licence No. GB25205028. ARIE Finance Ltd is not a bank. Client funds are held in safeguarded accounts and are not covered by any deposit guarantee scheme.</p>
+              <p style="margin:0 0 8px;font-family:'Hanken Grotesk',Arial,Helvetica,sans-serif;font-size:11px;line-height:1.7;color:#6B6456;text-align:center;">This email is for general information only and does not constitute financial advice.</p>
+              <p style="margin:0;font-family:'Hanken Grotesk',Arial,Helvetica,sans-serif;font-size:11px;line-height:1.7;color:#6B6456;text-align:center;">
+                <a href="https://www.ariefinance.com/" style="color:#6B6456;text-decoration:none;">ariefinance.com</a>
+                &nbsp;&middot;&nbsp;
+                <a href="mailto:customercare@ariefinance.com" style="color:#6B6456;text-decoration:none;">customercare@ariefinance.com</a>
+              </p>
+            </td>
+          </tr>
+
+        </table>
+      </td>
+    </tr>
+  </table>
+</body>
+</html>

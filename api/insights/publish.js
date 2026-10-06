@@ -7,7 +7,7 @@ const L = require('./_lib');
 
 function validImage(u) {
   if (!u) return true; // optional
-  return typeof u === 'string' && /^https?:\/\/[^\s"'<>]+$/.test(u) && u.length <= 500;
+  return typeof u === 'string' && /^https:\/\/[^\s"'<>]+$/.test(u) && u.length <= 500;
 }
 
 async function rebuildEntries(branch, manifest) {
@@ -130,3 +130,5 @@ module.exports = async function handler(req, res) {
     return res.status(500).json({ ok: false, error: 'server_error' });
   }
 };
+
+module.exports.__test = { validImage };

@@ -163,7 +163,16 @@ function slugify(s) {
 }
 function validSlug(s) { return typeof s === 'string' && /^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(s) && s.length <= 80; }
 function validDate(s) { return typeof s === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(s) && !Number.isNaN(Date.parse(s + 'T00:00:00Z')); }
-function todayISO() { return new Date().toISOString().slice(0, 10); }
+// Calendar date in Mauritius (UTC+4), as YYYY-MM-DD. ARIE operates in Mauritius,
+// so publication/review dates use the local date, not the UTC date. `date` is
+// injectable for tests; normal callers pass nothing.
+function todayISO(date = new Date()) {
+  const parts = new Intl.DateTimeFormat('en-CA', {
+    timeZone: 'Indian/Mauritius', year: 'numeric', month: '2-digit', day: '2-digit',
+  }).formatToParts(date);
+  const get = (t) => parts.find((p) => p.type === t).value;
+  return `${get('year')}-${get('month')}-${get('day')}`;
+}
 const MONTHS = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
 function formatDate(iso) {
   if (!validDate(iso)) return '';

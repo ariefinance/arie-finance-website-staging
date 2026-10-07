@@ -158,16 +158,24 @@
           <button id="btn-publish" type="button" disabled>Publish article</button>
           <button id="btn-cancel" class="secondary" type="button">Cancel</button>
         </div>
+        <p class="hint" id="publish-hint">Complete all fields and confirm internal approval to publish.</p>
         <div class="toast" id="editor-toast" role="status" aria-live="polite"></div>
+      </div>
+    </div>
 
-        <div id="post-actions" class="hidden" style="margin-top:16px;padding-top:16px;border-top:1px solid var(--line);">
-          <p class="sub" style="margin-bottom:10px;">Published.</p>
-          <div class="btns" style="margin-top:0;">
-            <a id="act-view" class="secondary" style="padding:10px 16px;border-radius:6px;text-decoration:none;display:inline-block;" target="_blank" rel="noopener">View article</a>
-            <a id="act-email" class="secondary" style="padding:10px 16px;border-radius:6px;text-decoration:none;display:inline-block;" target="_blank" rel="noopener">Prepare email</a>
-            <button id="act-copy" class="secondary" type="button">Copy article link</button>
-          </div>
+    <!-- SUCCESS -->
+    <div id="view-success" class="hidden">
+      <div class="card" style="text-align:center;max-width:560px;margin:30px auto;">
+        <div style="width:48px;height:48px;border-radius:50%;background:#E6F4EC;color:#0B6B3A;font-size:26px;line-height:48px;margin:4px auto 14px;">&#10003;</div>
+        <h1 id="success-title" style="margin-bottom:6px;">Your article has been published</h1>
+        <p class="sub">It may take a short moment to appear on the website while the update is deployed.</p>
+        <div class="btns" style="justify-content:center;">
+          <a id="s-view" class="secondary" style="padding:10px 16px;border:1px solid var(--navy);color:var(--navy);border-radius:6px;text-decoration:none;display:inline-block;" target="_blank" rel="noopener">View article</a>
+          <a id="s-email" class="secondary" style="padding:10px 16px;border:1px solid var(--navy);color:var(--navy);border-radius:6px;text-decoration:none;display:inline-block;" target="_blank" rel="noopener">Prepare client email</a>
+          <button id="s-copy" class="secondary" type="button">Copy link</button>
+          <button id="s-back" type="button">Back to articles</button>
         </div>
+        <div class="toast" id="success-toast" role="status" aria-live="polite" style="text-align:center;"></div>
       </div>
     </div>
   </div>
@@ -187,8 +195,75 @@
   var state={mode:'create',slug:'',published:null};
 
   function show(view){
-    ['view-login','view-list','view-editor'].forEach(function(v){ $('#'+v).classList.toggle('hidden', v!==view); });
+    ['view-login','view-list','view-editor','view-success'].forEach(function(v){ $('#'+v).classList.toggle('hidden', v!==view); });
     $('#logout').classList.toggle('hidden', view==='view-login');
+  }
+  // Build the Email Helper URL, prefilled from an article's fields.
+  function emailHelperUrl(a){
+    return '/insights/_email-helper.html?title='+encodeURIComponent(a.title||'')
+      +'&category='+encodeURIComponent(a.category||'')
+      +'&summary='+encodeURIComponent(a.summary||'')
+      +'&url='+encodeURIComponent('https://www.ariefinance.com/insights/'+(a.slug||'')+'/');
+  }
+  // Client-side sanitiser that mirrors the server allowlist closely, so Preview
+  // and pasted content reflect what will actually be published. The server's
+  // sanitizeBody remains the authoritative security boundary.
+  function clientSanitize(html){
+    var tpl=document.createElement('div'); tpl.innerHTML=String(html||'');
+    var ALLOWED={P:1,H1:1,H2:1,H3:1,UL:1,OL:1,LI:1,STRONG:1,B:1,EM:1,I:1,A:1,BLOCKQUOTE:1,BR:1,
+      TABLE:1,THEAD:1,TBODY:1,TR:1,TH:1,TD:1,DIV:1,SPAN:1,FONT:1};
+    function clean(node){
+      var kids=Array.prototype.slice.call(node.childNodes);
+      kids.forEach(function(n){
+        if(n.nodeType===3) return; // text
+        if(n.nodeType!==1){ node.removeChild(n); return; }
+        var tag=n.tagName;
+        if(!ALLOWED[tag]){ node.removeChild(n); return; }
+        // normalise Google Docs normal-weight bold -> unwrap
+        if((tag==='B'||tag==='STRONG')){
+          var fw=(n.getAttribute('style')||'').match(/font-weight\s*:\s*(normal|400)/i);
+          if(fw){ unwrap(n); return; }
+        }
+        clean(n);
+        // map/rename
+        if(tag==='B') rename(n,'strong');
+        else if(tag==='I') rename(n,'em');
+        else if(tag==='H1') rename(n,'h2');
+        else if(tag==='DIV') rename(n,'p');
+        else if(tag==='SPAN'||tag==='FONT') unwrap(n);
+        // strip all attributes except href on <a>
+        var keep = n.tagName==='A' ? ['href'] : [];
+        Array.prototype.slice.call(n.attributes||[]).forEach(function(at){
+          if(keep.indexOf(at.name.toLowerCase())<0) n.removeAttribute(at.name);
+        });
+        if(n.tagName==='A'){
+          var href=n.getAttribute('href')||'';
+          if(!/^(https?:|mailto:)/i.test(href)){ unwrap(n); }
+          else n.setAttribute('rel','noopener noreferrer');
+        }
+      });
+    }
+    function rename(el,name){ var r=document.createElement(name); while(el.firstChild) r.appendChild(el.firstChild); Array.prototype.slice.call(el.attributes).forEach(function(a){r.setAttribute(a.name,a.value);}); el.parentNode.replaceChild(r,el); return r; }
+    function unwrap(el){ var p=el.parentNode; while(el.firstChild) p.insertBefore(el.firstChild,el); p.removeChild(el); }
+    clean(tpl);
+    // Word bullets: paragraphs beginning with a bullet glyph -> a real list
+    var blocks=Array.prototype.slice.call(tpl.children), i=0;
+    while(i<blocks.length){
+      var el=blocks[i];
+      if(el.tagName==='P' && /^\s*[•·▪◦‣o-]\s+/.test(el.textContent)){
+        var ul=document.createElement('ul');
+        while(i<blocks.length && blocks[i].tagName==='P' && /^\s*[•·▪◦‣o-]\s+/.test(blocks[i].textContent)){
+          var li=document.createElement('li'); li.innerHTML=blocks[i].innerHTML.replace(/^\s*[•·▪◦‣o-]\s+/,'');
+          ul.appendChild(li); tpl.removeChild(blocks[i]); blocks.splice(i,1);
+        }
+        tpl.insertBefore(ul, blocks[i]||null); blocks=Array.prototype.slice.call(tpl.children);
+      } else i++;
+    }
+    // drop empty paragraphs/headings
+    Array.prototype.slice.call(tpl.querySelectorAll('p,h2,h3,blockquote,li')).forEach(function(el){
+      if(!el.textContent.trim() && !el.querySelector('br,img')) el.parentNode && el.parentNode.removeChild(el);
+    });
+    return tpl.innerHTML;
   }
   function toast(el,msg,isErr){ el.textContent=msg||''; el.className='toast'+(isErr?' err':''); }
   function esc(s){return String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');}
@@ -243,16 +318,19 @@
         '<td><div class="acts">'+
           '<button class="secondary" data-edit="'+esc(a.slug)+'" type="button">Edit</button>'+
           '<a class="secondary" href="/insights/'+esc(a.slug)+'/" target="_blank" rel="noopener" style="border:1px solid var(--navy);color:var(--navy);">View</a>'+
+          '<button class="secondary" data-email="'+esc(a.slug)+'" type="button">Email</button>'+
           '<button class="danger" data-unpub="'+esc(a.slug)+'" type="button">Unpublish</button>'+
         '</div></td></tr>';
     }).join('');
     $('#list-body').innerHTML='<table><thead><tr><th>Article</th><th>Published</th><th>Actions</th></tr></thead><tbody>'+rows+'</tbody></table>';
+    var bySlug={}; arts.forEach(function(a){ bySlug[a.slug]=a; });
     $('#list-body').querySelectorAll('[data-edit]').forEach(function(b){ b.addEventListener('click',function(){ openEditor(b.getAttribute('data-edit')); }); });
+    $('#list-body').querySelectorAll('[data-email]').forEach(function(b){ b.addEventListener('click',function(){ var a=bySlug[b.getAttribute('data-email')]; if(a) window.open(emailHelperUrl(a),'_blank','noopener'); }); });
     $('#list-body').querySelectorAll('[data-unpub]').forEach(function(b){ b.addEventListener('click',function(){ unpublish(b.getAttribute('data-unpub')); }); });
   }
 
   async function unpublish(slug){
-    if(!confirm('Remove this article from the public ARIE website?')) return;
+    if(!confirm('Unpublish this article? Links already shared with clients will stop working.')) return;
     var r=await api('/publish',{method:'POST',body:{action:'unpublish',slug:slug}});
     if(r.ok && r.json.ok){ toast($('#list-toast'),'Article unpublished.'); loadList(); }
     else if(r.status===401){ show('view-login'); }
@@ -260,6 +338,9 @@
   }
 
   // ---------- editor ----------
+  var dirtyBase='';
+  function markClean(){ dirtyBase=JSON.stringify(collect()); }
+  function isDirty(){ return JSON.stringify(collect())!==dirtyBase; }
   function bodyText(){ return ($('#editor').textContent||'').replace(/ /g,' ').trim(); }
   function refreshEditorState(){
     // placeholder toggle
@@ -293,11 +374,14 @@
     $('#f-title').value='';$('#f-category').value='Guides';
     $('#f-summary').value='';$('#editor').innerHTML='';
     $('#f-confirm').checked=false;$('#review-wrap').classList.add('hidden');$('#f-review').checked=false;
-    $('#post-actions').classList.add('hidden');$('#btn-publish').textContent='Publish article';
-    toast($('#editor-toast'),''); refreshEditorState(); show('view-editor'); $('#f-title').focus();
+    $('#btn-publish').textContent='Publish article';
+    toast($('#editor-toast'),''); refreshEditorState(); markClean(); show('view-editor'); $('#f-title').focus();
   }
   $('#new-article').addEventListener('click',newArticle);
-  $('#btn-cancel').addEventListener('click',function(){ show('view-list'); loadList(); });
+  $('#btn-cancel').addEventListener('click',function(){
+    if(isDirty() && !confirm('You have unsaved changes. Leave without publishing them?')) return;
+    show('view-list'); loadList();
+  });
 
   async function openEditor(slug){
     var r=await api('/articles?slug='+encodeURIComponent(slug));
@@ -311,8 +395,8 @@
     $('#f-summary').value=m.summary||'';$('#editor').innerHTML=r.json.body||'';
     $('#f-confirm').checked=false;
     $('#review-wrap').classList.toggle('hidden', m.category!=='Guides'); $('#f-review').checked=false;
-    $('#post-actions').classList.add('hidden');$('#btn-publish').textContent='Update article';
-    toast($('#editor-toast'),''); refreshEditorState(); show('view-editor'); $('#f-title').focus();
+    $('#btn-publish').textContent='Update article';
+    toast($('#editor-toast'),''); refreshEditorState(); markClean(); show('view-editor'); $('#f-title').focus();
   }
 
   // toolbar
@@ -334,6 +418,24 @@
     });
   });
 
+  // Paste cleaning: normalise Word / Google Docs HTML to the allowed set before
+  // it enters the editor, so Preview matches what will be published.
+  $('#editor').addEventListener('paste',function(e){
+    var cd=e.clipboardData||window.clipboardData; if(!cd) return;
+    e.preventDefault();
+    var html=cd.getData('text/html');
+    var out;
+    if(html){ out=clientSanitize(html); }
+    else {
+      var text=cd.getData('text/plain')||'';
+      out=text.split(/\n{2,}/).map(function(p){
+        return '<p>'+esc(p).replace(/\n/g,'<br>')+'</p>';
+      }).join('');
+    }
+    document.execCommand('insertHTML',false,out);
+    refreshEditorState();
+  });
+
   function collect(){
     return {title:$('#f-title').value.trim(),category:$('#f-category').value,
       summary:$('#f-summary').value.trim(),body:$('#editor').innerHTML};
@@ -352,7 +454,7 @@
       '<article class="ins-article"><span class="ins-cat ins-article__cat">'+esc(d.category)+'</span>'+
       '<h1>'+esc(d.title||'Untitled')+'</h1><p class="ins-article__summary">'+esc(d.summary)+'</p>'+
       '<div class="ins-article__meta'+(reviewed?' ins-article__meta--tight':'')+'">Published '+esc(fmtDate(pub))+'</div>'+rev+fig+
-      '<div class="article-body">'+d.body+'</div>'+
+      '<div class="article-body">'+clientSanitize(d.body)+'</div>'+
       '<div class="ins-disclaimer"><p class="ins-disclaimer__label">Information Disclaimer</p><p class="ins-disclaimer__text">This material is provided for general information only and does not constitute financial, investment, legal or tax advice. ARIE Finance Ltd does not provide foreign exchange brokerage services. Readers should seek appropriate professional advice before taking any action based on information contained in these articles.</p></div>'+
       '<div class="ins-cta"><p>Discuss your international payment requirements</p><a href="#">Speak to ARIE Finance</a></div>'+
       '<div class="ins-back"><a href="#">&larr; Back to Insights</a></div></article></div></body></html>';
@@ -373,22 +475,25 @@
     } else {
       payload={action:'update',slug:state.slug,title:d.title,category:d.category,summary:d.summary,body:d.body,confirm:$('#f-confirm').checked,recordReview:$('#f-review').checked};
     }
+    var wasCreate=state.mode==='create';
     $('#btn-publish').disabled=true; toast($('#editor-toast'),'Publishing…');
     var r=await api('/publish',{method:'POST',body:payload});
     $('#btn-publish').disabled=!$('#f-confirm').checked;
     if(r.ok && r.json.ok){
-      toast($('#editor-toast'), state.mode==='create'?'Article published.':'Article updated.');
+      markClean(); // editor is now saved; no unsaved-change prompt on leaving
       var url=r.json.url;
-      $('#act-view').href=url;
-      $('#act-email').href='/insights/_email-helper.html?title='+encodeURIComponent(d.title)+'&summary='+encodeURIComponent(d.summary)+'&url='+encodeURIComponent(url);
-      $('#act-copy').onclick=function(){ navigator.clipboard && navigator.clipboard.writeText(url); toast($('#editor-toast'),'Link copied.'); };
-      $('#post-actions').classList.remove('hidden');
-      state.mode='edit'; state.slug=r.json.slug;
+      var a={title:d.title,category:d.category,summary:d.summary,slug:r.json.slug};
+      $('#success-title').textContent = wasCreate ? 'Your article has been published' : 'Your article has been updated';
+      $('#s-view').href=url;
+      $('#s-email').href=emailHelperUrl(a);
+      $('#s-copy').onclick=function(){ if(navigator.clipboard&&navigator.clipboard.writeText){navigator.clipboard.writeText(url);} toast($('#success-toast'),'Link copied.'); };
+      toast($('#success-toast'),''); show('view-success');
     } else if(r.status===401){ show('view-login'); }
     else toast($('#editor-toast'),msg(r.json.error),true);
   });
 
-  // show branch tag (non-secret, informational)
+  $('#s-back').addEventListener('click',function(){ show('view-list'); loadList(); });
+
   boot();
 })();
 </script>

@@ -5,4 +5,13 @@
     <changefreq>monthly</changefreq>
     <priority>1.0</priority>
   </url>
+  <url>
+    <loc>https://www.ariefinance.com/insights/</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <!-- Article URLs below are maintained automatically by the Publisher
+       (/insights/admin/). Do not hand-edit between the markers. -->
+  <!-- ARIE_INSIGHTS_SITEMAP_START -->
+<!-- ARIE_INSIGHTS_SITEMAP_END -->
 </urlset>

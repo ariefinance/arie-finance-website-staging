@@ -1,0 +1,768 @@
+<!doctype html>
+<html lang="en">
+<!-- ARIE Insights Publisher — password-gated admin UI.
+     Static page; contains NO secrets. All actions require a valid server
+     session (HttpOnly cookie) verified by /api/insights/*. noindex/no-store. -->
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="robots" content="noindex, nofollow">
+<title>ARIE Insights Publisher</title>
+<link rel="icon" type="image/png" href="/favicon.png">
+<style>
+  :root{--navy:#06113A;--ink:#16151F;--slate:#3A4256;--meta:#6B6456;--label:#6B5D30;
+    --line:#E8E4DA;--wash:#F6F1E6;--bom:#F9F6EF;--gold:#C99B3F;--ok:#0B6B3A;--err:#B4231F;}
+  *{margin:0;padding:0;box-sizing:border-box;}
+  body{font-family:system-ui,-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;color:var(--ink);background:#F4F3EF;line-height:1.55;}
+  a{color:var(--navy);}
+  .bar{background:var(--navy);color:#fff;padding:14px 22px;display:flex;align-items:center;justify-content:space-between;gap:12px;}
+  .bar strong{font-size:14px;font-weight:600;letter-spacing:.4px;}
+  .bar .right{display:flex;gap:10px;align-items:center;}
+  .wrap{max-width:860px;margin:0 auto;padding:24px 20px 60px;}
+  .card{background:#fff;border:1px solid var(--line);border-radius:8px;padding:22px;margin-bottom:20px;}
+  h1{font-size:18px;font-weight:600;color:var(--navy);margin-bottom:4px;}
+  .sub{font-size:13px;color:var(--meta);margin-bottom:18px;}
+  label{display:block;font-size:12px;font-weight:600;color:var(--slate);margin:16px 0 6px;}
+  input[type=text],input[type=url],input[type=password],textarea,select{
+    width:100%;font:inherit;font-size:14px;color:var(--ink);border:1px solid var(--line);border-radius:6px;padding:9px 11px;background:#fff;}
+  input:focus,textarea:focus,select:focus,[contenteditable]:focus{outline:2px solid var(--navy);outline-offset:1px;border-color:var(--navy);}
+  textarea{min-height:72px;resize:vertical;}
+  .hint{font-size:11px;color:var(--meta);margin-top:5px;}
+  .row{display:flex;gap:14px;flex-wrap:wrap;}
+  .row>div{flex:1;min-width:200px;}
+  button{font:inherit;font-size:13px;font-weight:600;color:#fff;background:var(--navy);border:0;border-radius:6px;padding:10px 16px;cursor:pointer;}
+  button.secondary{background:#fff;color:var(--navy);border:1px solid var(--navy);}
+  button.ghost{background:none;color:#fff;border:1px solid rgba(255,255,255,.4);}
+  button.danger{background:#fff;color:var(--err);border:1px solid var(--err);}
+  button:hover{opacity:.92;}button:disabled{opacity:.45;cursor:not-allowed;}
+  button:focus-visible,a:focus-visible{outline:2px solid var(--gold);outline-offset:2px;}
+  .btns{display:flex;flex-wrap:wrap;gap:10px;margin-top:22px;}
+  .toast{min-height:20px;margin-top:12px;font-size:13px;font-weight:600;color:var(--ok);}
+  .toast.err{color:var(--err);}
+  /* toolbar + editor */
+  .tb{display:flex;flex-wrap:wrap;gap:6px;border:1px solid var(--line);border-bottom:0;border-radius:6px 6px 0 0;padding:8px;background:#FAFAF8;}
+  .tb button{font-size:12px;font-weight:600;color:var(--navy);background:#fff;border:1px solid var(--line);border-radius:4px;padding:6px 10px;min-width:34px;}
+  .editor{min-height:240px;border:1px solid var(--line);border-radius:0 0 6px 6px;padding:14px 16px;background:#fff;font-size:15px;line-height:1.7;overflow-wrap:break-word;}
+  .editor.is-empty::before{content:attr(data-ph);color:#9a968c;pointer-events:none;}
+  #sum-count{font-weight:600;color:var(--meta);}
+  #sum-count.over{color:var(--err);}
+  .guidance{margin:0 0 8px;border:1px solid var(--line);border-radius:6px;background:#FAFAF8;}
+  .guidance>summary{cursor:pointer;padding:9px 12px;font-size:12px;font-weight:600;color:var(--navy);list-style:none;}
+  .guidance>summary::-webkit-details-marker{display:none;}
+  .guidance>summary::before{content:"›";display:inline-block;margin-right:7px;transition:transform .15s;}
+  .guidance[open]>summary::before{transform:rotate(90deg);}
+  .guidance__body{padding:0 14px 12px;font-size:12px;color:var(--slate);line-height:1.6;}
+  .guidance__body ol,.guidance__body ul{margin:6px 0 8px 18px;}
+  .guidance__body p{margin:8px 0;}
+  .guidance__note{color:var(--meta);font-style:italic;}
+  .upd-list{border:1px solid var(--line);border-radius:6px;max-height:320px;overflow:auto;margin-top:4px;}
+  .upd-item{display:flex;gap:10px;align-items:flex-start;padding:12px 14px;border-bottom:1px solid var(--line);}
+  .upd-item:last-child{border-bottom:0;}
+  .upd-item input{margin-top:3px;flex-shrink:0;width:auto;}
+  .upd-item .t{font-weight:600;color:var(--navy);font-size:14px;display:block;margin:2px 0;}
+  .upd-item .d{font-size:12px;color:var(--meta);}
+  .upd-count{font-size:12px;color:var(--meta);margin-top:8px;}
+  .upd-grid{display:grid;grid-template-columns:minmax(300px,1fr) minmax(320px,560px);gap:24px;align-items:start;}
+  @media(max-width:860px){.upd-grid{grid-template-columns:1fr;}}
+  .upd-grid iframe{width:100%;height:560px;border:1px solid var(--line);border-radius:8px;background:#fff;}
+  .editor h2{font-size:21px;margin:18px 0 8px;color:var(--navy);}
+  .editor h3{font-size:18px;margin:14px 0 6px;color:var(--navy);}
+  .editor p{margin:0 0 12px;}.editor ul,.editor ol{margin:0 0 12px 22px;}
+  .editor blockquote{margin:12px 0;padding:8px 14px;border-left:3px solid var(--gold);background:var(--wash);font-style:italic;}
+  .editor a{color:var(--navy);text-decoration:underline;}
+  /* article list */
+  table{width:100%;border-collapse:collapse;font-size:14px;}
+  th,td{text-align:left;padding:10px 8px;border-bottom:1px solid var(--line);vertical-align:top;}
+  th{font-size:11px;letter-spacing:.8px;text-transform:uppercase;color:var(--meta);}
+  td .acts{display:flex;gap:8px;flex-wrap:wrap;}
+  td .acts button, td .acts a{font-size:12px;padding:6px 10px;border-radius:4px;text-decoration:none;}
+  .pill{display:inline-block;font-size:11px;font-weight:600;letter-spacing:.6px;text-transform:uppercase;color:var(--label);}
+  .confirm-row{display:flex;gap:9px;align-items:flex-start;margin-top:20px;padding:14px;background:var(--bom);border:1px solid var(--line);border-radius:6px;}
+  .confirm-row input{margin-top:3px;flex-shrink:0;}
+  .confirm-row label{margin:0;font-weight:500;color:var(--ink);font-size:13px;}
+  .note{font-size:12px;color:var(--meta);margin-top:8px;line-height:1.6;}
+  .hidden{display:none!important;}
+  /* modal */
+  .modal{position:fixed;inset:0;background:rgba(6,17,58,.55);display:flex;align-items:flex-start;justify-content:center;padding:30px 14px;overflow:auto;z-index:50;}
+  .modal .inner{width:100%;max-width:760px;background:#fff;border-radius:8px;overflow:hidden;}
+  .modal .mh{display:flex;align-items:center;justify-content:space-between;padding:12px 18px;border-bottom:1px solid var(--line);background:#FAFAF8;}
+  .modal iframe{width:100%;height:70vh;border:0;background:#fff;}
+  @media(max-width:560px){.bar strong{font-size:13px;}.wrap{padding:16px 14px 50px;}}
+</style>
+</head>
+<body>
+  <div class="bar">
+    <strong>ARIE Insights Publisher</strong>
+    <div class="right">
+      <span id="branch-tag" class="hint" style="color:rgba(255,255,255,.6);"></span>
+      <button id="logout" class="ghost hidden" type="button">Log out</button>
+    </div>
+  </div>
+
+  <div class="wrap">
+    <!-- LOGIN -->
+    <div id="view-login" class="card hidden" style="max-width:420px;margin:40px auto;">
+      <h1>Sign in</h1>
+      <p class="sub">Enter the ARIE Insights admin password.</p>
+      <form id="login-form">
+        <label for="pw">Password</label>
+        <input id="pw" type="password" autocomplete="current-password" required>
+        <div class="btns"><button type="submit">Sign in</button></div>
+        <div class="toast" id="login-toast" role="status" aria-live="polite"></div>
+      </form>
+    </div>
+
+    <!-- LIST -->
+    <div id="view-list" class="hidden">
+      <div class="card">
+        <div style="display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;">
+          <div><h1>Published articles</h1><p class="sub" style="margin:0;">Manage ARIE Insights. No GitHub, HTML or Markdown required.</p></div>
+          <div style="display:flex;gap:10px;flex-wrap:wrap;">
+            <button id="new-insights-update" class="secondary" type="button">Create Insights Update</button>
+            <button id="new-article" type="button">+ New article</button>
+          </div>
+        </div>
+        <div id="list-body" style="margin-top:16px;"></div>
+        <div class="toast" id="list-toast" role="status" aria-live="polite"></div>
+      </div>
+    </div>
+
+    <!-- EDITOR -->
+    <div id="view-editor" class="hidden">
+      <div class="card">
+        <h1 id="editor-title">New article</h1>
+        <p class="sub" id="editor-sub">Write the article, preview it, confirm internal approval, then publish.</p>
+
+        <details class="guidance">
+          <summary>Article examples &amp; guidance</summary>
+          <div class="guidance__body">
+            <p><strong>You can create an Insight in two ways:</strong></p>
+            <ol>
+              <li>Write an original article for an external business audience.</li>
+              <li>Adapt suitable material from the internal <em>ARIE Digest</em> for a public audience — rewrite it in your own words; do not copy it.</li>
+            </ol>
+            <p>There is no automatic Digest&nbsp;&rarr;&nbsp;Insights import. Every article still needs ARIE’s internal review before it is published.</p>
+            <p><strong>Example — ARIE Digest, 7 October 2026:</strong></p>
+            <ul>
+              <li>“Africa Credit Rating Agency launches from Mauritius” could become a <em>Guides</em> or <em>Updates</em> article on what a Mauritius-based rating agency means for internationally active businesses.</li>
+              <li>“SAP Pay” could become an <em>Updates</em> article on a relevant international-payments development.</li>
+            </ul>
+            <p><strong>Suitable public themes:</strong> Mauritius financial-services developments, international-payment developments, business-relevant regulatory developments, practical payment Guides, and ARIE company news.</p>
+            <p><strong>Internal only — do NOT adapt for the public blog:</strong> Film &amp; TV intelligence; Oil &amp; Gas intelligence; ARIE relevance / management commentary; internal QA, research-control or deduplication notes; internal source-access limitations; management-only conclusions.</p>
+            <p class="guidance__note">This panel is guidance only. It never fills in or publishes anything.</p>
+          </div>
+        </details>
+
+        <label for="f-title">Article title</label>
+        <input id="f-title" type="text" maxlength="160" autocomplete="off" placeholder="e.g. Understanding international payment delays">
+
+        <label for="f-category">Category</label>
+        <select id="f-category">
+          <option value="Guides">Guides</option>
+          <option value="Updates">Updates</option>
+          <option value="ARIE News">ARIE News</option>
+        </select>
+        <p class="hint">Shown as a label on the article and Insights page.</p>
+
+        <label for="f-summary">Short summary</label>
+        <textarea id="f-summary"></textarea>
+        <p class="hint">2–3 sentences. Shown on the Insights page, homepage and sharing email — so make it read well on its own. <span id="sum-count">0 / 400</span></p>
+
+        <label>Article content</label>
+        <div class="tb" role="toolbar" aria-label="Formatting">
+          <button type="button" data-cmd="p" title="Paragraph">Paragraph</button>
+          <button type="button" data-cmd="h2" title="Heading">Heading</button>
+          <button type="button" data-cmd="h3" title="Subheading">Subheading</button>
+          <button type="button" data-cmd="bold" title="Bold"><b>Bold</b></button>
+          <button type="button" data-cmd="italic" title="Italic"><i>Italic</i></button>
+          <button type="button" data-cmd="ul" title="Bullet list">Bullets</button>
+          <button type="button" data-cmd="ol" title="Numbered list">Numbered list</button>
+          <button type="button" data-cmd="quote" title="Quote">Quote</button>
+          <button type="button" data-cmd="link" title="Add link">Add link</button>
+          <button type="button" data-cmd="unlink" title="Remove link">Remove link</button>
+        </div>
+        <div id="editor" class="editor is-empty" contenteditable="true" aria-label="Article content" data-ph="Write or paste the approved article here."></div>
+
+        <div id="review-wrap" class="hidden" style="margin-top:16px;">
+          <label style="display:flex;gap:9px;align-items:flex-start;font-weight:500;color:var(--ink);font-size:13px;">
+            <input id="f-review" type="checkbox" style="width:auto;margin-top:3px;">
+            Record this update as an editorial review today (Guides only — sets “Last reviewed”).
+          </label>
+        </div>
+
+        <div class="confirm-row">
+          <input id="f-confirm" type="checkbox">
+          <label for="f-confirm">I confirm this article has completed ARIE’s internal review and is approved for publication.</label>
+        </div>
+
+        <div class="btns">
+          <button id="btn-preview" class="secondary" type="button">Preview</button>
+          <button id="btn-publish" type="button" disabled>Publish article</button>
+          <button id="btn-cancel" class="secondary" type="button">Cancel</button>
+        </div>
+        <p class="hint" id="publish-hint">Complete all fields and confirm internal approval to publish.</p>
+        <div class="toast" id="editor-toast" role="status" aria-live="polite"></div>
+      </div>
+    </div>
+
+    <!-- SUCCESS -->
+    <div id="view-success" class="hidden">
+      <div class="card" style="text-align:center;max-width:560px;margin:30px auto;">
+        <div style="width:48px;height:48px;border-radius:50%;background:#E6F4EC;color:#0B6B3A;font-size:26px;line-height:48px;margin:4px auto 14px;">&#10003;</div>
+        <h1 id="success-title" style="margin-bottom:6px;">Your article has been published</h1>
+        <p class="sub">It may take a short moment to appear on the website while the update is deployed.</p>
+        <div class="btns" style="justify-content:center;">
+          <a id="s-view" class="secondary" style="padding:10px 16px;border:1px solid var(--navy);color:var(--navy);border-radius:6px;text-decoration:none;display:inline-block;" target="_blank" rel="noopener">View article</a>
+          <a id="s-email" class="secondary" style="padding:10px 16px;border:1px solid var(--navy);color:var(--navy);border-radius:6px;text-decoration:none;display:inline-block;" target="_blank" rel="noopener">Prepare client email</a>
+          <button id="s-copy" class="secondary" type="button">Copy link</button>
+          <button id="s-linkedin" class="secondary" type="button">Share on LinkedIn</button>
+          <button id="s-back" type="button">Back to articles</button>
+        </div>
+        <div class="toast" id="success-toast" role="status" aria-live="polite" style="text-align:center;"></div>
+      </div>
+    </div>
+
+    <!-- INSIGHTS UPDATE (multi-article client email) -->
+    <div id="view-update" class="hidden">
+      <div class="card">
+        <div style="display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;">
+          <div><h1>Create an Insights Update</h1><p class="sub" style="margin:0;">Select 2–4 published articles to share together in one client email.</p></div>
+          <button id="u-back" class="secondary" type="button">Back to articles</button>
+        </div>
+        <div class="upd-grid" style="margin-top:16px;">
+          <div>
+            <label style="display:block;font-size:12px;font-weight:600;color:var(--slate);margin-bottom:6px;">Choose articles</label>
+            <div id="u-list" class="upd-list"></div>
+            <div class="upd-count" id="u-count">0 selected</div>
+
+            <label for="u-intro" style="display:block;font-size:12px;font-weight:600;color:var(--slate);margin:16px 0 6px;">Short introduction (optional)</label>
+            <textarea id="u-intro" style="width:100%;font:inherit;font-size:14px;border:1px solid var(--line);border-radius:6px;padding:9px 11px;min-height:64px;resize:vertical;"></textarea>
+
+            <label for="u-subject" style="display:block;font-size:12px;font-weight:600;color:var(--slate);margin:14px 0 6px;">Subject</label>
+            <input id="u-subject" type="text" style="width:100%;font:inherit;font-size:14px;border:1px solid var(--line);border-radius:6px;padding:9px 11px;">
+
+            <div class="btns">
+              <button id="u-subject-copy" class="secondary" type="button">Copy Subject</button>
+              <button id="u-email-copy" type="button" disabled>Copy Formatted Email</button>
+            </div>
+            <div class="toast" id="u-toast" role="status" aria-live="polite"></div>
+            <p class="hint">Select 2–4 articles, then copy the email and paste it into Outlook or Gmail. Add recipients and a personal note, then send through ARIE’s approved process.</p>
+          </div>
+          <div>
+            <div style="display:flex;align-items:baseline;justify-content:space-between;margin-bottom:10px;"><strong style="font-size:13px;color:var(--meta);">Preview</strong><span class="hint" style="margin:0;">updates as you choose</span></div>
+            <iframe id="u-preview" title="Insights Update preview" sandbox=""></iframe>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div id="u-rich-fallback" contenteditable="true" aria-hidden="true" style="position:fixed;left:-9999px;top:0;white-space:normal;"></div>
+
+  <!-- Preview modal -->
+  <div id="preview-modal" class="modal hidden">
+    <div class="inner">
+      <div class="mh"><strong style="font-size:13px;">Preview</strong><button id="preview-close" class="secondary" type="button">Close</button></div>
+      <iframe id="preview-frame" title="Article preview"></iframe>
+    </div>
+  </div>
+
+  <!-- Share on LinkedIn modal (manual: no API, no auto-posting) -->
+  <div id="li-modal" class="modal hidden">
+    <div class="inner" style="max-width:560px;">
+      <div class="mh"><strong style="font-size:13px;">Share on LinkedIn</strong><button id="li-close" class="secondary" type="button">Close</button></div>
+      <div style="padding:18px;">
+        <label for="li-text" style="display:block;font-size:12px;font-weight:600;color:var(--slate);margin-bottom:6px;">Suggested post text</label>
+        <textarea id="li-text" style="width:100%;font:inherit;font-size:14px;border:1px solid var(--line);border-radius:6px;padding:10px 12px;min-height:150px;resize:vertical;"></textarea>
+        <div class="btns">
+          <button id="li-copy" type="button">Copy post text</button>
+          <button id="li-copy-link" class="secondary" type="button">Copy article link</button>
+          <button id="li-open" class="secondary" type="button">Open LinkedIn</button>
+        </div>
+        <div class="toast" id="li-toast" role="status" aria-live="polite"></div>
+        <p class="hint">Copy the post text, open LinkedIn, then paste and edit your commentary. Choose your own profile or an ARIE Page you manage, and post manually. LinkedIn builds the link preview from the article page.</p>
+      </div>
+    </div>
+  </div>
+
+<script>
+(function(){
+  var $=function(s){return document.querySelector(s);};
+  var API='/api/insights';
+  var state={mode:'create',slug:'',published:null};
+  var lastArticles=[];
+
+  function show(view){
+    ['view-login','view-list','view-editor','view-success','view-update'].forEach(function(v){ $('#'+v).classList.toggle('hidden', v!==view); });
+    $('#logout').classList.toggle('hidden', view==='view-login');
+  }
+  // Build the Email Helper URL, prefilled from an article's fields.
+  function emailHelperUrl(a){
+    return '/insights/_email-helper.html?title='+encodeURIComponent(a.title||'')
+      +'&category='+encodeURIComponent(a.category||'')
+      +'&summary='+encodeURIComponent(a.summary||'')
+      +'&url='+encodeURIComponent('https://www.ariefinance.com/insights/'+(a.slug||'')+'/');
+  }
+  // Client-side sanitiser that mirrors the server allowlist closely, so Preview
+  // and pasted content reflect what will actually be published. The server's
+  // sanitizeBody remains the authoritative security boundary.
+  function clientSanitize(html){
+    // Parse pasted HTML INERTLY via <template>: its content is an inert document
+    // fragment, so images are not fetched (no onerror), scripts do not run, and
+    // SVG/inline-event content never executes in the Publisher browser. The server
+    // sanitizeBody() remains the authoritative second boundary.
+    var holder=document.createElement('template'); holder.innerHTML=String(html||'');
+    var tpl=holder.content;
+    var ALLOWED={P:1,H1:1,H2:1,H3:1,H4:1,H5:1,H6:1,UL:1,OL:1,LI:1,STRONG:1,B:1,EM:1,I:1,A:1,BLOCKQUOTE:1,BR:1,
+      TABLE:1,THEAD:1,TBODY:1,TR:1,TH:1,TD:1,DIV:1,SPAN:1,FONT:1};
+    function clean(node){
+      var kids=Array.prototype.slice.call(node.childNodes);
+      kids.forEach(function(n){
+        if(n.nodeType===3) return; // text
+        if(n.nodeType!==1){ node.removeChild(n); return; }
+        var tag=n.tagName;
+        if(!ALLOWED[tag]){ node.removeChild(n); return; }
+        // normalise Google Docs normal-weight bold -> unwrap
+        if((tag==='B'||tag==='STRONG')){
+          // Only the real CSS `font-weight` property, not Microsoft-prefixed ones
+          // such as `mso-bidi-font-weight:normal`, which must not unbold real bold.
+          var fw=(n.getAttribute('style')||'').match(/(?:^|[;\s"'])font-weight\s*:\s*(normal|400)\b/i);
+          if(fw){ unwrap(n); return; }
+        }
+        clean(n);
+        // map/rename (reassign n so attribute stripping below applies to the new node).
+        // Headings normalise into the ARIE article model (only h2/h3): H1/H2->h2, H3-H6->h3.
+        // Word emits headings as styled <p> (class MsoHeadingN / mso-style-name:heading N),
+        // so detect those here, BEFORE class/style attributes are stripped, to preserve intent.
+        if(tag==='B') n=rename(n,'strong');
+        else if(tag==='I') n=rename(n,'em');
+        else if(tag==='H1') n=rename(n,'h2');
+        else if(tag==='H4'||tag==='H5'||tag==='H6') n=rename(n,'h3');
+        else if(tag==='DIV') n=rename(n,'p');
+        else if(tag==='P'){
+          var hc=(n.getAttribute('class')||'')+' '+(n.getAttribute('style')||'');
+          if(/mso-?style-?name\s*:\s*heading\s*[12]\b|MsoTitle\b|MsoHeading\s*[12]\b/i.test(hc)) n=rename(n,'h2');
+          else if(/mso-?style-?name\s*:\s*heading\b|MsoHeading\s*[3-9]\b|MsoSubtitle\b/i.test(hc)) n=rename(n,'h3');
+        }
+        else if(tag==='SPAN'||tag==='FONT'){ unwrap(n); return; }
+        // strip all attributes except href on <a>
+        var keep = n.tagName==='A' ? ['href'] : [];
+        Array.prototype.slice.call(n.attributes||[]).forEach(function(at){
+          if(keep.indexOf(at.name.toLowerCase())<0) n.removeAttribute(at.name);
+        });
+        if(n.tagName==='A'){
+          var href=n.getAttribute('href')||'';
+          if(!/^(https?:|mailto:)/i.test(href)){ unwrap(n); }
+          else n.setAttribute('rel','noopener noreferrer');
+        }
+      });
+    }
+    function rename(el,name){ var r=document.createElement(name); while(el.firstChild) r.appendChild(el.firstChild); Array.prototype.slice.call(el.attributes).forEach(function(a){r.setAttribute(a.name,a.value);}); el.parentNode.replaceChild(r,el); return r; }
+    function unwrap(el){ var p=el.parentNode; while(el.firstChild) p.insertBefore(el.firstChild,el); p.removeChild(el); }
+    // Remove a leading bullet glyph + following whitespace (including non-breaking
+    // spaces) from an element, operating on the decoded text node so &nbsp; markup
+    // can't let the glyph survive. Preserves inner formatting (e.g. bold).
+    function stripLeadingBullet(container){
+      function firstText(node){
+        for(var i=0;i<node.childNodes.length;i++){
+          var c=node.childNodes[i];
+          if(c.nodeType===3){ if(/[^\s ]/.test(c.nodeValue)) return c; continue; }
+          if(c.nodeType===1){ var t=firstText(c); if(t) return t; }
+        }
+        return null;
+      }
+      var tn=firstText(container);
+      if(tn) tn.nodeValue=tn.nodeValue.replace(/^[\s ]*[•·▪◦‣o-]+[\s ]*/,'');
+    }
+    clean(tpl);
+    // Word bullets: paragraphs beginning with a bullet glyph -> a real list
+    var blocks=Array.prototype.slice.call(tpl.children), i=0;
+    while(i<blocks.length){
+      var el=blocks[i];
+      if(el.tagName==='P' && /^\s*[•·▪◦‣o-]\s+/.test(el.textContent)){
+        var ul=document.createElement('ul');
+        while(i<blocks.length && blocks[i].tagName==='P' && /^\s*[•·▪◦‣o-]\s+/.test(blocks[i].textContent)){
+          var li=document.createElement('li'); li.innerHTML=blocks[i].innerHTML; stripLeadingBullet(li);
+          ul.appendChild(li); tpl.removeChild(blocks[i]); blocks.splice(i,1);
+        }
+        tpl.insertBefore(ul, blocks[i]||null); blocks=Array.prototype.slice.call(tpl.children);
+      } else i++;
+    }
+    // drop empty paragraphs/headings
+    Array.prototype.slice.call(tpl.querySelectorAll('p,h2,h3,blockquote,li')).forEach(function(el){
+      if(!el.textContent.trim() && !el.querySelector('br,img')) el.parentNode && el.parentNode.removeChild(el);
+    });
+    // Serialise the fragment (DocumentFragment has no innerHTML of its own).
+    var box=document.createElement('div'); box.appendChild(tpl); return box.innerHTML;
+  }
+  function toast(el,msg,isErr){ el.textContent=msg||''; el.className='toast'+(isErr?' err':''); }
+  function esc(s){return String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');}
+  function fmtDate(iso){ if(!/^\d{4}-\d{2}-\d{2}$/.test(iso||''))return ''; var M=['January','February','March','April','May','June','July','August','September','October','November','December']; var p=iso.split('-'); return (+p[2])+' '+M[(+p[1])-1]+' '+p[0]; }
+
+  var ERR={invalid_password:'Incorrect password.',too_many_attempts:'Too many attempts. Wait a few minutes and try again.',
+    unauthenticated:'Your session has expired. Please sign in again.',forbidden_origin:'Request blocked. Reload the Publisher and try again.',
+    unconfigured:'The Publisher is not configured yet. Contact the site administrator.',bad_title:'Enter an article title.',
+    bad_category:'Choose a category.',bad_summary:'Enter a summary (up to 400 characters).',empty_body:'Add article content.',
+    confirm_required:'Confirm that the article has completed internal review.',bad_slug:'The slug is invalid. Use letters, numbers and dashes.',
+    slug_exists:'An article with that slug already exists.',bad_image:'The image URL must be a full https:// link.',
+    image_alt_required:'Add alt text for the image.',conflict:'The website changed while you were editing. Reload the Publisher and try again.',
+    not_found:'That article could not be found.',too_large:'The article is too large.',server_error:'Publishing failed. No website changes were made.'};
+  function msg(code){return ERR[code]||'Something went wrong. Please try again.';}
+
+  async function api(path,opts){
+    opts=opts||{};
+    var r=await fetch(API+path,{method:opts.method||'GET',credentials:'same-origin',
+      headers:opts.body?{'Content-Type':'application/json'}:undefined,
+      body:opts.body?JSON.stringify(opts.body):undefined});
+    var j=null; try{j=await r.json();}catch(e){}
+    return {ok:r.ok,status:r.status,json:j||{}};
+  }
+
+  // ---------- auth ----------
+  async function boot(){
+    var r=await api('/session');
+    if(r.json && r.json.authenticated){ enterApp(); }
+    else { show('view-login'); $('#pw').focus(); }
+  }
+  $('#login-form').addEventListener('submit',async function(e){
+    e.preventDefault(); toast($('#login-toast'),'');
+    var r=await api('/login',{method:'POST',body:{password:$('#pw').value}});
+    if(r.ok && r.json.ok){ $('#pw').value=''; enterApp(); }
+    else toast($('#login-toast'),msg(r.json.error),true);
+  });
+  $('#logout').addEventListener('click',async function(){ await api('/logout',{method:'POST'}); show('view-login'); $('#pw').focus(); });
+
+  function enterApp(){ show('view-list'); loadList(); }
+
+  // ---------- list ----------
+  async function loadList(){
+    toast($('#list-toast'),'');
+    var r=await api('/articles');
+    if(r.status===401){ show('view-login'); return; }
+    if(!r.ok){ toast($('#list-toast'),msg(r.json.error),true); return; }
+    var arts=r.json.articles||[];
+    lastArticles=arts;
+    if(!arts.length){ $('#list-body').innerHTML='<p class="sub" style="margin:0;">No articles yet. Click “New article” to publish the first one.</p>'; return; }
+    var rows=arts.map(function(a){
+      return '<tr><td><span class="pill">'+esc(a.category)+'</span><br><strong>'+esc(a.title)+'</strong></td>'+
+        '<td>'+esc(fmtDate(a.published))+(a.lastReviewed?'<br><span class="hint">Reviewed '+esc(fmtDate(a.lastReviewed))+'</span>':'')+'</td>'+
+        '<td><div class="acts">'+
+          '<button class="secondary" data-edit="'+esc(a.slug)+'" type="button">Edit</button>'+
+          '<a class="secondary" href="/insights/'+esc(a.slug)+'/" target="_blank" rel="noopener" style="border:1px solid var(--navy);color:var(--navy);">View</a>'+
+          '<button class="secondary" data-email="'+esc(a.slug)+'" type="button">Email</button>'+
+          '<button class="secondary" data-linkedin="'+esc(a.slug)+'" type="button" title="Share on LinkedIn">LinkedIn</button>'+
+          '<button class="danger" data-unpub="'+esc(a.slug)+'" type="button">Unpublish</button>'+
+        '</div></td></tr>';
+    }).join('');
+    $('#list-body').innerHTML='<table><thead><tr><th>Article</th><th>Published</th><th>Actions</th></tr></thead><tbody>'+rows+'</tbody></table>';
+    var bySlug={}; arts.forEach(function(a){ bySlug[a.slug]=a; });
+    $('#list-body').querySelectorAll('[data-edit]').forEach(function(b){ b.addEventListener('click',function(){ openEditor(b.getAttribute('data-edit')); }); });
+    $('#list-body').querySelectorAll('[data-email]').forEach(function(b){ b.addEventListener('click',function(){ var a=bySlug[b.getAttribute('data-email')]; if(a) window.open(emailHelperUrl(a),'_blank','noopener'); }); });
+    $('#list-body').querySelectorAll('[data-linkedin]').forEach(function(b){ b.addEventListener('click',function(){ var a=bySlug[b.getAttribute('data-linkedin')]; if(a) openLinkedIn(a); }); });
+    $('#list-body').querySelectorAll('[data-unpub]').forEach(function(b){ b.addEventListener('click',function(){ unpublish(b.getAttribute('data-unpub')); }); });
+  }
+
+  async function unpublish(slug){
+    if(!confirm('Unpublish this article? Links already shared with clients will stop working.')) return;
+    var r=await api('/publish',{method:'POST',body:{action:'unpublish',slug:slug}});
+    if(r.ok && r.json.ok){ toast($('#list-toast'),'Article unpublished.'); loadList(); }
+    else if(r.status===401){ show('view-login'); }
+    else toast($('#list-toast'),msg(r.json.error),true);
+  }
+
+  // ---------- editor ----------
+  var dirtyBase='';
+  function markClean(){ dirtyBase=JSON.stringify(collect()); }
+  function isDirty(){ return JSON.stringify(collect())!==dirtyBase; }
+  function bodyText(){ return ($('#editor').textContent||'').replace(/ /g,' ').trim(); }
+  function refreshEditorState(){
+    // placeholder toggle
+    $('#editor').classList.toggle('is-empty', bodyText().length===0);
+    // summary counter
+    var len=$('#f-summary').value.length;
+    var c=$('#sum-count'); c.textContent=len+' / 400'; c.classList.toggle('over', len>400);
+    gate();
+  }
+  $('#f-title').addEventListener('input',gate);
+  $('#f-summary').addEventListener('input',refreshEditorState);
+  $('#f-confirm').addEventListener('change',gate);
+  $('#editor').addEventListener('input',refreshEditorState);
+  $('#f-category').addEventListener('change',function(){ $('#review-wrap').classList.toggle('hidden', !($('#f-category').value==='Guides' && state.mode==='edit')); });
+
+  // Publish/Update is enabled only when every required field is complete.
+  function gate(){
+    var ok = $('#f-title').value.trim().length>0
+      && ['Guides','Updates','ARIE News'].indexOf($('#f-category').value)>=0
+      && $('#f-summary').value.trim().length>0
+      && $('#f-summary').value.length<=400
+      && bodyText().length>0
+      && $('#f-confirm').checked;
+    $('#btn-publish').disabled = !ok;
+  }
+
+  function newArticle(){
+    state={mode:'create',slug:'',published:null};
+    $('#editor-title').textContent='New article';
+    $('#editor-sub').textContent='Write the article, preview it, confirm it has been approved, then publish.';
+    $('#f-title').value='';$('#f-category').value='Guides';
+    $('#f-summary').value='';$('#editor').innerHTML='';
+    $('#f-confirm').checked=false;$('#review-wrap').classList.add('hidden');$('#f-review').checked=false;
+    $('#btn-publish').textContent='Publish article';
+    toast($('#editor-toast'),''); refreshEditorState(); markClean(); show('view-editor'); $('#f-title').focus();
+  }
+  $('#new-article').addEventListener('click',newArticle);
+  $('#btn-cancel').addEventListener('click',function(){
+    if(isDirty() && !confirm('You have unsaved changes. Leave without publishing them?')) return;
+    show('view-list'); loadList();
+  });
+
+  async function openEditor(slug){
+    var r=await api('/articles?slug='+encodeURIComponent(slug));
+    if(r.status===401){ show('view-login'); return; }
+    if(!r.ok || !r.json.meta){ toast($('#list-toast'),msg(r.json.error),true); return; }
+    var m=r.json.meta;
+    state={mode:'edit',slug:m.slug,published:m.published};
+    $('#editor-title').textContent='Edit article';
+    $('#editor-sub').textContent='Editing does not change the live article until you click Update. The article’s web address stays the same.';
+    $('#f-title').value=m.title||'';$('#f-category').value=m.category||'Guides';
+    $('#f-summary').value=m.summary||'';$('#editor').innerHTML=r.json.body||'';
+    $('#f-confirm').checked=false;
+    $('#review-wrap').classList.toggle('hidden', m.category!=='Guides'); $('#f-review').checked=false;
+    $('#btn-publish').textContent='Update article';
+    toast($('#editor-toast'),''); refreshEditorState(); markClean(); show('view-editor'); $('#f-title').focus();
+  }
+
+  // toolbar
+  document.querySelectorAll('.tb [data-cmd]').forEach(function(b){
+    b.addEventListener('mousedown',function(e){ e.preventDefault(); });
+    b.addEventListener('click',function(){
+      var c=b.getAttribute('data-cmd'); $('#editor').focus();
+      if(c==='p') document.execCommand('formatBlock',false,'P');
+      else if(c==='h2') document.execCommand('formatBlock',false,'H2');
+      else if(c==='h3') document.execCommand('formatBlock',false,'H3');
+      else if(c==='quote') document.execCommand('formatBlock',false,'BLOCKQUOTE');
+      else if(c==='bold') document.execCommand('bold');
+      else if(c==='italic') document.execCommand('italic');
+      else if(c==='ul') document.execCommand('insertUnorderedList');
+      else if(c==='ol') document.execCommand('insertOrderedList');
+      else if(c==='unlink') document.execCommand('unlink');
+      else if(c==='link'){ var u=prompt('Link URL (https://…):',''); if(u){ if(!/^https?:\/\//i.test(u)&&!/^mailto:/i.test(u)) u='https://'+u; document.execCommand('createLink',false,u);} }
+      refreshEditorState();
+    });
+  });
+
+  // Paste cleaning: normalise Word / Google Docs HTML to the allowed set before
+  // it enters the editor, so Preview matches what will be published.
+  $('#editor').addEventListener('paste',function(e){
+    var cd=e.clipboardData||window.clipboardData; if(!cd) return;
+    e.preventDefault();
+    var html=cd.getData('text/html');
+    var out;
+    if(html){ out=clientSanitize(html); }
+    else {
+      var text=cd.getData('text/plain')||'';
+      out=text.split(/\n{2,}/).map(function(p){
+        return '<p>'+esc(p).replace(/\n/g,'<br>')+'</p>';
+      }).join('');
+    }
+    document.execCommand('insertHTML',false,out);
+    refreshEditorState();
+  });
+
+  function collect(){
+    return {title:$('#f-title').value.trim(),category:$('#f-category').value,
+      summary:$('#f-summary').value.trim(),body:$('#editor').innerHTML};
+  }
+
+  // preview — render with the real stylesheet
+  $('#btn-preview').addEventListener('click',function(){
+    var d=collect();
+    var reviewed = (d.category==='Guides' && state.mode==='edit' && $('#f-review').checked && state.published && state.published < new Date().toISOString().slice(0,10));
+    var pub = state.published || new Date().toISOString().slice(0,10);
+    var fig = '';
+    var rev = reviewed? '<div class="ins-article__reviewed">Last reviewed '+esc(fmtDate(new Date().toISOString().slice(0,10)))+'</div>':'';
+    var html='<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">'+
+      '<link href="https://fonts.googleapis.com/css2?family=Hanken+Grotesk:wght@400;500;600;700&family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,500;1,6..72,400&display=swap" rel="stylesheet">'+
+      '<link rel="stylesheet" href="/insights/insights.css"></head><body><div class="page">'+
+      '<article class="ins-article"><span class="ins-cat ins-article__cat">'+esc(d.category)+'</span>'+
+      '<h1>'+esc(d.title||'Untitled')+'</h1><p class="ins-article__summary">'+esc(d.summary)+'</p>'+
+      '<div class="ins-article__meta'+(reviewed?' ins-article__meta--tight':'')+'">Published '+esc(fmtDate(pub))+'</div>'+rev+fig+
+      '<div class="article-body">'+clientSanitize(d.body)+'</div>'+
+      '<div class="ins-disclaimer"><p class="ins-disclaimer__label">Information Disclaimer</p><p class="ins-disclaimer__text">This material is provided for general information only and does not constitute financial, investment, legal or tax advice. ARIE Finance Ltd does not provide foreign exchange brokerage services. Readers should seek appropriate professional advice before taking any action based on information contained in these articles.</p></div>'+
+      '<div class="ins-cta"><p>Discuss your international payment requirements</p><a href="#">Speak to ARIE Finance</a></div>'+
+      '<div class="ins-back"><a href="#">&larr; Back to Insights</a></div></article></div></body></html>';
+    $('#preview-frame').srcdoc=html; $('#preview-modal').classList.remove('hidden');
+  });
+  $('#preview-close').addEventListener('click',function(){ $('#preview-modal').classList.add('hidden'); });
+
+  // publish / update
+  $('#btn-publish').addEventListener('click',async function(){
+    var d=collect();
+    if(!d.title){ return toast($('#editor-toast'),msg('bad_title'),true); }
+    if(!d.summary){ return toast($('#editor-toast'),msg('bad_summary'),true); }
+    // Image fields are intentionally not sent by the writer UI, so the backend
+    // auto-generates the slug on create and preserves any image on update.
+    var payload;
+    if(state.mode==='create'){
+      payload={action:'create',title:d.title,category:d.category,summary:d.summary,body:d.body,confirm:$('#f-confirm').checked};
+    } else {
+      payload={action:'update',slug:state.slug,title:d.title,category:d.category,summary:d.summary,body:d.body,confirm:$('#f-confirm').checked,recordReview:$('#f-review').checked};
+    }
+    var wasCreate=state.mode==='create';
+    $('#btn-publish').disabled=true; toast($('#editor-toast'),'Publishing…');
+    var r=await api('/publish',{method:'POST',body:payload});
+    $('#btn-publish').disabled=!$('#f-confirm').checked;
+    if(r.ok && r.json.ok){
+      markClean(); // editor is now saved; no unsaved-change prompt on leaving
+      var url=r.json.url;
+      var a={title:d.title,category:d.category,summary:d.summary,slug:r.json.slug};
+      $('#success-title').textContent = wasCreate ? 'Your article has been published' : 'Your article has been updated';
+      $('#s-view').href=url;
+      $('#s-email').href=emailHelperUrl(a);
+      $('#s-copy').onclick=function(){ if(navigator.clipboard&&navigator.clipboard.writeText){navigator.clipboard.writeText(url);} toast($('#success-toast'),'Link copied.'); };
+      $('#s-linkedin').onclick=function(){ openLinkedIn(a); };
+      toast($('#success-toast'),''); show('view-success');
+    } else if(r.status===401){ show('view-login'); }
+    else toast($('#editor-toast'),msg(r.json.error),true);
+  });
+
+  $('#s-back').addEventListener('click',function(){ show('view-list'); loadList(); });
+
+  // ---------- ARIE Insights Update (manual multi-article client email) ----------
+  // Builds a formatted email from 2–4 EXISTING published articles, reusing the
+  // single-article email visual language. No sending, no lists, no scheduling —
+  // the relationship manager copies the subject + formatted email and pastes
+  // them into Outlook/Gmail beneath a personal greeting.
+  var DEFAULT_INTRO='Please find below a selection of our latest insights on developments relevant to international businesses and cross-border payments.';
+  var DEFAULT_SUBJECT='ARIE Insights — Latest insights';
+  var VIEW_ALL='https://www.ariefinance.com/insights/';
+  var FOOTER_REG='ARIE Finance Ltd is a licensed Payment Intermediary Services company regulated by the Financial Services Commission of Mauritius. Licence No. GB25205028. ARIE Finance Ltd is not a bank. Client funds are held in safeguarded accounts and are not covered by any deposit guarantee scheme.';
+  var FOOTER_DISCLAIMER='This communication is provided for general information only and does not constitute financial, investment, legal or tax advice, nor an offer or solicitation in relation to any financial product or service. Information is based on sources considered reliable, but ARIE Finance Ltd does not represent or warrant that it is complete or error-free. Information may change without notice. Readers should seek appropriate professional advice before taking action based on this communication. ARIE Finance Ltd does not provide foreign exchange brokerage services.';
+  function eyebrowFor(cat){ var m={'Guides':'GUIDE','Updates':'UPDATE','ARIE News':'ARIE NEWS'}; return 'ARIE INSIGHTS · '+(m[cat]||String(cat||'').toUpperCase()); }
+  function artUrl(slug){ return VIEW_ALL+encodeURIComponent(slug)+'/'; }
+
+  function buildUpdate(arts){
+    var intro=($('#u-intro').value||'').trim();
+    var FA="'Hanken Grotesk',Arial,Helvetica,sans-serif", FS="'Newsreader',Georgia,'Times New Roman',serif";
+    var rows=[];
+    rows.push('<tr><td align="center" style="padding:28px 32px 6px;"><img src="https://www.ariefinance.com/insights/assets/arie-logo-email.png" alt="ARIE Finance" width="150" style="display:block;width:150px;max-width:60%;height:auto;border:0;"></td></tr>');
+    rows.push('<tr><td align="center" style="padding:10px 32px 0;"><div style="font-family:'+FA+';font-size:11px;font-weight:700;letter-spacing:2px;color:#6B5D30;text-transform:uppercase;">ARIE INSIGHTS</div></td></tr>');
+    rows.push('<tr><td style="padding:10px 32px 2px;"><h1 style="margin:0;font-family:'+FS+';font-size:23px;font-weight:400;line-height:1.3;color:#06113A;text-align:center;">Latest insights from ARIE Finance</h1></td></tr>');
+    if(intro) rows.push('<tr><td style="padding:12px 32px 2px;"><p style="margin:0;font-family:'+FA+';font-size:15px;line-height:1.65;color:#3A4256;text-align:center;">'+esc(intro)+'</p></td></tr>');
+    rows.push('<tr><td style="padding:14px 32px 0;"><div style="border-top:1px solid #E8E4DA;font-size:0;line-height:0;">&nbsp;</div></td></tr>');
+    arts.forEach(function(a,i){
+      if(i>0) rows.push('<tr><td style="padding:0 32px;"><div style="border-top:1px solid #E8E4DA;font-size:0;line-height:0;">&nbsp;</div></td></tr>');
+      rows.push('<tr><td style="padding:16px 32px 4px;">'+
+        '<div style="font-family:'+FA+';font-size:10px;font-weight:700;letter-spacing:2px;color:#6B5D30;text-transform:uppercase;margin:0 0 6px;">'+esc(eyebrowFor(a.category))+'</div>'+
+        '<h2 style="margin:0 0 8px;font-family:'+FS+';font-size:19px;font-weight:400;line-height:1.3;color:#06113A;">'+esc(a.title)+'</h2>'+
+        '<p style="margin:0 0 10px;font-family:'+FA+';font-size:14px;line-height:1.6;color:#3A4256;">'+esc(a.summary)+'</p>'+
+        '<p style="margin:0 0 14px;"><a href="'+esc(artUrl(a.slug))+'" style="font-family:'+FA+';font-size:13px;font-weight:600;color:#06113A;text-decoration:none;">Read article &rarr;</a></p>'+
+        '</td></tr>');
+    });
+    rows.push('<tr><td align="center" style="padding:14px 32px 30px;border-top:1px solid #E8E4DA;">'+
+      '<table role="presentation" cellpadding="0" cellspacing="0" border="0" align="center"><tr>'+
+      '<td align="center" bgcolor="#06113A" style="padding:13px 34px;"><a href="'+esc(VIEW_ALL)+'" style="font-family:'+FA+';font-size:14px;font-weight:600;color:#ffffff;text-decoration:none;display:inline-block;">View all ARIE Insights &rarr;</a></td>'+
+      '</tr></table></td></tr>');
+    rows.push('<tr><td style="padding:18px 32px 22px;border-top:1px solid #E8E4DA;">'+
+      '<p style="margin:0 0 3px;font-family:'+FA+';font-size:9px;font-weight:700;letter-spacing:1px;color:#8A8372;text-transform:uppercase;text-align:center;">Information Disclaimer</p>'+
+      '<p style="margin:0 0 10px;font-family:'+FA+';font-size:10px;line-height:1.6;color:#8A8372;text-align:center;">'+esc(FOOTER_DISCLAIMER)+'</p>'+
+      '<p style="margin:0 0 6px;font-family:'+FA+';font-size:11px;line-height:1.7;color:#6B6456;text-align:center;">'+esc(FOOTER_REG)+'</p>'+
+      '<p style="margin:0;font-family:'+FA+';font-size:11px;line-height:1.7;color:#6B6456;text-align:center;">'+
+      '<a href="https://www.ariefinance.com/" style="color:#6B6456;text-decoration:none;">ariefinance.com</a>&nbsp;&middot;&nbsp;'+
+      '<a href="mailto:customercare@ariefinance.com" style="color:#6B6456;text-decoration:none;">customercare@ariefinance.com</a></p></td></tr>');
+    var body='<table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="background:#ffffff;"><tr><td align="center" style="padding:8px 12px;">'+
+      '<table role="presentation" width="600" cellpadding="0" cellspacing="0" border="0" style="width:600px;max-width:100%;background:#ffffff;border:1px solid #E8E4DA;">'+rows.join('')+'</table></td></tr></table>';
+    var doc='<!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"></head><body style="margin:0;padding:0;background:#ffffff;">'+body+'</body></html>';
+    var txt=['ARIE INSIGHTS — Latest insights from ARIE Finance',''];
+    if(intro){ txt.push(intro,''); }
+    arts.forEach(function(a){ txt.push('['+eyebrowFor(a.category)+']',a.title,a.summary,'Read article: '+artUrl(a.slug),''); });
+    txt.push('View all ARIE Insights: '+VIEW_ALL,'','Information Disclaimer: '+FOOTER_DISCLAIMER,'',FOOTER_REG,'ariefinance.com · customercare@ariefinance.com');
+    return {doc:doc,body:body,text:txt.join('\n')};
+  }
+
+  function uSelected(){ return Array.prototype.slice.call($('#u-list').querySelectorAll('input[type=checkbox]:checked')).map(function(c){return c.value;}); }
+  function uArts(){ var sel=uSelected(); return lastArticles.filter(function(a){return sel.indexOf(a.slug)>=0;}); }
+  function updatePreview(){
+    var arts=uArts(), iframe=$('#u-preview');
+    if(arts.length<2){ iframe.srcdoc='<!doctype html><body style="font-family:Arial,sans-serif;color:#6B6456;padding:24px;font-size:14px;">Select 2–4 articles to preview the Insights Update.</body>'; return; }
+    iframe.srcdoc=buildUpdate(arts).doc;
+  }
+  function onUSelect(){
+    var sel=uSelected(), n=sel.length;
+    Array.prototype.forEach.call($('#u-list').querySelectorAll('input[type=checkbox]'),function(c){ if(!c.checked) c.disabled=(n>=4); });
+    $('#u-count').textContent=n+' selected'+(n<2?' — select at least 2':(n>=4?' — maximum reached':''));
+    $('#u-email-copy').disabled=!(n>=2&&n<=4);
+    updatePreview();
+  }
+  function renderUpdate(){
+    toast($('#u-toast'),'');
+    var pub=lastArticles.slice(), list=$('#u-list');
+    $('#u-subject').value=DEFAULT_SUBJECT;
+    if(pub.length<2){
+      list.innerHTML='<p class="sub" style="margin:0;">You need at least two published articles to create an Insights Update. Publish more articles first.</p>';
+      $('#u-count').textContent=''; $('#u-email-copy').disabled=true;
+      $('#u-preview').srcdoc='<!doctype html><body style="font-family:Arial,sans-serif;color:#6B6456;padding:24px;font-size:14px;">Publish at least two articles to build an Insights Update.</body>';
+      return;
+    }
+    if(!$('#u-intro').value) $('#u-intro').value=DEFAULT_INTRO;
+    list.innerHTML=pub.map(function(a){
+      return '<label class="upd-item"><input type="checkbox" value="'+esc(a.slug)+'"> '+
+        '<span><span class="pill">'+esc(a.category)+'</span> <strong>'+esc(a.title)+'</strong></span></label>';
+    }).join('');
+    list.querySelectorAll('input[type=checkbox]').forEach(function(cb){ cb.addEventListener('change',onUSelect); });
+    onUSelect();
+  }
+
+  async function copyText(t){
+    try{ if(navigator.clipboard&&navigator.clipboard.writeText){ await navigator.clipboard.writeText(t); return true; } }catch(e){}
+    try{ var f=$('#u-rich-fallback'); f.textContent=t; var rg=document.createRange(); rg.selectNodeContents(f); var s=window.getSelection(); s.removeAllRanges(); s.addRange(rg); var ok=document.execCommand('copy'); s.removeAllRanges(); f.textContent=''; return ok; }catch(e){}
+    return false;
+  }
+  async function copyRich(html,text){
+    try{
+      if(navigator.clipboard&&window.ClipboardItem){
+        await navigator.clipboard.write([new ClipboardItem({'text/html':new Blob([html],{type:'text/html'}),'text/plain':new Blob([text],{type:'text/plain'})})]);
+        return true;
+      }
+    }catch(e){}
+    try{ var f=$('#u-rich-fallback'); f.innerHTML=html; var rg=document.createRange(); rg.selectNodeContents(f); var s=window.getSelection(); s.removeAllRanges(); s.addRange(rg); var ok=document.execCommand('copy'); s.removeAllRanges(); f.innerHTML=''; return ok; }catch(e){}
+    return false;
+  }
+
+  $('#new-insights-update').addEventListener('click',function(){ show('view-update'); renderUpdate(); });
+  $('#u-back').addEventListener('click',function(){ show('view-list'); loadList(); });
+  $('#u-intro').addEventListener('input',function(){ updatePreview(); });
+  $('#u-subject-copy').addEventListener('click',async function(){ var ok=await copyText(($('#u-subject').value||DEFAULT_SUBJECT)); toast($('#u-toast'),ok?'Subject copied.':'Copy failed — select the subject and copy manually.',!ok); });
+  $('#u-email-copy').addEventListener('click',async function(){
+    var arts=uArts(); if(arts.length<2||arts.length>4) return;
+    var built=buildUpdate(arts);
+    var ok=await copyRich(built.body,built.text);
+    toast($('#u-toast'),ok?'Formatted email copied. Paste into Outlook or Gmail beneath your greeting.':'Copy failed — open the preview to copy manually.',!ok);
+  });
+
+  // ---------- Share on LinkedIn (manual: no API, no OAuth, no auto-posting) ----------
+  // Derives the URL strictly from the selected published article's slug, builds a
+  // restrained suggested caption (no hashtags/emojis/AI), and opens LinkedIn's
+  // current off-site URL-share flow. LinkedIn renders the preview from the
+  // article page's Open Graph tags. The publisher pastes/edits and posts manually.
+  var liCurrent=null;
+  function liUrl(a){ return 'https://www.ariefinance.com/insights/'+(a&&a.slug?a.slug:'')+'/'; }
+  function liCaption(a){
+    return 'New from ARIE Insights:\n\n'+(a&&a.title?a.title:'')+'\n\n'+(a&&a.summary?a.summary:'')+'\n\nRead the full insight:\n'+liUrl(a);
+  }
+  function openLinkedIn(a){
+    liCurrent=a;
+    $('#li-text').value=liCaption(a); // .value assignment never parses HTML (injection-safe)
+    toast($('#li-toast'),'');
+    $('#li-modal').classList.remove('hidden');
+  }
+  $('#li-close').addEventListener('click',function(){ $('#li-modal').classList.add('hidden'); });
+  $('#li-copy').addEventListener('click',async function(){ var ok=await copyText($('#li-text').value); toast($('#li-toast'),ok?'Post text copied.':'Copy failed — select the text and copy manually.',!ok); });
+  $('#li-copy-link').addEventListener('click',async function(){ if(!liCurrent) return; var ok=await copyText(liUrl(liCurrent)); toast($('#li-toast'),ok?'Article link copied.':'Copy failed — copy the link manually.',!ok); });
+  $('#li-open').addEventListener('click',function(){ if(!liCurrent) return; window.open('https://www.linkedin.com/sharing/share-offsite/?url='+encodeURIComponent(liUrl(liCurrent)),'_blank','noopener'); });
+
+  boot();
+})();
+</script>
+</body>
+</html>

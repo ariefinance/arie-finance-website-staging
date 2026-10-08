@@ -289,7 +289,7 @@
   // sanitizeBody remains the authoritative security boundary.
   function clientSanitize(html){
     var tpl=document.createElement('div'); tpl.innerHTML=String(html||'');
-    var ALLOWED={P:1,H1:1,H2:1,H3:1,UL:1,OL:1,LI:1,STRONG:1,B:1,EM:1,I:1,A:1,BLOCKQUOTE:1,BR:1,
+    var ALLOWED={P:1,H1:1,H2:1,H3:1,H4:1,H5:1,H6:1,UL:1,OL:1,LI:1,STRONG:1,B:1,EM:1,I:1,A:1,BLOCKQUOTE:1,BR:1,
       TABLE:1,THEAD:1,TBODY:1,TR:1,TH:1,TD:1,DIV:1,SPAN:1,FONT:1};
     function clean(node){
       var kids=Array.prototype.slice.call(node.childNodes);
@@ -300,16 +300,27 @@
         if(!ALLOWED[tag]){ node.removeChild(n); return; }
         // normalise Google Docs normal-weight bold -> unwrap
         if((tag==='B'||tag==='STRONG')){
-          var fw=(n.getAttribute('style')||'').match(/font-weight\s*:\s*(normal|400)/i);
+          // Only the real CSS `font-weight` property, not Microsoft-prefixed ones
+          // such as `mso-bidi-font-weight:normal`, which must not unbold real bold.
+          var fw=(n.getAttribute('style')||'').match(/(?:^|[;\s"'])font-weight\s*:\s*(normal|400)\b/i);
           if(fw){ unwrap(n); return; }
         }
         clean(n);
-        // map/rename
-        if(tag==='B') rename(n,'strong');
-        else if(tag==='I') rename(n,'em');
-        else if(tag==='H1') rename(n,'h2');
-        else if(tag==='DIV') rename(n,'p');
-        else if(tag==='SPAN'||tag==='FONT') unwrap(n);
+        // map/rename (reassign n so attribute stripping below applies to the new node).
+        // Headings normalise into the ARIE article model (only h2/h3): H1/H2->h2, H3-H6->h3.
+        // Word emits headings as styled <p> (class MsoHeadingN / mso-style-name:heading N),
+        // so detect those here, BEFORE class/style attributes are stripped, to preserve intent.
+        if(tag==='B') n=rename(n,'strong');
+        else if(tag==='I') n=rename(n,'em');
+        else if(tag==='H1') n=rename(n,'h2');
+        else if(tag==='H4'||tag==='H5'||tag==='H6') n=rename(n,'h3');
+        else if(tag==='DIV') n=rename(n,'p');
+        else if(tag==='P'){
+          var hc=(n.getAttribute('class')||'')+' '+(n.getAttribute('style')||'');
+          if(/mso-?style-?name\s*:\s*heading\s*[12]\b|MsoTitle\b|MsoHeading\s*[12]\b/i.test(hc)) n=rename(n,'h2');
+          else if(/mso-?style-?name\s*:\s*heading\b|MsoHeading\s*[3-9]\b|MsoSubtitle\b/i.test(hc)) n=rename(n,'h3');
+        }
+        else if(tag==='SPAN'||tag==='FONT'){ unwrap(n); return; }
         // strip all attributes except href on <a>
         var keep = n.tagName==='A' ? ['href'] : [];
         Array.prototype.slice.call(n.attributes||[]).forEach(function(at){
@@ -324,6 +335,21 @@
     }
     function rename(el,name){ var r=document.createElement(name); while(el.firstChild) r.appendChild(el.firstChild); Array.prototype.slice.call(el.attributes).forEach(function(a){r.setAttribute(a.name,a.value);}); el.parentNode.replaceChild(r,el); return r; }
     function unwrap(el){ var p=el.parentNode; while(el.firstChild) p.insertBefore(el.firstChild,el); p.removeChild(el); }
+    // Remove a leading bullet glyph + following whitespace (including non-breaking
+    // spaces) from an element, operating on the decoded text node so &nbsp; markup
+    // can't let the glyph survive. Preserves inner formatting (e.g. bold).
+    function stripLeadingBullet(container){
+      function firstText(node){
+        for(var i=0;i<node.childNodes.length;i++){
+          var c=node.childNodes[i];
+          if(c.nodeType===3){ if(/[^\s ]/.test(c.nodeValue)) return c; continue; }
+          if(c.nodeType===1){ var t=firstText(c); if(t) return t; }
+        }
+        return null;
+      }
+      var tn=firstText(container);
+      if(tn) tn.nodeValue=tn.nodeValue.replace(/^[\s ]*[•·▪◦‣o-]+[\s ]*/,'');
+    }
     clean(tpl);
     // Word bullets: paragraphs beginning with a bullet glyph -> a real list
     var blocks=Array.prototype.slice.call(tpl.children), i=0;
@@ -332,7 +358,7 @@
       if(el.tagName==='P' && /^\s*[•·▪◦‣o-]\s+/.test(el.textContent)){
         var ul=document.createElement('ul');
         while(i<blocks.length && blocks[i].tagName==='P' && /^\s*[•·▪◦‣o-]\s+/.test(blocks[i].textContent)){
-          var li=document.createElement('li'); li.innerHTML=blocks[i].innerHTML.replace(/^\s*[•·▪◦‣o-]\s+/,'');
+          var li=document.createElement('li'); li.innerHTML=blocks[i].innerHTML; stripLeadingBullet(li);
           ul.appendChild(li); tpl.removeChild(blocks[i]); blocks.splice(i,1);
         }
         tpl.insertBefore(ul, blocks[i]||null); blocks=Array.prototype.slice.call(tpl.children);

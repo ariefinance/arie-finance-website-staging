@@ -87,7 +87,21 @@
   .modal .inner{width:100%;max-width:760px;background:#fff;border-radius:8px;overflow:hidden;}
   .modal .mh{display:flex;align-items:center;justify-content:space-between;padding:12px 18px;border-bottom:1px solid var(--line);background:#FAFAF8;}
   .modal iframe{width:100%;height:70vh;border:0;background:#fff;}
-  @media(max-width:560px){.bar strong{font-size:13px;}.wrap{padding:16px 14px 50px;}}
+  /* top back nav, help link, edit-status, sticky actions, how-it-works */
+  .topnav{margin-bottom:12px;}
+  .topnav button{background:none;color:var(--navy);border:0;padding:4px 0;font-size:13px;font-weight:600;cursor:pointer;}
+  .topnav button:hover{text-decoration:underline;}
+  .linklike{background:none;border:0;color:var(--navy);font-size:12px;font-weight:600;text-decoration:underline;cursor:pointer;padding:0;}
+  .status-box{margin:0 0 16px;padding:11px 14px;background:var(--bom);border:1px solid var(--line);border-radius:6px;font-size:12px;color:var(--slate);line-height:1.6;}
+  .status-box strong{color:var(--navy);}
+  .help-copy{font-size:12px;color:var(--meta);margin:8px 0 0;line-height:1.6;}
+  .editor-actions{position:sticky;bottom:0;background:#fff;border-top:1px solid var(--line);margin:22px -22px -22px;padding:14px 22px;display:flex;flex-wrap:wrap;gap:10px;align-items:center;border-radius:0 0 8px 8px;}
+  .how ol{margin:4px 0 2px 18px;}
+  .how li{margin:7px 0;}
+  .how li strong{color:var(--navy);}
+  .empty{text-align:center;padding:14px 0 4px;}
+  .empty p{font-size:14px;color:var(--meta);margin-bottom:14px;}
+  @media(max-width:560px){.bar strong{font-size:13px;}.wrap{padding:16px 14px 50px;}.card{padding:18px;}.editor-actions{margin:18px -18px -18px;padding:12px 18px;}}
 </style>
 </head>
 <body>
@@ -118,10 +132,28 @@
         <div style="display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;">
           <div><h1>Published articles</h1><p class="sub" style="margin:0;">Manage ARIE Insights. No GitHub, HTML or Markdown required.</p></div>
           <div style="display:flex;gap:10px;flex-wrap:wrap;">
-            <button id="new-insights-update" class="secondary" type="button">Create Insights Update</button>
-            <button id="new-article" type="button">+ New article</button>
+            <button id="new-insights-update" class="secondary" type="button" title="Select 2–4 published articles and prepare one combined client email." aria-label="Create Insights Update: select 2–4 published articles and prepare one combined client email">Create Insights Update</button>
+            <button id="new-article" type="button" title="Start a new ARIE Insights article." aria-label="New article">+ New article</button>
           </div>
         </div>
+
+        <details class="guidance how" id="how-it-works">
+          <summary>How ARIE Insights works</summary>
+          <div class="guidance__body" id="how-body">
+            <ol>
+              <li><strong>Create an article.</strong> Select <em>New article</em> and add the title, category, short summary and article content.</li>
+              <li><strong>Preview it.</strong> Use <em>Preview</em> to see how the article will appear on the ARIE website. Previewing does not publish anything.</li>
+              <li><strong>Review and publish.</strong> Once the article has completed ARIE’s internal review, confirm approval and select <em>Publish article</em>.</li>
+              <li><strong>Share one article.</strong> Use <em>Email</em> to prepare a formatted client email for one published article. Use <em>LinkedIn</em> to prepare a suggested LinkedIn post for manual sharing.</li>
+              <li><strong>Share several together.</strong> Use <em>Create Insights Update</em> to select 2–4 published articles and prepare one combined ARIE-branded client email.</li>
+              <li><strong>Update an article later.</strong> Use <em>Edit</em> to make changes. The existing article web address stays the same.</li>
+              <li><strong>Remove an article.</strong> Use <em>Unpublish</em> only when an article should no longer be publicly available. Previously shared links will stop working.</li>
+            </ol>
+            <p class="guidance__note">Published articles remain in the ARIE Insights library and can be edited, emailed, shared on LinkedIn or added to an Insights Update again at any time.</p>
+          </div>
+        </details>
+        <p class="help-copy"><strong>Email</strong> shares one article. <strong>Create Insights Update</strong> combines 2–4 published articles into one client email.</p>
+
         <div id="list-body" style="margin-top:16px;"></div>
         <div class="toast" id="list-toast" role="status" aria-live="polite"></div>
       </div>
@@ -130,28 +162,11 @@
     <!-- EDITOR -->
     <div id="view-editor" class="hidden">
       <div class="card">
+        <div class="topnav"><button id="editor-back" type="button" title="Return to the Published Articles screen." aria-label="Back to the Published Articles screen">&larr; Back to articles</button></div>
         <h1 id="editor-title">New article</h1>
         <p class="sub" id="editor-sub">Write the article, preview it, confirm internal approval, then publish.</p>
-
-        <details class="guidance">
-          <summary>Article examples &amp; guidance</summary>
-          <div class="guidance__body">
-            <p><strong>You can create an Insight in two ways:</strong></p>
-            <ol>
-              <li>Write an original article for an external business audience.</li>
-              <li>Adapt suitable material from the internal <em>ARIE Digest</em> for a public audience — rewrite it in your own words; do not copy it.</li>
-            </ol>
-            <p>There is no automatic Digest&nbsp;&rarr;&nbsp;Insights import. Every article still needs ARIE’s internal review before it is published.</p>
-            <p><strong>Example — ARIE Digest, 7 October 2026:</strong></p>
-            <ul>
-              <li>“Africa Credit Rating Agency launches from Mauritius” could become a <em>Guides</em> or <em>Updates</em> article on what a Mauritius-based rating agency means for internationally active businesses.</li>
-              <li>“SAP Pay” could become an <em>Updates</em> article on a relevant international-payments development.</li>
-            </ul>
-            <p><strong>Suitable public themes:</strong> Mauritius financial-services developments, international-payment developments, business-relevant regulatory developments, practical payment Guides, and ARIE company news.</p>
-            <p><strong>Internal only — do NOT adapt for the public blog:</strong> Film &amp; TV intelligence; Oil &amp; Gas intelligence; ARIE relevance / management commentary; internal QA, research-control or deduplication notes; internal source-access limitations; management-only conclusions.</p>
-            <p class="guidance__note">This panel is guidance only. It never fills in or publishes anything.</p>
-          </div>
-        </details>
+        <div id="edit-status" class="status-box hidden"></div>
+        <p class="help-copy"><button class="linklike" id="editor-help" type="button">Publishing guide — how ARIE Insights works</button></p>
 
         <label for="f-title">Article title</label>
         <input id="f-title" type="text" maxlength="160" autocomplete="off" placeholder="e.g. Understanding international payment delays">
@@ -170,22 +185,22 @@
 
         <label>Article content</label>
         <div class="tb" role="toolbar" aria-label="Formatting">
-          <button type="button" data-cmd="p" title="Paragraph">Paragraph</button>
-          <button type="button" data-cmd="h2" title="Heading">Heading</button>
-          <button type="button" data-cmd="h3" title="Subheading">Subheading</button>
-          <button type="button" data-cmd="bold" title="Bold"><b>Bold</b></button>
-          <button type="button" data-cmd="italic" title="Italic"><i>Italic</i></button>
-          <button type="button" data-cmd="ul" title="Bullet list">Bullets</button>
-          <button type="button" data-cmd="ol" title="Numbered list">Numbered list</button>
-          <button type="button" data-cmd="quote" title="Quote">Quote</button>
-          <button type="button" data-cmd="link" title="Add link">Add link</button>
-          <button type="button" data-cmd="unlink" title="Remove link">Remove link</button>
+          <button type="button" data-cmd="p" title="Normal article text." aria-label="Paragraph: normal article text">Paragraph</button>
+          <button type="button" data-cmd="h2" title="Main section heading." aria-label="Heading: main section heading">Heading</button>
+          <button type="button" data-cmd="h3" title="Heading within a section." aria-label="Subheading: heading within a section">Subheading</button>
+          <button type="button" data-cmd="bold" title="Make selected text bold." aria-label="Bold: make selected text bold"><b>Bold</b></button>
+          <button type="button" data-cmd="italic" title="Make selected text italic." aria-label="Italic: make selected text italic"><i>Italic</i></button>
+          <button type="button" data-cmd="ul" title="Create a bullet list." aria-label="Bullets: create a bullet list">Bullets</button>
+          <button type="button" data-cmd="ol" title="Create a numbered list." aria-label="Numbered list: create a numbered list">Numbered list</button>
+          <button type="button" data-cmd="quote" title="Format selected text as a quotation." aria-label="Quote: format selected text as a quotation">Quote</button>
+          <button type="button" data-cmd="link" title="Add a web or email link to selected text." aria-label="Add link to selected text">Add link</button>
+          <button type="button" data-cmd="unlink" title="Remove the link from selected text." aria-label="Remove link from selected text">Remove link</button>
         </div>
         <div id="editor" class="editor is-empty" contenteditable="true" aria-label="Article content" data-ph="Write or paste the approved article here."></div>
 
         <div id="review-wrap" class="hidden" style="margin-top:16px;">
-          <label style="display:flex;gap:9px;align-items:flex-start;font-weight:500;color:var(--ink);font-size:13px;">
-            <input id="f-review" type="checkbox" style="width:auto;margin-top:3px;">
+          <label style="display:flex;gap:9px;align-items:flex-start;font-weight:500;color:var(--ink);font-size:13px;" title="Adds a ‘Last reviewed’ date to this Guide after a genuine content review.">
+            <input id="f-review" type="checkbox" style="width:auto;margin-top:3px;" aria-label="Record this update as an editorial review today — adds a Last reviewed date to this Guide">
             Record this update as an editorial review today (Guides only — sets “Last reviewed”).
           </label>
         </div>
@@ -195,13 +210,14 @@
           <label for="f-confirm">I confirm this article has completed ARIE’s internal review and is approved for publication.</label>
         </div>
 
-        <div class="btns">
-          <button id="btn-preview" class="secondary" type="button">Preview</button>
-          <button id="btn-publish" type="button" disabled>Publish article</button>
-          <button id="btn-cancel" class="secondary" type="button">Cancel</button>
-        </div>
         <p class="hint" id="publish-hint">Complete all fields and confirm internal approval to publish.</p>
         <div class="toast" id="editor-toast" role="status" aria-live="polite"></div>
+        <div class="editor-actions">
+          <button id="btn-preview" class="secondary" type="button" title="See how the article will look on the ARIE website. This does not publish it." aria-label="Preview: see how the article will look on the ARIE website; this does not publish it">Preview</button>
+          <button id="btn-publish" type="button" disabled title="Publish this article to ARIE Insights after internal approval." aria-label="Publish this article to ARIE Insights after internal approval">Publish article</button>
+          <span class="spacer"></span>
+          <button id="btn-cancel" class="secondary" type="button" title="Discard and return to the Published Articles screen." aria-label="Cancel and return to the Published Articles screen">Cancel</button>
+        </div>
       </div>
     </div>
 
@@ -212,11 +228,11 @@
         <h1 id="success-title" style="margin-bottom:6px;">Your article has been published</h1>
         <p class="sub">It may take a short moment to appear on the website while the update is deployed.</p>
         <div class="btns" style="justify-content:center;">
-          <a id="s-view" class="secondary" style="padding:10px 16px;border:1px solid var(--navy);color:var(--navy);border-radius:6px;text-decoration:none;display:inline-block;" target="_blank" rel="noopener">View article</a>
-          <a id="s-email" class="secondary" style="padding:10px 16px;border:1px solid var(--navy);color:var(--navy);border-radius:6px;text-decoration:none;display:inline-block;" target="_blank" rel="noopener">Prepare client email</a>
-          <button id="s-copy" class="secondary" type="button">Copy link</button>
-          <button id="s-linkedin" class="secondary" type="button">Share on LinkedIn</button>
-          <button id="s-back" type="button">Back to articles</button>
+          <a id="s-view" class="secondary" style="padding:10px 16px;border:1px solid var(--navy);color:var(--navy);border-radius:6px;text-decoration:none;display:inline-block;" target="_blank" rel="noopener" title="Open the public article." aria-label="Open the public article">View article</a>
+          <a id="s-email" class="secondary" style="padding:10px 16px;border:1px solid var(--navy);color:var(--navy);border-radius:6px;text-decoration:none;display:inline-block;" target="_blank" rel="noopener" title="Prepare a formatted client email for this article." aria-label="Prepare a formatted client email for this article">Prepare client email</a>
+          <button id="s-copy" class="secondary" type="button" title="Copy the public article link." aria-label="Copy the public article link">Copy link</button>
+          <button id="s-linkedin" class="secondary" type="button" title="Prepare a suggested LinkedIn post and open LinkedIn for manual sharing." aria-label="Prepare a suggested LinkedIn post and open LinkedIn for manual sharing">Share on LinkedIn</button>
+          <button id="s-back" type="button" title="Return to the Published Articles screen." aria-label="Return to the Published Articles screen">Back to articles</button>
         </div>
         <div class="toast" id="success-toast" role="status" aria-live="polite" style="text-align:center;"></div>
       </div>
@@ -264,6 +280,14 @@
     <div class="inner">
       <div class="mh"><strong style="font-size:13px;">Preview</strong><button id="preview-close" class="secondary" type="button">Close</button></div>
       <iframe id="preview-frame" title="Article preview"></iframe>
+    </div>
+  </div>
+
+  <!-- How ARIE Insights works (same content as the list panel) -->
+  <div id="help-modal" class="modal hidden">
+    <div class="inner" style="max-width:560px;">
+      <div class="mh"><strong style="font-size:13px;">How ARIE Insights works</strong><button id="help-close" class="secondary" type="button">Close</button></div>
+      <div class="guidance__body how" id="help-body" style="padding:18px;"></div>
     </div>
   </div>
 
@@ -442,16 +466,20 @@
     if(!r.ok){ toast($('#list-toast'),msg(r.json.error),true); return; }
     var arts=r.json.articles||[];
     lastArticles=arts;
-    if(!arts.length){ $('#list-body').innerHTML='<p class="sub" style="margin:0;">No articles yet. Click “New article” to publish the first one.</p>'; return; }
+    if(!arts.length){
+      $('#list-body').innerHTML='<div class="empty"><p>No Insights published yet.</p><button id="empty-new" type="button">Create first article</button></div>';
+      $('#empty-new').addEventListener('click',newArticle);
+      return;
+    }
     var rows=arts.map(function(a){
       return '<tr><td><span class="pill">'+esc(a.category)+'</span><br><strong>'+esc(a.title)+'</strong></td>'+
         '<td>'+esc(fmtDate(a.published))+(a.lastReviewed?'<br><span class="hint">Reviewed '+esc(fmtDate(a.lastReviewed))+'</span>':'')+'</td>'+
         '<td><div class="acts">'+
-          '<button class="secondary" data-edit="'+esc(a.slug)+'" type="button">Edit</button>'+
-          '<a class="secondary" href="/insights/'+esc(a.slug)+'/" target="_blank" rel="noopener" style="border:1px solid var(--navy);color:var(--navy);">View</a>'+
-          '<button class="secondary" data-email="'+esc(a.slug)+'" type="button">Email</button>'+
-          '<button class="secondary" data-linkedin="'+esc(a.slug)+'" type="button" title="Share on LinkedIn">LinkedIn</button>'+
-          '<button class="danger" data-unpub="'+esc(a.slug)+'" type="button">Unpublish</button>'+
+          '<button class="secondary" data-edit="'+esc(a.slug)+'" type="button" title="Edit this published article." aria-label="Edit this published article">Edit</button>'+
+          '<a class="secondary" href="/insights/'+esc(a.slug)+'/" target="_blank" rel="noopener" style="border:1px solid var(--navy);color:var(--navy);" title="Open the public article." aria-label="Open the public article">View</a>'+
+          '<button class="secondary" data-email="'+esc(a.slug)+'" type="button" title="Prepare a formatted client email for this article." aria-label="Prepare a formatted client email for this article">Email</button>'+
+          '<button class="secondary" data-linkedin="'+esc(a.slug)+'" type="button" title="Prepare a suggested LinkedIn post and open LinkedIn for manual sharing." aria-label="Prepare a suggested LinkedIn post and open LinkedIn for manual sharing">LinkedIn</button>'+
+          '<button class="danger" data-unpub="'+esc(a.slug)+'" type="button" title="Remove this article from the public website. Previously shared links will stop working." aria-label="Unpublish: remove this article from the public website; previously shared links will stop working">Unpublish</button>'+
         '</div></td></tr>';
     }).join('');
     $('#list-body').innerHTML='<table><thead><tr><th>Article</th><th>Published</th><th>Actions</th></tr></thead><tbody>'+rows+'</tbody></table>';
@@ -508,13 +536,25 @@
     $('#f-summary').value='';$('#editor').innerHTML='';
     $('#f-confirm').checked=false;$('#review-wrap').classList.add('hidden');$('#f-review').checked=false;
     $('#btn-publish').textContent='Publish article';
+    $('#btn-publish').title='Publish this article to ARIE Insights after internal approval.';
+    $('#btn-publish').setAttribute('aria-label','Publish this article to ARIE Insights after internal approval');
+    $('#edit-status').classList.add('hidden'); $('#edit-status').innerHTML='';
     toast($('#editor-toast'),''); refreshEditorState(); markClean(); show('view-editor'); $('#f-title').focus();
   }
   $('#new-article').addEventListener('click',newArticle);
-  $('#btn-cancel').addEventListener('click',function(){
+  // One shared leave path (top Back and bottom Cancel) — reuses the dirty-state check.
+  function leaveEditor(){
     if(isDirty() && !confirm('You have unsaved changes. Leave without publishing them?')) return;
     show('view-list'); loadList();
+  }
+  $('#btn-cancel').addEventListener('click',leaveEditor);
+  $('#editor-back').addEventListener('click',leaveEditor);
+  // Publishing-guide help (reuses the same How-it-works copy as the list panel).
+  $('#editor-help').addEventListener('click',function(){
+    $('#help-body').innerHTML=$('#how-body').innerHTML;
+    $('#help-modal').classList.remove('hidden');
   });
+  $('#help-close').addEventListener('click',function(){ $('#help-modal').classList.add('hidden'); });
 
   async function openEditor(slug){
     var r=await api('/articles?slug='+encodeURIComponent(slug));
@@ -529,6 +569,11 @@
     $('#f-confirm').checked=false;
     $('#review-wrap').classList.toggle('hidden', m.category!=='Guides'); $('#f-review').checked=false;
     $('#btn-publish').textContent='Update article';
+    $('#btn-publish').title='Save these changes to the published article. Its web address stays the same.';
+    $('#btn-publish').setAttribute('aria-label','Update article: save these changes to the published article; its web address stays the same');
+    var st='<strong>Published · '+esc(fmtDate(m.published))+'</strong><br>Changes are not live until you click Update article.';
+    if(m.lastReviewed) st+='<br>Last reviewed · '+esc(fmtDate(m.lastReviewed));
+    $('#edit-status').innerHTML=st; $('#edit-status').classList.remove('hidden');
     toast($('#editor-toast'),''); refreshEditorState(); markClean(); show('view-editor'); $('#f-title').focus();
   }
 
@@ -619,7 +664,7 @@
       $('#success-title').textContent = wasCreate ? 'Your article has been published' : 'Your article has been updated';
       $('#s-view').href=url;
       $('#s-email').href=emailHelperUrl(a);
-      $('#s-copy').onclick=function(){ if(navigator.clipboard&&navigator.clipboard.writeText){navigator.clipboard.writeText(url);} toast($('#success-toast'),'Link copied.'); };
+      $('#s-copy').onclick=function(){ if(navigator.clipboard&&navigator.clipboard.writeText){navigator.clipboard.writeText(url);} toast($('#success-toast'),'Article link copied.'); };
       $('#s-linkedin').onclick=function(){ openLinkedIn(a); };
       toast($('#success-toast'),''); show('view-success');
     } else if(r.status===401){ show('view-login'); }
@@ -699,7 +744,7 @@
     var pub=lastArticles.slice(), list=$('#u-list');
     $('#u-subject').value=DEFAULT_SUBJECT;
     if(pub.length<2){
-      list.innerHTML='<p class="sub" style="margin:0;">You need at least two published articles to create an Insights Update. Publish more articles first.</p>';
+      list.innerHTML='<p class="sub" style="margin:0;">Publish at least two articles to create an Insights Update.</p>';
       $('#u-count').textContent=''; $('#u-email-copy').disabled=true;
       $('#u-preview').srcdoc='<!doctype html><body style="font-family:Arial,sans-serif;color:#6B6456;padding:24px;font-size:14px;">Publish at least two articles to build an Insights Update.</body>';
       return;
@@ -737,7 +782,7 @@
     var arts=uArts(); if(arts.length<2||arts.length>4) return;
     var built=buildUpdate(arts);
     var ok=await copyRich(built.body,built.text);
-    toast($('#u-toast'),ok?'Formatted email copied. Paste into Outlook or Gmail beneath your greeting.':'Copy failed — open the preview to copy manually.',!ok);
+    toast($('#u-toast'),ok?'Email copied — paste into Outlook or Gmail beneath your greeting.':'Copy failed — open the preview to copy manually.',!ok);
   });
 
   // ---------- Share on LinkedIn (manual: no API, no OAuth, no auto-posting) ----------
@@ -757,7 +802,7 @@
     $('#li-modal').classList.remove('hidden');
   }
   $('#li-close').addEventListener('click',function(){ $('#li-modal').classList.add('hidden'); });
-  $('#li-copy').addEventListener('click',async function(){ var ok=await copyText($('#li-text').value); toast($('#li-toast'),ok?'Post text copied.':'Copy failed — select the text and copy manually.',!ok); });
+  $('#li-copy').addEventListener('click',async function(){ var ok=await copyText($('#li-text').value); toast($('#li-toast'),ok?'LinkedIn post text copied.':'Copy failed — select the text and copy manually.',!ok); });
   $('#li-copy-link').addEventListener('click',async function(){ if(!liCurrent) return; var ok=await copyText(liUrl(liCurrent)); toast($('#li-toast'),ok?'Article link copied.':'Copy failed — copy the link manually.',!ok); });
   $('#li-open').addEventListener('click',function(){ if(!liCurrent) return; window.open('https://www.linkedin.com/sharing/share-offsite/?url='+encodeURIComponent(liUrl(liCurrent)),'_blank','noopener'); });
 

@@ -46,6 +46,25 @@
   .editor.is-empty::before{content:attr(data-ph);color:#9a968c;pointer-events:none;}
   #sum-count{font-weight:600;color:var(--meta);}
   #sum-count.over{color:var(--err);}
+  .guidance{margin:0 0 8px;border:1px solid var(--line);border-radius:6px;background:#FAFAF8;}
+  .guidance>summary{cursor:pointer;padding:9px 12px;font-size:12px;font-weight:600;color:var(--navy);list-style:none;}
+  .guidance>summary::-webkit-details-marker{display:none;}
+  .guidance>summary::before{content:"›";display:inline-block;margin-right:7px;transition:transform .15s;}
+  .guidance[open]>summary::before{transform:rotate(90deg);}
+  .guidance__body{padding:0 14px 12px;font-size:12px;color:var(--slate);line-height:1.6;}
+  .guidance__body ol,.guidance__body ul{margin:6px 0 8px 18px;}
+  .guidance__body p{margin:8px 0;}
+  .guidance__note{color:var(--meta);font-style:italic;}
+  .upd-list{border:1px solid var(--line);border-radius:6px;max-height:320px;overflow:auto;margin-top:4px;}
+  .upd-item{display:flex;gap:10px;align-items:flex-start;padding:12px 14px;border-bottom:1px solid var(--line);}
+  .upd-item:last-child{border-bottom:0;}
+  .upd-item input{margin-top:3px;flex-shrink:0;width:auto;}
+  .upd-item .t{font-weight:600;color:var(--navy);font-size:14px;display:block;margin:2px 0;}
+  .upd-item .d{font-size:12px;color:var(--meta);}
+  .upd-count{font-size:12px;color:var(--meta);margin-top:8px;}
+  .upd-grid{display:grid;grid-template-columns:minmax(300px,1fr) minmax(320px,560px);gap:24px;align-items:start;}
+  @media(max-width:860px){.upd-grid{grid-template-columns:1fr;}}
+  .upd-grid iframe{width:100%;height:560px;border:1px solid var(--line);border-radius:8px;background:#fff;}
   .editor h2{font-size:21px;margin:18px 0 8px;color:var(--navy);}
   .editor h3{font-size:18px;margin:14px 0 6px;color:var(--navy);}
   .editor p{margin:0 0 12px;}.editor ul,.editor ol{margin:0 0 12px 22px;}
@@ -98,7 +117,10 @@
       <div class="card">
         <div style="display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;">
           <div><h1>Published articles</h1><p class="sub" style="margin:0;">Manage ARIE Insights. No GitHub, HTML or Markdown required.</p></div>
-          <button id="new-article" type="button">+ New article</button>
+          <div style="display:flex;gap:10px;flex-wrap:wrap;">
+            <button id="new-insights-update" class="secondary" type="button">Create Insights Update</button>
+            <button id="new-article" type="button">+ New article</button>
+          </div>
         </div>
         <div id="list-body" style="margin-top:16px;"></div>
         <div class="toast" id="list-toast" role="status" aria-live="polite"></div>
@@ -110,6 +132,26 @@
       <div class="card">
         <h1 id="editor-title">New article</h1>
         <p class="sub" id="editor-sub">Write the article, preview it, confirm internal approval, then publish.</p>
+
+        <details class="guidance">
+          <summary>Article examples &amp; guidance</summary>
+          <div class="guidance__body">
+            <p><strong>You can create an Insight in two ways:</strong></p>
+            <ol>
+              <li>Write an original article for an external business audience.</li>
+              <li>Adapt suitable material from the internal <em>ARIE Digest</em> for a public audience — rewrite it in your own words; do not copy it.</li>
+            </ol>
+            <p>There is no automatic Digest&nbsp;&rarr;&nbsp;Insights import. Every article still needs ARIE’s internal review before it is published.</p>
+            <p><strong>Example — ARIE Digest, 7 October 2026:</strong></p>
+            <ul>
+              <li>“Africa Credit Rating Agency launches from Mauritius” could become a <em>Guides</em> or <em>Updates</em> article on what a Mauritius-based rating agency means for internationally active businesses.</li>
+              <li>“SAP Pay” could become an <em>Updates</em> article on a relevant international-payments development.</li>
+            </ul>
+            <p><strong>Suitable public themes:</strong> Mauritius financial-services developments, international-payment developments, business-relevant regulatory developments, practical payment Guides, and ARIE company news.</p>
+            <p><strong>Internal only — do NOT adapt for the public blog:</strong> Film &amp; TV intelligence; Oil &amp; Gas intelligence; ARIE relevance / management commentary; internal QA, research-control or deduplication notes; internal source-access limitations; management-only conclusions.</p>
+            <p class="guidance__note">This panel is guidance only. It never fills in or publishes anything.</p>
+          </div>
+        </details>
 
         <label for="f-title">Article title</label>
         <input id="f-title" type="text" maxlength="160" autocomplete="off" placeholder="e.g. Understanding international payment delays">
@@ -178,7 +220,43 @@
         <div class="toast" id="success-toast" role="status" aria-live="polite" style="text-align:center;"></div>
       </div>
     </div>
+
+    <!-- INSIGHTS UPDATE (multi-article client email) -->
+    <div id="view-update" class="hidden">
+      <div class="card">
+        <div style="display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;">
+          <div><h1>Create an Insights Update</h1><p class="sub" style="margin:0;">Select 2–4 published articles to share together in one client email.</p></div>
+          <button id="u-back" class="secondary" type="button">Back to articles</button>
+        </div>
+        <div class="upd-grid" style="margin-top:16px;">
+          <div>
+            <label style="display:block;font-size:12px;font-weight:600;color:var(--slate);margin-bottom:6px;">Choose articles</label>
+            <div id="u-list" class="upd-list"></div>
+            <div class="upd-count" id="u-count">0 selected</div>
+
+            <label for="u-intro" style="display:block;font-size:12px;font-weight:600;color:var(--slate);margin:16px 0 6px;">Short introduction (optional)</label>
+            <textarea id="u-intro" style="width:100%;font:inherit;font-size:14px;border:1px solid var(--line);border-radius:6px;padding:9px 11px;min-height:64px;resize:vertical;"></textarea>
+
+            <label for="u-subject" style="display:block;font-size:12px;font-weight:600;color:var(--slate);margin:14px 0 6px;">Subject</label>
+            <input id="u-subject" type="text" style="width:100%;font:inherit;font-size:14px;border:1px solid var(--line);border-radius:6px;padding:9px 11px;">
+
+            <div class="btns">
+              <button id="u-subject-copy" class="secondary" type="button">Copy Subject</button>
+              <button id="u-email-copy" type="button" disabled>Copy Formatted Email</button>
+            </div>
+            <div class="toast" id="u-toast" role="status" aria-live="polite"></div>
+            <p class="hint">Select 2–4 articles, then copy the email and paste it into Outlook or Gmail. Add recipients and a personal note, then send through ARIE’s approved process.</p>
+          </div>
+          <div>
+            <div style="display:flex;align-items:baseline;justify-content:space-between;margin-bottom:10px;"><strong style="font-size:13px;color:var(--meta);">Preview</strong><span class="hint" style="margin:0;">updates as you choose</span></div>
+            <iframe id="u-preview" title="Insights Update preview" sandbox=""></iframe>
+          </div>
+        </div>
+      </div>
+    </div>
   </div>
+
+  <div id="u-rich-fallback" contenteditable="true" aria-hidden="true" style="position:fixed;left:-9999px;top:0;white-space:normal;"></div>
 
   <!-- Preview modal -->
   <div id="preview-modal" class="modal hidden">
@@ -193,9 +271,10 @@
   var $=function(s){return document.querySelector(s);};
   var API='/api/insights';
   var state={mode:'create',slug:'',published:null};
+  var lastArticles=[];
 
   function show(view){
-    ['view-login','view-list','view-editor','view-success'].forEach(function(v){ $('#'+v).classList.toggle('hidden', v!==view); });
+    ['view-login','view-list','view-editor','view-success','view-update'].forEach(function(v){ $('#'+v).classList.toggle('hidden', v!==view); });
     $('#logout').classList.toggle('hidden', view==='view-login');
   }
   // Build the Email Helper URL, prefilled from an article's fields.
@@ -311,6 +390,7 @@
     if(r.status===401){ show('view-login'); return; }
     if(!r.ok){ toast($('#list-toast'),msg(r.json.error),true); return; }
     var arts=r.json.articles||[];
+    lastArticles=arts;
     if(!arts.length){ $('#list-body').innerHTML='<p class="sub" style="margin:0;">No articles yet. Click “New article” to publish the first one.</p>'; return; }
     var rows=arts.map(function(a){
       return '<tr><td><span class="pill">'+esc(a.category)+'</span><br><strong>'+esc(a.title)+'</strong></td>'+
@@ -493,6 +573,115 @@
   });
 
   $('#s-back').addEventListener('click',function(){ show('view-list'); loadList(); });
+
+  // ---------- ARIE Insights Update (manual multi-article client email) ----------
+  // Builds a formatted email from 2–4 EXISTING published articles, reusing the
+  // single-article email visual language. No sending, no lists, no scheduling —
+  // the relationship manager copies the subject + formatted email and pastes
+  // them into Outlook/Gmail beneath a personal greeting.
+  var DEFAULT_INTRO='Please find below a selection of our latest insights on developments relevant to international businesses and cross-border payments.';
+  var DEFAULT_SUBJECT='ARIE Insights — Latest insights';
+  var VIEW_ALL='https://www.ariefinance.com/insights/';
+  var FOOTER_REG='ARIE Finance Ltd is a licensed Payment Intermediary Services company regulated by the Financial Services Commission of Mauritius. Licence No. GB25205028. ARIE Finance Ltd is not a bank. Client funds are held in safeguarded accounts and are not covered by any deposit guarantee scheme.';
+  function eyebrowFor(cat){ var m={'Guides':'GUIDE','Updates':'UPDATE','ARIE News':'ARIE NEWS'}; return 'ARIE INSIGHTS · '+(m[cat]||String(cat||'').toUpperCase()); }
+  function artUrl(slug){ return VIEW_ALL+encodeURIComponent(slug)+'/'; }
+
+  function buildUpdate(arts){
+    var intro=($('#u-intro').value||'').trim();
+    var FA="'Hanken Grotesk',Arial,Helvetica,sans-serif", FS="'Newsreader',Georgia,'Times New Roman',serif";
+    var rows=[];
+    rows.push('<tr><td align="center" style="padding:28px 32px 6px;"><img src="https://www.ariefinance.com/insights/assets/arie-logo-email.png" alt="ARIE Finance" width="150" style="display:block;width:150px;max-width:60%;height:auto;border:0;"></td></tr>');
+    rows.push('<tr><td align="center" style="padding:10px 32px 0;"><div style="font-family:'+FA+';font-size:11px;font-weight:700;letter-spacing:2px;color:#6B5D30;text-transform:uppercase;">ARIE INSIGHTS</div></td></tr>');
+    rows.push('<tr><td style="padding:10px 32px 2px;"><h1 style="margin:0;font-family:'+FS+';font-size:23px;font-weight:400;line-height:1.3;color:#06113A;text-align:center;">Latest insights from ARIE Finance</h1></td></tr>');
+    if(intro) rows.push('<tr><td style="padding:12px 32px 2px;"><p style="margin:0;font-family:'+FA+';font-size:15px;line-height:1.65;color:#3A4256;text-align:center;">'+esc(intro)+'</p></td></tr>');
+    rows.push('<tr><td style="padding:14px 32px 0;"><div style="border-top:1px solid #E8E4DA;font-size:0;line-height:0;">&nbsp;</div></td></tr>');
+    arts.forEach(function(a,i){
+      if(i>0) rows.push('<tr><td style="padding:0 32px;"><div style="border-top:1px solid #E8E4DA;font-size:0;line-height:0;">&nbsp;</div></td></tr>');
+      rows.push('<tr><td style="padding:16px 32px 4px;">'+
+        '<div style="font-family:'+FA+';font-size:10px;font-weight:700;letter-spacing:2px;color:#6B5D30;text-transform:uppercase;margin:0 0 6px;">'+esc(eyebrowFor(a.category))+'</div>'+
+        '<h2 style="margin:0 0 8px;font-family:'+FS+';font-size:19px;font-weight:400;line-height:1.3;color:#06113A;">'+esc(a.title)+'</h2>'+
+        '<p style="margin:0 0 10px;font-family:'+FA+';font-size:14px;line-height:1.6;color:#3A4256;">'+esc(a.summary)+'</p>'+
+        '<p style="margin:0 0 14px;"><a href="'+esc(artUrl(a.slug))+'" style="font-family:'+FA+';font-size:13px;font-weight:600;color:#06113A;text-decoration:none;">Read article &rarr;</a></p>'+
+        '</td></tr>');
+    });
+    rows.push('<tr><td align="center" style="padding:14px 32px 30px;border-top:1px solid #E8E4DA;">'+
+      '<table role="presentation" cellpadding="0" cellspacing="0" border="0" align="center"><tr>'+
+      '<td align="center" bgcolor="#06113A" style="padding:13px 34px;"><a href="'+esc(VIEW_ALL)+'" style="font-family:'+FA+';font-size:14px;font-weight:600;color:#ffffff;text-decoration:none;display:inline-block;">View all ARIE Insights &rarr;</a></td>'+
+      '</tr></table></td></tr>');
+    rows.push('<tr><td style="padding:18px 32px 22px;border-top:1px solid #E8E4DA;">'+
+      '<p style="margin:0 0 6px;font-family:'+FA+';font-size:11px;line-height:1.7;color:#6B6456;text-align:center;">'+esc(FOOTER_REG)+'</p>'+
+      '<p style="margin:0;font-family:'+FA+';font-size:11px;line-height:1.7;color:#6B6456;text-align:center;">'+
+      '<a href="https://www.ariefinance.com/" style="color:#6B6456;text-decoration:none;">ariefinance.com</a>&nbsp;&middot;&nbsp;'+
+      '<a href="mailto:customercare@ariefinance.com" style="color:#6B6456;text-decoration:none;">customercare@ariefinance.com</a></p></td></tr>');
+    var body='<table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="background:#ffffff;"><tr><td align="center" style="padding:8px 12px;">'+
+      '<table role="presentation" width="600" cellpadding="0" cellspacing="0" border="0" style="width:600px;max-width:100%;background:#ffffff;border:1px solid #E8E4DA;">'+rows.join('')+'</table></td></tr></table>';
+    var doc='<!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"></head><body style="margin:0;padding:0;background:#ffffff;">'+body+'</body></html>';
+    var txt=['ARIE INSIGHTS — Latest insights from ARIE Finance',''];
+    if(intro){ txt.push(intro,''); }
+    arts.forEach(function(a){ txt.push('['+eyebrowFor(a.category)+']',a.title,a.summary,'Read article: '+artUrl(a.slug),''); });
+    txt.push('View all ARIE Insights: '+VIEW_ALL,'',FOOTER_REG,'ariefinance.com · customercare@ariefinance.com');
+    return {doc:doc,body:body,text:txt.join('\n')};
+  }
+
+  function uSelected(){ return Array.prototype.slice.call($('#u-list').querySelectorAll('input[type=checkbox]:checked')).map(function(c){return c.value;}); }
+  function uArts(){ var sel=uSelected(); return lastArticles.filter(function(a){return sel.indexOf(a.slug)>=0;}); }
+  function updatePreview(){
+    var arts=uArts(), iframe=$('#u-preview');
+    if(arts.length<2){ iframe.srcdoc='<!doctype html><body style="font-family:Arial,sans-serif;color:#6B6456;padding:24px;font-size:14px;">Select 2–4 articles to preview the Insights Update.</body>'; return; }
+    iframe.srcdoc=buildUpdate(arts).doc;
+  }
+  function onUSelect(){
+    var sel=uSelected(), n=sel.length;
+    Array.prototype.forEach.call($('#u-list').querySelectorAll('input[type=checkbox]'),function(c){ if(!c.checked) c.disabled=(n>=4); });
+    $('#u-count').textContent=n+' selected'+(n<2?' — select at least 2':(n>=4?' — maximum reached':''));
+    $('#u-email-copy').disabled=!(n>=2&&n<=4);
+    updatePreview();
+  }
+  function renderUpdate(){
+    toast($('#u-toast'),'');
+    var pub=lastArticles.slice(), list=$('#u-list');
+    $('#u-subject').value=DEFAULT_SUBJECT;
+    if(pub.length<2){
+      list.innerHTML='<p class="sub" style="margin:0;">You need at least two published articles to create an Insights Update. Publish more articles first.</p>';
+      $('#u-count').textContent=''; $('#u-email-copy').disabled=true;
+      $('#u-preview').srcdoc='<!doctype html><body style="font-family:Arial,sans-serif;color:#6B6456;padding:24px;font-size:14px;">Publish at least two articles to build an Insights Update.</body>';
+      return;
+    }
+    if(!$('#u-intro').value) $('#u-intro').value=DEFAULT_INTRO;
+    list.innerHTML=pub.map(function(a){
+      return '<label class="upd-item"><input type="checkbox" value="'+esc(a.slug)+'"> '+
+        '<span><span class="pill">'+esc(a.category)+'</span> <strong>'+esc(a.title)+'</strong></span></label>';
+    }).join('');
+    list.querySelectorAll('input[type=checkbox]').forEach(function(cb){ cb.addEventListener('change',onUSelect); });
+    onUSelect();
+  }
+
+  async function copyText(t){
+    try{ if(navigator.clipboard&&navigator.clipboard.writeText){ await navigator.clipboard.writeText(t); return true; } }catch(e){}
+    try{ var f=$('#u-rich-fallback'); f.textContent=t; var rg=document.createRange(); rg.selectNodeContents(f); var s=window.getSelection(); s.removeAllRanges(); s.addRange(rg); var ok=document.execCommand('copy'); s.removeAllRanges(); f.textContent=''; return ok; }catch(e){}
+    return false;
+  }
+  async function copyRich(html,text){
+    try{
+      if(navigator.clipboard&&window.ClipboardItem){
+        await navigator.clipboard.write([new ClipboardItem({'text/html':new Blob([html],{type:'text/html'}),'text/plain':new Blob([text],{type:'text/plain'})})]);
+        return true;
+      }
+    }catch(e){}
+    try{ var f=$('#u-rich-fallback'); f.innerHTML=html; var rg=document.createRange(); rg.selectNodeContents(f); var s=window.getSelection(); s.removeAllRanges(); s.addRange(rg); var ok=document.execCommand('copy'); s.removeAllRanges(); f.innerHTML=''; return ok; }catch(e){}
+    return false;
+  }
+
+  $('#new-insights-update').addEventListener('click',function(){ show('view-update'); renderUpdate(); });
+  $('#u-back').addEventListener('click',function(){ show('view-list'); loadList(); });
+  $('#u-intro').addEventListener('input',function(){ updatePreview(); });
+  $('#u-subject-copy').addEventListener('click',async function(){ var ok=await copyText(($('#u-subject').value||DEFAULT_SUBJECT)); toast($('#u-toast'),ok?'Subject copied.':'Copy failed — select the subject and copy manually.',!ok); });
+  $('#u-email-copy').addEventListener('click',async function(){
+    var arts=uArts(); if(arts.length<2||arts.length>4) return;
+    var built=buildUpdate(arts);
+    var ok=await copyRich(built.body,built.text);
+    toast($('#u-toast'),ok?'Formatted email copied. Paste into Outlook or Gmail beneath your greeting.':'Copy failed — open the preview to copy manually.',!ok);
+  });
 
   boot();
 })();

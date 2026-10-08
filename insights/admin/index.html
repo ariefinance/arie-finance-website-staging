@@ -215,6 +215,7 @@
           <a id="s-view" class="secondary" style="padding:10px 16px;border:1px solid var(--navy);color:var(--navy);border-radius:6px;text-decoration:none;display:inline-block;" target="_blank" rel="noopener">View article</a>
           <a id="s-email" class="secondary" style="padding:10px 16px;border:1px solid var(--navy);color:var(--navy);border-radius:6px;text-decoration:none;display:inline-block;" target="_blank" rel="noopener">Prepare client email</a>
           <button id="s-copy" class="secondary" type="button">Copy link</button>
+          <button id="s-linkedin" class="secondary" type="button">Share on LinkedIn</button>
           <button id="s-back" type="button">Back to articles</button>
         </div>
         <div class="toast" id="success-toast" role="status" aria-live="polite" style="text-align:center;"></div>
@@ -263,6 +264,24 @@
     <div class="inner">
       <div class="mh"><strong style="font-size:13px;">Preview</strong><button id="preview-close" class="secondary" type="button">Close</button></div>
       <iframe id="preview-frame" title="Article preview"></iframe>
+    </div>
+  </div>
+
+  <!-- Share on LinkedIn modal (manual: no API, no auto-posting) -->
+  <div id="li-modal" class="modal hidden">
+    <div class="inner" style="max-width:560px;">
+      <div class="mh"><strong style="font-size:13px;">Share on LinkedIn</strong><button id="li-close" class="secondary" type="button">Close</button></div>
+      <div style="padding:18px;">
+        <label for="li-text" style="display:block;font-size:12px;font-weight:600;color:var(--slate);margin-bottom:6px;">Suggested post text</label>
+        <textarea id="li-text" style="width:100%;font:inherit;font-size:14px;border:1px solid var(--line);border-radius:6px;padding:10px 12px;min-height:150px;resize:vertical;"></textarea>
+        <div class="btns">
+          <button id="li-copy" type="button">Copy post text</button>
+          <button id="li-copy-link" class="secondary" type="button">Copy article link</button>
+          <button id="li-open" class="secondary" type="button">Open LinkedIn</button>
+        </div>
+        <div class="toast" id="li-toast" role="status" aria-live="polite"></div>
+        <p class="hint">Copy the post text, open LinkedIn, then paste and edit your commentary. Choose your own profile or an ARIE Page you manage, and post manually. LinkedIn builds the link preview from the article page.</p>
+      </div>
     </div>
   </div>
 
@@ -431,6 +450,7 @@
           '<button class="secondary" data-edit="'+esc(a.slug)+'" type="button">Edit</button>'+
           '<a class="secondary" href="/insights/'+esc(a.slug)+'/" target="_blank" rel="noopener" style="border:1px solid var(--navy);color:var(--navy);">View</a>'+
           '<button class="secondary" data-email="'+esc(a.slug)+'" type="button">Email</button>'+
+          '<button class="secondary" data-linkedin="'+esc(a.slug)+'" type="button" title="Share on LinkedIn">LinkedIn</button>'+
           '<button class="danger" data-unpub="'+esc(a.slug)+'" type="button">Unpublish</button>'+
         '</div></td></tr>';
     }).join('');
@@ -438,6 +458,7 @@
     var bySlug={}; arts.forEach(function(a){ bySlug[a.slug]=a; });
     $('#list-body').querySelectorAll('[data-edit]').forEach(function(b){ b.addEventListener('click',function(){ openEditor(b.getAttribute('data-edit')); }); });
     $('#list-body').querySelectorAll('[data-email]').forEach(function(b){ b.addEventListener('click',function(){ var a=bySlug[b.getAttribute('data-email')]; if(a) window.open(emailHelperUrl(a),'_blank','noopener'); }); });
+    $('#list-body').querySelectorAll('[data-linkedin]').forEach(function(b){ b.addEventListener('click',function(){ var a=bySlug[b.getAttribute('data-linkedin')]; if(a) openLinkedIn(a); }); });
     $('#list-body').querySelectorAll('[data-unpub]').forEach(function(b){ b.addEventListener('click',function(){ unpublish(b.getAttribute('data-unpub')); }); });
   }
 
@@ -599,6 +620,7 @@
       $('#s-view').href=url;
       $('#s-email').href=emailHelperUrl(a);
       $('#s-copy').onclick=function(){ if(navigator.clipboard&&navigator.clipboard.writeText){navigator.clipboard.writeText(url);} toast($('#success-toast'),'Link copied.'); };
+      $('#s-linkedin').onclick=function(){ openLinkedIn(a); };
       toast($('#success-toast'),''); show('view-success');
     } else if(r.status===401){ show('view-login'); }
     else toast($('#editor-toast'),msg(r.json.error),true);
@@ -717,6 +739,27 @@
     var ok=await copyRich(built.body,built.text);
     toast($('#u-toast'),ok?'Formatted email copied. Paste into Outlook or Gmail beneath your greeting.':'Copy failed — open the preview to copy manually.',!ok);
   });
+
+  // ---------- Share on LinkedIn (manual: no API, no OAuth, no auto-posting) ----------
+  // Derives the URL strictly from the selected published article's slug, builds a
+  // restrained suggested caption (no hashtags/emojis/AI), and opens LinkedIn's
+  // current off-site URL-share flow. LinkedIn renders the preview from the
+  // article page's Open Graph tags. The publisher pastes/edits and posts manually.
+  var liCurrent=null;
+  function liUrl(a){ return 'https://www.ariefinance.com/insights/'+(a&&a.slug?a.slug:'')+'/'; }
+  function liCaption(a){
+    return 'New from ARIE Insights:\n\n'+(a&&a.title?a.title:'')+'\n\n'+(a&&a.summary?a.summary:'')+'\n\nRead the full insight:\n'+liUrl(a);
+  }
+  function openLinkedIn(a){
+    liCurrent=a;
+    $('#li-text').value=liCaption(a); // .value assignment never parses HTML (injection-safe)
+    toast($('#li-toast'),'');
+    $('#li-modal').classList.remove('hidden');
+  }
+  $('#li-close').addEventListener('click',function(){ $('#li-modal').classList.add('hidden'); });
+  $('#li-copy').addEventListener('click',async function(){ var ok=await copyText($('#li-text').value); toast($('#li-toast'),ok?'Post text copied.':'Copy failed — select the text and copy manually.',!ok); });
+  $('#li-copy-link').addEventListener('click',async function(){ if(!liCurrent) return; var ok=await copyText(liUrl(liCurrent)); toast($('#li-toast'),ok?'Article link copied.':'Copy failed — copy the link manually.',!ok); });
+  $('#li-open').addEventListener('click',function(){ if(!liCurrent) return; window.open('https://www.linkedin.com/sharing/share-offsite/?url='+encodeURIComponent(liUrl(liCurrent)),'_blank','noopener'); });
 
   boot();
 })();

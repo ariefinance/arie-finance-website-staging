@@ -16,16 +16,30 @@
   const nl = (s) => esc(s).replace(/\n/g, '<br>');
   const ph = (v, fallback) => (v && String(v).trim()) ? esc(v) : '<span class="placeholder">' + esc(fallback) + '</span>';
 
+  // Brand-aware helpers: a brand may hide its header strap-line (regulator + licence) and/or its
+  // footer contacts. ACBM uses the ARIE logo but no strap-line and no footer contacts (confirmed).
+  const brandAsset = (key) => A[(D.brand().assets || {})[key]] || A[key];
+  const brandDisplayName = () => (D.brand && D.brand().displayName) || 'ARIE Finance';
   function header() {
-    return '<div class="hdr"><img src="' + A.LOGO_WIDE + '" alt="ARIE Finance"><div class="reg"><div>' + esc(D.REGULATOR) + '</div><div>' + esc(D.LICENCE) + '</div></div></div><div class="hdr-rule"></div>';
+    const b = D.brand();
+    const strap = (b.regulator || b.licence)
+      ? '<div class="reg"><div>' + esc(b.regulator || '') + '</div><div>' + esc(b.licence || '') + '</div></div>'
+      : '';
+    return '<div class="hdr"><img src="' + brandAsset('logoWide') + '" alt="' + esc(brandDisplayName()) + '">' + strap + '</div><div class="hdr-rule"></div>';
   }
   function watermark() {
-    return '<div class="wm" aria-hidden="true"><img class="a" src="' + A.MARK_A + '" alt=""><img class="b" src="' + A.MARK_B + '" alt=""></div>';
+    const a = brandAsset('markA'), bImg = brandAsset('markB');
+    if (!a && !bImg) return '';
+    return '<div class="wm" aria-hidden="true">' + (a ? '<img class="a" src="' + a + '" alt="">' : '') + (bImg ? '<img class="b" src="' + bImg + '" alt="">' : '') + '</div>';
   }
   function footer(left, right) {
-    const f = D.FOOTER;
-    return '<div class="foot"><div class="pc">' + left + '</div>' + (right != null ? right :
-      '<div class="contacts"><span>' + f.web + '</span><i></i><span>' + f.email + '</span><i></i><span>' + f.phone + '</span></div>') + '</div>';
+    const f = D.brand().footer;
+    const rightCell = right != null
+      ? right
+      : (f
+        ? '<div class="contacts"><span>' + f.web + '</span><i></i><span>' + f.email + '</span><i></i><span>' + f.phone + '</span></div>'
+        : '<div class="contacts"></div>');
+    return '<div class="foot"><div class="pc">' + left + '</div>' + rightCell + '</div>';
   }
   const secH = (t) => '<div class="sec-h"><span>' + esc(t) + '</span><span></span></div>';
   const pageNo = (i, n) => n > 1 ? '<span class="pg">Page ' + i + ' of ' + n + '</span>' : '';

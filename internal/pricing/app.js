@@ -6,19 +6,27 @@
   'use strict';
   const D = window.ARIE_DEFAULTS, R = window.ARIE_RENDER, W = window.ARIE_WIRING, X = window.ARIE_EXPORT, IO = window.ARIE_DOCXIO;
   const esc = R.esc;
-  const STORE_KEY = 'arie_docbuilder_session_v2';
+  // Per-brand sessionStorage so switching entity does NOT destroy the other brand's in-progress work.
+  // Each brand keeps its own state (and its own 'files' snapshot is reset in memory on switch because
+  // uploaded PDFs are never persisted anyway — same as before).
+  const STORE_KEY = (brandId) => 'arie_docbuilder_session_v2_' + (brandId || D.activeBrand);
   const MODE_NAMES = { indicative: 'Indicative Fee Schedule', client: 'Client Fee Schedule', welcome: 'Welcome Pack' };
 
   // ---------- State ----------
   const todayStr = () => new Date().toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' });
+  // A fresh state only includes modes the active brand supports. Date fields default to today.
   function freshState() {
-    const s = { mode: 'indicative', docs: { indicative: D.indicative(), client: D.client(), welcome: D.welcome() } };
-    s.docs.client.date = todayStr();
-    s.docs.welcome.date = todayStr();
-    return s;
+    const modes = D.brand().modes;
+    const docs = {};
+    if (modes.indexOf('indicative') >= 0) docs.indicative = D.indicative();
+    if (modes.indexOf('client') >= 0) { docs.client = D.client(); docs.client.date = todayStr(); }
+    if (modes.indexOf('welcome') >= 0 && D.welcome()) { docs.welcome = D.welcome(); docs.welcome.date = todayStr(); }
+    const mode = modes[0] || 'indicative';
+    return { mode, docs };
   }
   let state = freshState();
-  // Memory only, never persisted: uploaded files and their derived data.
+  // Memory only, never persisted: uploaded files and their derived data. These do NOT survive a
+  // brand switch — same guarantee the tool has always had across page reloads.
   //   fee:    { name, kind:'pdf'|'docx', buf, pages?:[dataURL], meta?:{name,reference,date}, feeDoc?:state }
   //   tc:     { name, buf, pages }
   //   wiring: { [accountId]: { name, buf } }
@@ -27,14 +35,38 @@
 
   // Temporary session recovery is stamped with a schema version. State written by an older build is
   // discarded rather than migrated: it is a few minutes of unsaved work, never the record of anything.
+  // State is keyed per brand, so loading never touches another brand's record.
   function load() {
     try {
-      const raw = JSON.parse(sessionStorage.getItem(STORE_KEY) || 'null');
-      if (raw && raw.schemaVersion === D.SCHEMA_VERSION && raw.state && raw.state.docs) { state = raw.state; return; }
-      if (raw) sessionStorage.removeItem(STORE_KEY);
+      const raw = JSON.parse(sessionStorage.getItem(STORE_KEY()) || 'null');
+      if (raw && raw.schemaVersion === D.SCHEMA_VERSION && raw.state && raw.state.docs) {
+        // Guard: a stored mode the current brand does not support (shouldn't happen, but a safety net)
+        // falls back to the brand's first mode.
+        const modes = D.brand().modes;
+        if (modes.indexOf(raw.state.mode) < 0) raw.state.mode = modes[0] || 'indicative';
+        state = raw.state; return;
+      }
+      if (raw) sessionStorage.removeItem(STORE_KEY());
     } catch (e) { /* storage unavailable: run from defaults */ }
   }
-  function persist() { try { sessionStorage.setItem(STORE_KEY, JSON.stringify({ schemaVersion: D.SCHEMA_VERSION, appVersion: D.VERSION, state })); } catch (e) { /* ignore */ } }
+  function persist() { try { sessionStorage.setItem(STORE_KEY(), JSON.stringify({ schemaVersion: D.SCHEMA_VERSION, appVersion: D.VERSION, brand: D.activeBrand, state })); } catch (e) { /* ignore */ } }
+
+  // Switches the active entity. Each brand owns its own sessionStorage slot, so switching to the other
+  // entity restores whatever work was in progress for that brand and leaves this brand's work untouched.
+  // In-memory uploads (wiring PDFs, attached T&C, attached fee schedule) are dropped on switch, same as
+  // on reload — they are not persisted and must be re-attached. The access gate / session cookie is
+  // unaffected (brand selection is a UI choice, not an authentication boundary).
+  function switchBrand(brandId) {
+    if (!D.BRANDS[brandId] || brandId === D.activeBrand) return;
+    persist();                       // save current brand's work to its slot
+    D.setBrand(brandId);
+    files = { fee: null, tc: null, wiring: {} };
+    openAccount = null;
+    state = freshState();            // seed defaults for the new brand before load() restores if present
+    load();
+    renderAll();
+    toast('Switched to ' + D.brand().label + '.', 'info');
+  }
 
   const getPath = (obj, path) => path.split('.').reduce((o, k) => (o == null ? undefined : o[k]), obj);
   function setPath(obj, path, value) {
@@ -366,8 +398,21 @@
     const el = document.getElementById('pane');
     const d = doc();
     el.innerHTML = state.mode === 'welcome' ? welcomeControls(d) : feeControls(d, state.mode);
-    document.querySelectorAll('.modes button').forEach(b => b.classList.toggle('active', b.dataset.mode === state.mode));
+    renderBrandAndModes();
     document.getElementById('brand-sub').textContent = state.mode === 'welcome' ? 'Attach the fee schedule, drop the wiring PDFs, review, export.' : 'Edit any field, add or remove sections, then export.';
+  }
+
+  // Rebuilds the Entity segmented control and the Mode buttons from the active brand so switching
+  // entities (or booting) always shows exactly the modes the brand supports.
+  function renderBrandAndModes() {
+    const brands = D.BRANDS;
+    const brandBtns = Object.keys(brands).map(id => '<button type="button" data-brand="' + id + '" class="' + (id === D.activeBrand ? 'active' : '') + '">' + esc(brands[id].label) + '</button>').join('');
+    const brandWrap = document.getElementById('entity-switch');
+    if (brandWrap) brandWrap.innerHTML = brandBtns;
+    const modes = D.brand().modes;
+    const modeBtns = modes.map(m => '<button type="button" data-mode="' + m + '" class="' + (m === state.mode ? 'active' : '') + '">' + esc(MODE_NAMES[m] || m) + '</button>').join('');
+    const modeWrap = document.querySelector('.modes');
+    if (modeWrap) modeWrap.innerHTML = modeBtns;
   }
 
   function renderAll() { renderDesk(); renderControls(); persist(); }
@@ -396,7 +441,8 @@
     state = freshState();
     files = { fee: null, tc: null, wiring: {} };
     openAccount = null;
-    try { sessionStorage.removeItem(STORE_KEY); } catch (e) { /* ignore */ }
+    // Only clears the active brand's slot; the other brand's work (if any) is left alone.
+    try { sessionStorage.removeItem(STORE_KEY()); } catch (e) { /* ignore */ }
     renderAll();
     toast('Cleared. Ready for a new client.', 'info');
   }
@@ -460,9 +506,10 @@
 
   function fileTitle() {
     const d = doc();
-    if (state.mode === 'indicative') return 'ARIE_Indicative_Fee_Schedule';
-    if (state.mode === 'client') return 'ARIE_Client_Fee_Schedule_' + X.safe(d.preparedFor) + '_' + X.safe(d.date);
-    return 'ARIE_Welcome_Pack_' + X.safe(d.clientName) + '_' + X.safe(d.date);
+    const prefix = D.brand().filenamePrefix || 'ARIE';
+    if (state.mode === 'indicative') return prefix + '_Indicative_Fee_Schedule';
+    if (state.mode === 'client') return prefix + '_Client_Fee_Schedule_' + X.safe(d.preparedFor) + '_' + X.safe(d.date);
+    return prefix + '_Welcome_Pack_' + X.safe(d.clientName) + '_' + X.safe(d.date);
   }
 
   // ---------- File handling ----------
@@ -628,16 +675,24 @@
       if (el.dataset.act === 'openAcct' && e.target.closest('.acct-edit')) return;
       const fn = ACTIONS[el.dataset.act]; if (fn) { e.preventDefault(); fn(el); }
     });
-    document.querySelectorAll('.modes button').forEach(b => b.addEventListener('click', () => {
-      state.mode = b.dataset.mode;
-      if (state.mode === 'welcome') { const d = w(), c = state.docs.client; if (d.feeSource === 'current') { if (!d.clientName && c.preparedFor) d.clientName = c.preparedFor; if (!d.cfsRef && c.reference) d.cfsRef = c.reference; } }
-      renderAll();
-    }));
+    // Delegated so re-rendered mode / entity buttons keep working.
+    document.addEventListener('click', (e) => {
+      const mb = e.target.closest('.modes button[data-mode]');
+      if (mb) {
+        if (!state.docs[mb.dataset.mode]) return;    // ignore a mode this brand doesn't offer
+        state.mode = mb.dataset.mode;
+        if (state.mode === 'welcome') { const d = w(), c = state.docs.client; if (d.feeSource === 'current') { if (!d.clientName && c.preparedFor) d.clientName = c.preparedFor; if (!d.cfsRef && c.reference) d.cfsRef = c.reference; } }
+        renderAll();
+        return;
+      }
+      const eb = e.target.closest('#entity-switch button[data-brand]');
+      if (eb) switchBrand(eb.dataset.brand);
+    });
     pane.addEventListener('dragover', (e) => { const z = e.target.closest('.drop'); if (z) { e.preventDefault(); z.classList.add('over'); } });
     pane.addEventListener('dragleave', (e) => { const z = e.target.closest('.drop'); if (z) z.classList.remove('over'); });
     pane.addEventListener('drop', (e) => { const z = e.target.closest('.drop'); if (!z) return; e.preventDefault(); z.classList.remove('over'); handleFiles(z.dataset.drop, e.dataTransfer.files); });
     pane.addEventListener('click', (e) => { const z = e.target.closest('.drop'); if (z && !e.target.closest('button')) z.querySelector('input[type=file]').click(); });
-    window.addEventListener('afterprint', () => { document.title = 'ARIE Document Builder'; });
+    window.addEventListener('afterprint', () => { document.title = 'Document Builder'; });
     window.addEventListener('resize', scheduleDesk);
   }
 

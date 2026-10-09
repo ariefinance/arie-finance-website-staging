@@ -1,25 +1,28 @@
-// Standard ARIE wording and pricing. Carried over verbatim from the existing
-// Indicative and Client Fee Schedule builders. Edit here to change the defaults
-// that every new document starts from. Nothing in the app rewrites these.
+// Standard wording and pricing per brand. The ARIE record is a lift-and-shift of the previous
+// hardcoded values (same strings, same fee tiles, same conditions, same footer) so ARIE outputs
+// are unchanged. ACBM is added as a second brand with its own eyebrow, templates, and empty
+// regulator/licence/footer (deliberate — ACBM must not inherit ARIE's licence or contacts).
+// The active brand is picked at runtime; D.brand() returns the active record and the legacy
+// top-level getters (D.indicative/client/welcome, D.FOOTER, D.REGULATOR, D.LICENCE) forward to it
+// so render.js/exports.js keep working unchanged where they just read a string.
 (function () {
   'use strict';
 
   let seq = 1;
   const uid = () => 'b' + (seq++) + '_' + Math.random().toString(36).slice(2, 7);
 
-  const THIRD_PARTY_TABLE = () => ({
+  // ---------- ARIE Finance templates (unchanged) ----------
+  const ARIE_THIRD_PARTY = () => ({
     id: uid(), type: 'table', title: 'Third-Party Payment Charges',
     columns: ['Charge', 'Incoming', 'Outgoing'],
     rows: [['Correspondent-Bank / SWIFT Charges', 'Not applicable', '0.15%\nMinimum USD 70 · Maximum USD 150\nPlus applicable SWIFT charges']],
     note: 'Additional third-party, correspondent-bank and foreign exchange charges may apply depending on the payment route, currency and transaction requirements.'
   });
-
-  const ADDITIONAL_FEES = () => ({
+  const ARIE_ADDITIONAL = () => ({
     id: uid(), type: 'feeList', title: 'Additional Fees',
     rows: [{ label: 'Service Closure Fee', fee: 'USD 300' }]
   });
-
-  const CONDITIONS = () => ({
+  const ARIE_CONDITIONS = () => ({
     id: uid(), type: 'bullets', title: 'Commercial Conditions',
     items: [
       'Account funding: an aggregate minimum balance of USD 5,000, or equivalent, is required within one month of service activation.',
@@ -28,7 +31,7 @@
     ]
   });
 
-  function indicative() {
+  function arieIndicative() {
     return {
       kind: 'indicative',
       eyebrow: 'ARIE FINANCE',
@@ -46,13 +49,12 @@
             { label: 'Enhanced Review Profile', fees: [{ label: 'Onboarding Fee', value: 'From USD 5,000' }, { label: 'Monthly Service Fee', value: 'USD 250 / month' }, { label: 'Payment Transaction Fee', value: 'USD 60 / payment' }] }
           ]
         },
-        THIRD_PARTY_TABLE(),
-        ADDITIONAL_FEES()
+        ARIE_THIRD_PARTY(),
+        ARIE_ADDITIONAL()
       ]
     };
   }
-
-  function client() {
+  function arieClient() {
     return {
       kind: 'client',
       eyebrow: 'ARIE FINANCE',
@@ -69,14 +71,13 @@
             { label: '', fees: [{ label: 'Onboarding Fee', value: 'USD 2,000' }, { label: 'Monthly Service Fee', value: 'USD 150 / month' }, { label: 'Payment Transaction Fee', value: 'USD 40 / payment' }] }
           ]
         },
-        THIRD_PARTY_TABLE(),
-        ADDITIONAL_FEES(),
-        CONDITIONS()
+        ARIE_THIRD_PARTY(),
+        ARIE_ADDITIONAL(),
+        ARIE_CONDITIONS()
       ]
     };
   }
-
-  function welcome() {
+  function arieWelcome() {
     return {
       kind: 'welcome',
       clientName: '',
@@ -105,12 +106,87 @@
         'The Terms & Conditions govern the ongoing provision of services generally.',
         'This Welcome Pack provides operational and account-activation information.'
       ],
-      // The Terms & Conditions line is chosen automatically from the attachment state (render.js tcLine):
       tcLineEnclosed: 'ARIE Finance Terms & Conditions version 1.4 are enclosed with this pack',
       tcLineSeparate: 'ARIE Finance Terms & Conditions version 1.4 apply to your account and are provided separately',
-      feeSource: 'current',   // 'current' | 'upload' | 'none'
+      feeSource: 'current',
       includeTc: false,
-      mismatchAck: ''         // the exact set of client-name differences staff confirmed as intentional
+      mismatchAck: ''
+    };
+  }
+
+  // ---------- ACBM templates (seeded from the reference pricing PDF) ----------
+  // ACBM has its own copy — intentionally not shared with ARIE — so changes to one don't leak.
+  const ACBM_THIRD_PARTY = () => ({
+    id: uid(), type: 'table', title: 'Correspondent Bank Fees',
+    columns: ['Charge', 'Incoming', 'Outgoing'],
+    rows: [['Correspondent-Bank / SWIFT Charges', 'Not applicable', '0.15%\nMinimum USD 70 · Maximum USD 150\nPlus applicable SWIFT charges']],
+    note: 'Additional third-party, correspondent-bank and foreign exchange charges may apply depending on the payment route, currency and transaction requirements.'
+  });
+  const ACBM_ADDITIONAL = () => ({
+    id: uid(), type: 'feeList', title: 'General Fees',
+    rows: [{ label: 'Account Closure Fee', fee: 'USD 300' }]
+  });
+  const ACBM_CONDITIONS = () => ({
+    id: uid(), type: 'bullets', title: 'Important Conditions',
+    items: [
+      'Account funding: the account should be funded within one month with an aggregate minimum balance of USD 5,000, or equivalent.',
+      'Additional third-party, correspondent-bank and foreign exchange charges may apply depending on the payment route, currency and transaction requirements.',
+      "All services remain subject to ACBM's standard terms, ongoing compliance requirements and applicable third-party conditions."
+    ]
+  });
+
+  function acbmIndicative() {
+    return {
+      kind: 'indicative',
+      eyebrow: 'ACBM',
+      title: 'Indicative Fee Schedule',
+      subtitle: 'For International Business Clients',
+      clientFields: false,
+      preparedFor: '', reference: '', date: '',
+      intro: 'ACBM provides relationship-led international payment services for globally active businesses, supported by structured onboarding and a dedicated Relationship Manager.',
+      note: 'The fees below are indicative and intended as a guide only. Final pricing is subject to onboarding and compliance approval and may vary according to the client profile, jurisdiction, ownership structure, expected transaction activity and service requirements.',
+      blocks: [
+        {
+          id: uid(), type: 'feeGrid', title: 'Fee Structure',
+          profiles: [
+            { label: '', fees: [
+              { label: 'Onboarding Fee', value: 'USD 2,000' },
+              { label: 'Monthly Service Fee', value: 'USD 150 / month' },
+              { label: 'Payment Transaction Fee', value: 'USD 40 / payment' }
+            ] }
+          ]
+        },
+        ACBM_THIRD_PARTY(),
+        ACBM_ADDITIONAL(),
+        ACBM_CONDITIONS()
+      ]
+    };
+  }
+  function acbmClient() {
+    return {
+      kind: 'client',
+      eyebrow: 'ACBM',
+      title: 'Client Fee Schedule',
+      subtitle: 'Client-Specific Commercial Terms',
+      clientFields: true,
+      preparedFor: '', reference: '', date: '',
+      intro: 'Following approval of your onboarding application, this Client Fee Schedule sets out the commercial terms applicable to your ACBM relationship.',
+      note: 'The fees below reflect the applicable service scope and should be read together with the relevant third-party charges, operational conditions and contractual terms.',
+      blocks: [
+        {
+          id: uid(), type: 'feeGrid', title: 'Applicable Fees',
+          profiles: [
+            { label: '', fees: [
+              { label: 'Onboarding Fee', value: 'USD 2,000' },
+              { label: 'Monthly Service Fee', value: 'USD 150 / month' },
+              { label: 'Payment Transaction Fee', value: 'USD 40 / payment' }
+            ] }
+          ]
+        },
+        ACBM_THIRD_PARTY(),
+        ACBM_ADDITIONAL(),
+        ACBM_CONDITIONS()
+      ]
     };
   }
 
@@ -122,9 +198,74 @@
     }, partial || {});
   }
 
-  window.ARIE_DEFAULTS = { VERSION: '0.6.1', SCHEMA_VERSION: 3, indicative, client, welcome, account, uid,
-    FOOTER: { web: 'www.ariefinance.com', email: 'customercare@ariefinance.com', phone: '+230 468 6497' },
-    REGULATOR: 'Regulated by the Financial Services Commission (Mauritius)',
-    LICENCE: 'Payment Intermediary Services Licence · GB25205028'
+  // ---------- Brand registry ----------
+  // Each brand owns: its logo assets key (into window.ARIE_ASSETS), its header strap-line (regulator /
+  // licence — null hides the whole strap-line), its footer contacts (null hides the contacts row and
+  // leaves only Private & Confidential + page number), the modes it offers, its filename prefix, its
+  // reference regex, its DOCX creator string and the custom-property prefix used to round-trip CFS state.
+  //
+  // The `label` is for the UI entity switcher; `displayName` is the human name used in modals.
+  // ACBM intentionally reuses ARIE's logo (confirmed by the user) and intentionally has no footer,
+  // regulator, or licence (confirmed — ACBM must not inherit ARIE's licence or contacts).
+  const BRANDS = {
+    arie: {
+      id: 'arie',
+      label: 'ARIE Finance',
+      displayName: 'ARIE Finance',
+      eyebrow: 'ARIE FINANCE',
+      assets: { logoWide: 'LOGO_WIDE', markA: 'MARK_A', markB: 'MARK_B' },
+      regulator: 'Regulated by the Financial Services Commission (Mauritius)',
+      licence: 'Payment Intermediary Services Licence · GB25205028',
+      footer: { web: 'www.ariefinance.com', email: 'customercare@ariefinance.com', phone: '+230 468 6497' },
+      modes: ['indicative', 'client', 'welcome'],
+      filenamePrefix: 'ARIE',
+      referenceRegex: /\b(ARIE-FS-[A-Z0-9-]+)\b/i,
+      docxCreator: 'ARIE Document Builder',
+      statePropPrefix: 'ARIE_STATE_',
+      indicative: arieIndicative,
+      client: arieClient,
+      welcome: arieWelcome
+    },
+    acbm: {
+      id: 'acbm',
+      label: 'ACBM',
+      displayName: 'Arie Capital Investment (ACBM) Ltd',
+      eyebrow: 'ACBM',
+      // ACBM uses the ARIE Finance logo on its documents (confirmed by the user).
+      assets: { logoWide: 'LOGO_WIDE', markA: 'MARK_A', markB: 'MARK_B' },
+      regulator: null,
+      licence: null,
+      footer: null,
+      modes: ['indicative', 'client'],
+      filenamePrefix: 'ACBM',
+      referenceRegex: /\b(ACBM-FS-[A-Z0-9-]+)\b/i,
+      docxCreator: 'ACBM Document Builder',
+      statePropPrefix: 'ACBM_STATE_',
+      indicative: acbmIndicative,
+      client: acbmClient
+      // No welcome(): ACBM has no Welcome Pack.
+    }
+  };
+
+  let activeBrand = 'arie';
+  const brand = () => BRANDS[activeBrand];
+  function setBrand(id) { if (BRANDS[id]) activeBrand = id; }
+
+  window.ARIE_DEFAULTS = {
+    VERSION: '0.7.0',
+    SCHEMA_VERSION: 4,
+    BRANDS,
+    brand,
+    setBrand,
+    get activeBrand() { return activeBrand; },
+    // Legacy top-level getters forward to the active brand so render.js / exports.js keep working.
+    get FOOTER() { return brand().footer || { web: '', email: '', phone: '' }; },
+    get REGULATOR() { return brand().regulator || ''; },
+    get LICENCE() { return brand().licence || ''; },
+    indicative: () => brand().indicative(),
+    client: () => brand().client(),
+    welcome: () => (brand().welcome ? brand().welcome() : null),
+    account,
+    uid
   };
 })();

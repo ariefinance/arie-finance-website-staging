@@ -55,30 +55,46 @@
   }
   const W_TOTAL = 9640; // usable width in twips at 2cm margins
 
+  // Brand-aware: the strap-line (regulator + licence) is hidden when the active brand has neither,
+  // and the logo cell then spans the full header width. The brand's own logo asset is used.
+  function brandLogoBytes() {
+    const assets = (D.brand && D.brand().assets) || {};
+    const dataUrl = window.ARIE_ASSETS[assets.logoWide] || window.ARIE_ASSETS.LOGO_WIDE;
+    return b64ToBytes(dataUrl);
+  }
   function brandHeader(extra) {
     const d = lib();
-    const logo = new d.ImageRun({ type: 'png', data: b64ToBytes(window.ARIE_ASSETS.LOGO_WIDE), transformation: { width: 150, height: 36 } });
+    const logo = new d.ImageRun({ type: 'png', data: brandLogoBytes(), transformation: { width: 150, height: 36 } });
     return new d.Header({ children: (extra || []).length ? [headerTable(d, logo)].concat(extra) : [headerTable(d, logo)] });
   }
   function headerTable(d, logo) {
-    return (
-      new d.Table({ width: { size: 100, type: d.WidthType.PERCENTAGE }, columnWidths: [4000, 5640], layout: d.TableLayoutType.FIXED, borders: { top: { style: d.BorderStyle.NONE }, bottom: { style: d.BorderStyle.SINGLE, size: 6, color: GOLD }, left: { style: d.BorderStyle.NONE }, right: { style: d.BorderStyle.NONE }, insideVertical: { style: d.BorderStyle.NONE }, insideHorizontal: { style: d.BorderStyle.NONE } },
-        rows: [new d.TableRow({ children: [
-          new d.TableCell({ children: [new d.Paragraph({ children: [logo] })], borders: borders('FFFFFF'), margins: { bottom: 120 } }),
-          new d.TableCell({ children: [
-            new d.Paragraph({ alignment: d.AlignmentType.RIGHT, children: [run(D.REGULATOR.toUpperCase(), { size: 14, bold: true, color: SLATE, characterSpacing: 30 })] }),
-            new d.Paragraph({ alignment: d.AlignmentType.RIGHT, children: [run(D.LICENCE.toUpperCase(), { size: 14, bold: true, color: SAND, characterSpacing: 30 })] })
-          ], borders: borders('FFFFFF'), margins: { bottom: 120 } })
-        ] })] })
-    );
+    const b = D.brand();
+    const hasStrap = !!(b.regulator || b.licence);
+    const bottomRule = { top: { style: d.BorderStyle.NONE }, bottom: { style: d.BorderStyle.SINGLE, size: 6, color: GOLD }, left: { style: d.BorderStyle.NONE }, right: { style: d.BorderStyle.NONE }, insideVertical: { style: d.BorderStyle.NONE }, insideHorizontal: { style: d.BorderStyle.NONE } };
+    const logoCell = new d.TableCell({ children: [new d.Paragraph({ children: [logo] })], borders: borders('FFFFFF'), margins: { bottom: 120 } });
+    if (!hasStrap) {
+      return new d.Table({ width: { size: 100, type: d.WidthType.PERCENTAGE }, columnWidths: [9640], layout: d.TableLayoutType.FIXED, borders: bottomRule,
+        rows: [new d.TableRow({ children: [logoCell] })] });
+    }
+    return new d.Table({ width: { size: 100, type: d.WidthType.PERCENTAGE }, columnWidths: [4000, 5640], layout: d.TableLayoutType.FIXED, borders: bottomRule,
+      rows: [new d.TableRow({ children: [
+        logoCell,
+        new d.TableCell({ children: [
+          new d.Paragraph({ alignment: d.AlignmentType.RIGHT, children: [run((b.regulator || '').toUpperCase(), { size: 14, bold: true, color: SLATE, characterSpacing: 30 })] }),
+          new d.Paragraph({ alignment: d.AlignmentType.RIGHT, children: [run((b.licence || '').toUpperCase(), { size: 14, bold: true, color: SAND, characterSpacing: 30 })] })
+        ], borders: borders('FFFFFF'), margins: { bottom: 120 } })
+      ] })] });
   }
-  // Footer: confidentiality line, optional document identifiers (right), contacts, "Page n of m".
+  // Footer: confidentiality line, optional document identifiers (right), contacts (if the brand has
+  // any), "Page n of m". When the brand has no footer contacts (ACBM), the second paragraph still
+  // prints the "Page n of m" marker, right-aligned, but no contact strip.
   function brandFooter(left, ids) {
-    const d = lib(); const f = D.FOOTER;
+    const d = lib(); const f = D.brand().footer;
     const pageRun = [run('Page ', { size: 14, color: SAND }), new d.TextRun({ children: [d.PageNumber.CURRENT], font: SANS, size: 14, color: SAND }), run(' of ', { size: 14, color: SAND }), new d.TextRun({ children: [d.PageNumber.TOTAL_PAGES], font: SANS, size: 14, color: SAND })];
+    const contactRun = f ? [run(f.web + '   ·   ' + f.email + '   ·   ' + f.phone, { size: 16, color: SLATE }), new d.TextRun({ children: [new d.Tab()] })] : [new d.TextRun({ children: [new d.Tab()] })];
     return new d.Footer({ children: [
       new d.Paragraph({ children: [run((left || 'Private & Confidential').toUpperCase(), { size: 14, bold: true, color: SAND, characterSpacing: 40 })].concat(ids ? [new d.TextRun({ children: [new d.Tab()] }), run(ids, { size: 14, bold: true, color: SAND })] : []), tabStops: [{ type: d.TabStopType.RIGHT, position: 9640 }], border: { top: { style: d.BorderStyle.SINGLE, size: 6, color: 'E0D3B4', space: 6 } }, spacing: { after: 40 } }),
-      new d.Paragraph({ children: [run(f.web + '   ·   ' + f.email + '   ·   ' + f.phone, { size: 16, color: SLATE }), new d.TextRun({ children: [new d.Tab()] })].concat(pageRun), tabStops: [{ type: d.TabStopType.RIGHT, position: 9640 }] })
+      new d.Paragraph({ children: contactRun.concat(pageRun), tabStops: [{ type: d.TabStopType.RIGHT, position: 9640 }] })
     ] });
   }
   const PAGE = { page: { size: { width: 11906, height: 16838 }, margin: { top: 1000, bottom: 1000, left: 1134, right: 1134 } } };
@@ -147,7 +163,8 @@
   async function feeDocx(doc) {
     const d = lib(), IO = window.ARIE_DOCXIO;
     const left = 'Private & Confidential' + (doc.clientFields && doc.preparedFor ? ' · Prepared for ' + doc.preparedFor : '');
-    const build = (props) => new d.Document({ creator: 'ARIE Document Builder', title: doc.title, styles: { default: { document: { run: { font: SANS, size: 20 } } } },
+    const creator = D.brand().docxCreator || 'ARIE Document Builder';
+    const build = (props) => new d.Document({ creator, title: doc.title, styles: { default: { document: { run: { font: SANS, size: 20 } } } },
       customProperties: props, sections: [Object.assign(feeSectionProps(doc, left), { children: feeBody(doc) })] });
     // Pass 1: build once to fingerprint the visible body text. Pass 2: embed state + fingerprint.
     // (Custom properties live outside word/document.xml, so the body is byte-identical between passes.)
@@ -206,7 +223,7 @@
     // One Word section per part of the pack, so each starts on a new page with the branded header/footer.
     const ids = [doc.date, doc.cfsRef, doc.packRef].filter(Boolean).join(' · ');
     const left = 'Private & Confidential' + (doc.clientName ? ' · ' + doc.clientName : '');
-    const docx = new d.Document({ creator: 'ARIE Document Builder', title: 'Welcome Pack – ' + (doc.clientName || ''), styles: { default: { document: { run: { font: SANS, size: 20 } } } },
+    const docx = new d.Document({ creator: D.brand().docxCreator || 'ARIE Document Builder', title: 'Welcome Pack – ' + (doc.clientName || ''), styles: { default: { document: { run: { font: SANS, size: 20 } } } },
       sections: [
         Object.assign(sectionProps(left, ids), { children: cover }),
         Object.assign(sectionProps(left, ids), { children: funding }),

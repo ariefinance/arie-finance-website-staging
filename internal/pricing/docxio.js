@@ -13,10 +13,16 @@
   const PROP_PREFIX = 'ARIE_STATE_';
   const CHUNK = 200;
 
+  // The write prefix is the active brand's; the reader (below) accepts any ARIE_STATE_/ACBM_STATE_
+  // chunk sequence so a historical ARIE DOCX still round-trips exactly as before.
+  function writePrefix() {
+    try { return (window.ARIE_DEFAULTS && window.ARIE_DEFAULTS.brand && window.ARIE_DEFAULTS.brand().statePropPrefix) || PROP_PREFIX; }
+    catch (e) { return PROP_PREFIX; }
+  }
   function toChunks(obj) {
     const b64 = btoa(unescape(encodeURIComponent(JSON.stringify(obj))));
-    const out = [];
-    for (let i = 0; i < b64.length; i += CHUNK) out.push({ name: PROP_PREFIX + (i / CHUNK), value: b64.slice(i, i + CHUNK) });
+    const out = []; const prefix = writePrefix();
+    for (let i = 0; i < b64.length; i += CHUNK) out.push({ name: prefix + (i / CHUNK), value: b64.slice(i, i + CHUNK) });
     return out;
   }
 
@@ -124,7 +130,7 @@
     if (!xml) return null;
     const text = new TextDecoder().decode(xml);
     const parts = []; let storedFp = '';
-    const re = /<property[^>]*name="(ARIE_STATE_(\d+)|ARIE_FP)"[^>]*>\s*<vt:lpwstr>([^<]*)<\/vt:lpwstr>/g;
+    const re = /<property[^>]*name="((?:ARIE|ACBM)_STATE_(\d+)|ARIE_FP)"[^>]*>\s*<vt:lpwstr>([^<]*)<\/vt:lpwstr>/g;
     let m; while ((m = re.exec(text))) { if (m[1] === 'ARIE_FP') storedFp = unxml(m[3]); else parts.push({ i: +m[2], v: unxml(m[3]) }); }
     if (!parts.length) return null;
     parts.sort((a, b) => a.i - b.i);

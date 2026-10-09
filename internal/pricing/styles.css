@@ -26,8 +26,13 @@ a { color: var(--navy); text-decoration: none; }
 .brandbar h1 { margin: 0; font-size: 16px; font-weight: 800; letter-spacing: -0.01em; }
 .brandbar h1 span { color: var(--gold); }
 .brandbar p { margin: 3px 0 0; font-size: 11.5px; color: rgba(255,255,255,0.72); line-height: 1.4; }
-.modes { display: flex; gap: 6px; margin-top: 14px; }
-.modes button { flex: 1; padding: 9px 6px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.28); background: transparent; color: #fff; font-weight: 600; font-size: 12px; }
+.entity { display: flex; align-items: center; gap: 10px; margin-top: 14px; }
+.entity-lbl { font-size: 10.5px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; color: rgba(255,255,255,0.6); }
+.entity-switch { display: flex; gap: 4px; background: rgba(255,255,255,0.08); border-radius: 7px; padding: 3px; flex: 1; }
+.entity-switch button { flex: 1; padding: 6px 8px; border-radius: 5px; border: none; background: transparent; color: rgba(255,255,255,0.78); font-weight: 600; font-size: 11.5px; cursor: pointer; }
+.entity-switch button.active { background: #fff; color: var(--navy); font-weight: 700; }
+.modes { display: flex; gap: 6px; margin-top: 10px; min-height: 36px; }
+.modes button { flex: 1; padding: 9px 6px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.28); background: transparent; color: #fff; font-weight: 600; font-size: 12px; cursor: pointer; }
 .modes button.active { background: var(--gold); border-color: var(--gold); color: var(--navy); font-weight: 700; }
 .actions { display: flex; gap: 8px; margin-top: 12px; flex-wrap: wrap; }
 .actions button { flex: 1 1 auto; padding: 10px 12px; border: none; border-radius: 9px; font-weight: 700; font-size: 13px; }

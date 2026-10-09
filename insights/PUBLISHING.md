@@ -154,7 +154,7 @@ In `/sitemap.xml` add one `<url>` for the new article (template is in the file):
 
 ```xml
 <url>
-  <loc>https://insights.ariefinance.com/insights/<slug>/</loc>
+  <loc>https://www.ariefinance.com/insights/<slug>/</loc>
   <changefreq>monthly</changefreq>
   <priority>0.6</priority>
 </url>

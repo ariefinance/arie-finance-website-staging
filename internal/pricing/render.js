@@ -41,7 +41,12 @@
         : '<div class="contacts"></div>');
     return '<div class="foot"><div class="pc">' + left + '</div>' + rightCell + '</div>';
   }
-  const secH = (t) => '<div class="sec-h"><span>' + esc(t) + '</span><span></span></div>';
+  // ACBM section headers carry a small teal triangle marker before the title, mimicking the
+  // ACBM A-mark pattern on the reference template. ARIE sheets get no marker.
+  function sectionIcon() {
+    return D.activeBrand === 'acbm' ? '<span class="sec-icon" aria-hidden="true">▸</span>' : '';
+  }
+  const secH = (t) => '<div class="sec-h"><span>' + sectionIcon() + esc(t) + '</span><span></span></div>';
   const pageNo = (i, n) => n > 1 ? '<span class="pg">Page ' + i + ' of ' + n + '</span>' : '';
 
   // "USD 150 / month" -> ["USD 150", "month"]

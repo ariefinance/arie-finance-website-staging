@@ -17,6 +17,7 @@
   --head-fill: #1B4C58; --head-text: #FFFFFF;
 }
 .sheet[data-brand="acbm"] .hdr-rule { background: rgba(27,76,88,0.5); }
+.sheet[data-brand="acbm"] .sec-h .sec-icon { color: #1B4C58; margin-right: 8px; font-size: 13px; display: inline-block; transform: translateY(-1px); }
 /* ACBM watermark layout: full-width teal gradient panel anchored to the bottom of the page
    (image carries the signature mint→teal footer bar), plus a tall diagonal strip on the right
    edge. Both are drawn as subtle backdrops behind the content; z-index 0 keeps them below the

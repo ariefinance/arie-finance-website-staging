@@ -51,7 +51,14 @@
   function label(text) { return ptext(text.toUpperCase(), { size: 16, bold: true, color: SAND(), characterSpacing: 40 }, { spacing: { after: 40 } }); }
   function sectionHeading(text) {
     const d = lib();
-    return new d.Paragraph({ children: [run(text.toUpperCase(), { size: 19, bold: true, color: NAVY(), characterSpacing: 60 })], spacing: { before: 260, after: 120 }, keepNext: true, keepLines: true, border: { bottom: { style: d.BorderStyle.SINGLE, size: 6, color: theme().rule3, space: 4 } } });
+    // ACBM section headers carry a small teal triangle marker before the title (mirrors the HTML
+    // render). ARIE sheets keep the plain heading. Uses U+25B8 "black right-pointing small triangle"
+    // in the brand's gold/accent colour — teal for ACBM, gold for ARIE (which effectively never
+    // shows because the icon only renders for ACBM here).
+    const children = [];
+    if (D.activeBrand === 'acbm') children.push(run('▸  ', { size: 19, bold: true, color: GOLD(), characterSpacing: 0 }));
+    children.push(run(text.toUpperCase(), { size: 19, bold: true, color: NAVY(), characterSpacing: 60 }));
+    return new d.Paragraph({ children, spacing: { before: 260, after: 120 }, keepNext: true, keepLines: true, border: { bottom: { style: d.BorderStyle.SINGLE, size: 6, color: theme().rule3, space: 4 } } });
   }
   function multi(text, o) { // "a\nb" -> runs with breaks
     const d = lib(); const lines = String(text || '').split('\n'); const out = [];

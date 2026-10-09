@@ -79,8 +79,8 @@
       <textarea id="f-summary" placeholder="The short summary shown on the article."></textarea>
 
       <label for="f-url">Article URL</label>
-      <input id="f-url" type="url" placeholder="https://www.ariefinance.com/insights/article-slug/" autocomplete="off">
-      <p class="hint" id="url-hint">Must be a published ARIE Insights URL (https://www.ariefinance.com/insights/…/).</p>
+      <input id="f-url" type="url" placeholder="https://insights.ariefinance.com/insights/article-slug/" autocomplete="off">
+      <p class="hint" id="url-hint">Must be a published ARIE Insights URL (https://insights.ariefinance.com/insights/…/).</p>
 
       <div class="subject-line" id="subject-out">Subject: <span id="subject-text">ARIE Insights: …</span></div>
 
@@ -107,8 +107,8 @@
   var $=function(id){return document.getElementById(id);};
   var title=$('f-title'), category=$('f-category'), summary=$('f-summary'), url=$('f-url');
   var toast=$('toast'), subjectText=$('subject-text'), preview=$('preview'), urlHint=$('url-hint');
-  var LOGO='https://www.ariefinance.com/insights/assets/arie-logo-email.png';
-  var URL_RE=/^https:\/\/www\.ariefinance\.com\/insights\/[a-z0-9]+(?:-[a-z0-9]+)*\/$/;
+  var LOGO='https://insights.ariefinance.com/insights/assets/arie-logo-email.png';
+  var URL_RE=/^https:\/\/insights\.ariefinance\.com\/insights\/[a-z0-9]+(?:-[a-z0-9]+)*\/$/;
 
   function esc(s){return String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
   function val(el){return (el.value||'').trim();}
@@ -123,7 +123,7 @@
   function emailHTML(){
     var t=esc(val(title)||'Article title');
     var s=esc(val(summary)||'A short two to three sentence summary of the article.');
-    var u=urlValid()? val(url) : 'https://www.ariefinance.com/insights/';
+    var u=urlValid()? val(url) : 'https://insights.ariefinance.com/insights/';
     var uAttr=esc(u);
     return '' +
 '<table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="background:#ffffff;">' +
@@ -152,7 +152,7 @@
   function emailPlain(){
     var t=val(title)||'Article title';
     var s=val(summary)||'A short summary of the article.';
-    var u=urlValid()? val(url) : 'https://www.ariefinance.com/insights/';
+    var u=urlValid()? val(url) : 'https://insights.ariefinance.com/insights/';
     return eyebrow()+'\n\n'+t+'\n\n'+s+'\n\nRead the full article: '+u+'\n\n' +
       '—\nInformation Disclaimer: This communication is provided for general information only and does not constitute financial, investment, legal or tax advice, nor an offer or solicitation in relation to any financial product or service. Information is based on sources considered reliable, but ARIE Finance Ltd does not represent or warrant that it is complete or error-free. Information may change without notice. Readers should seek appropriate professional advice before taking action based on this communication. ARIE Finance Ltd does not provide foreign exchange brokerage services.\n\n' +
       'ARIE Finance Ltd is a licensed Payment Intermediary Services company regulated by the Financial Services Commission of Mauritius. Licence No. GB25205028. ARIE Finance Ltd is not a bank. Client funds are held in safeguarded accounts and are not covered by any deposit guarantee scheme.\n' +
@@ -162,7 +162,7 @@
   function refreshUrlState(){
     var has=val(url).length>0;
     if(has && !urlValid()){ urlHint.textContent='That is not a valid ARIE Insights article URL.'; urlHint.className='hint err'; }
-    else { urlHint.textContent='Must be a published ARIE Insights URL (https://www.ariefinance.com/insights/…/).'; urlHint.className='hint'; }
+    else { urlHint.textContent='Must be a published ARIE Insights URL (https://insights.ariefinance.com/insights/…/).'; urlHint.className='hint'; }
     $('b-email').disabled = !urlValid();
     $('b-link').disabled = !urlValid();
   }

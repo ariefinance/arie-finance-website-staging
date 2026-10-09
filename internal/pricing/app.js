@@ -512,6 +512,30 @@
     return prefix + '_Welcome_Pack_' + X.safe(d.clientName) + '_' + X.safe(d.date);
   }
 
+  // ---------- Brand detection on uploads ----------
+  // Returns the brand id ('arie' | 'acbm') encoded in a reference string, or '' when the prefix
+  // doesn't match any configured brand (older files, hand-typed references, blank).
+  function brandFromReference(ref) {
+    const r = String(ref || '').trim().toUpperCase();
+    if (!r) return '';
+    for (const id of Object.keys(D.BRANDS)) {
+      const prefix = (D.BRANDS[id].filenamePrefix || '').toUpperCase();
+      if (prefix && r.indexOf(prefix + '-FS-') === 0) return id;
+    }
+    return '';
+  }
+  // Infer the brand of an embedded CFS state. Reference prefix wins; eyebrow is a weaker fallback
+  // (users can edit the eyebrow freely). Returns '' when neither can identify a brand.
+  function brandOfFeeDoc(feeDoc) {
+    const byRef = brandFromReference(feeDoc && feeDoc.reference);
+    if (byRef) return byRef;
+    const eye = String((feeDoc && feeDoc.eyebrow) || '').trim().toUpperCase();
+    for (const id of Object.keys(D.BRANDS)) {
+      if (eye && eye === String(D.BRANDS[id].eyebrow || '').toUpperCase()) return id;
+    }
+    return '';
+  }
+
   // ---------- File handling ----------
   async function handleFiles(kind, list) {
     const arr = Array.from(list || []);
@@ -568,6 +592,16 @@
             renderAll(); return;
           }
           const feeDoc = r.state;
+          // Cross-brand attachment guard: the attached CFS must belong to the active brand. Brand is
+          // inferred from the reference prefix (ARIE-FS-… / ACBM-FS-…) and, as a safety net, from the
+          // stored eyebrow string. An ACBM Welcome Pack doesn't exist in UI, so in practice this
+          // catches an ACBM CFS attached to an ARIE Welcome Pack.
+          const attachedBrandDocx = brandOfFeeDoc(feeDoc);
+          if (attachedBrandDocx && attachedBrandDocx !== D.activeBrand) {
+            files.fee = null;
+            showModal({ title: 'Wrong entity', text: 'This Client Fee Schedule was issued by ' + esc(D.BRANDS[attachedBrandDocx].displayName) + ', but the current Welcome Pack is for ' + esc(D.brand().displayName) + '. Switch entity, or attach the Client Fee Schedule issued by ' + esc(D.brand().displayName) + ' instead.' });
+            renderAll(); return;
+          }
           files.fee = { name: f.name, kind: 'docx', buf, feeDoc, meta: { name: feeDoc.preparedFor, reference: feeDoc.reference, date: feeDoc.date } };
         } else {
           if (!(await sizeGuard(f, buf))) return;
@@ -575,6 +609,13 @@
           if (meta.docType === 'indicative' || meta.docType === 'welcome') {
             files.fee = null;
             showModal({ title: 'Wrong document type', text: 'This PDF is ' + (meta.docType === 'indicative' ? 'an Indicative Fee Schedule' : 'a Welcome Pack') + ', not a Client Fee Schedule. Attach this client\u2019s final Client Fee Schedule PDF instead.' });
+            renderAll(); return;
+          }
+          // Cross-brand attachment guard for PDFs: the reference prefix identifies the issuing brand.
+          const attachedBrandPdf = brandFromReference(meta.reference);
+          if (attachedBrandPdf && attachedBrandPdf !== D.activeBrand) {
+            files.fee = null;
+            showModal({ title: 'Wrong entity', text: 'This Client Fee Schedule PDF (reference ' + esc(meta.reference) + ') was issued by ' + esc(D.BRANDS[attachedBrandPdf].displayName) + ', but the current Welcome Pack is for ' + esc(D.brand().displayName) + '. Switch entity, or attach the Client Fee Schedule issued by ' + esc(D.brand().displayName) + ' instead.' });
             renderAll(); return;
           }
           const pages = await W.renderPages(buf.slice(0), 2.5);

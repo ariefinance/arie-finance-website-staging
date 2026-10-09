@@ -143,14 +143,14 @@
       subtitle: 'For International Business Clients',
       clientFields: false,
       preparedFor: '', reference: '', date: '',
-      intro: 'ACBM provides relationship-led international payment services for globally active businesses, supported by structured onboarding and a dedicated Relationship Manager.',
+      intro: "Arie Capital Investment (ACBM) Ltd (‘ACBM’) provides relationship-led international payment services for globally active businesses, supported by structured onboarding and a dedicated Relationship Manager.",
       note: 'The fees below are indicative and intended as a guide only. Final pricing is subject to onboarding and compliance approval and may vary according to the client profile, jurisdiction, ownership structure, expected transaction activity and service requirements.',
       blocks: [
         {
           id: uid(), type: 'feeGrid', title: 'Fee Structure',
           profiles: [
             { label: '', fees: [
-              { label: 'Onboarding Fee', value: 'USD 2,000' },
+              { label: 'Onboarding Fee', value: 'USD 2,500' },
               { label: 'Monthly Service Fee', value: 'USD 150 / month' },
               { label: 'Payment Transaction Fee', value: 'USD 40 / payment' }
             ] }
@@ -170,14 +170,14 @@
       subtitle: 'Client-Specific Commercial Terms',
       clientFields: true,
       preparedFor: '', reference: '', date: '',
-      intro: 'Following approval of your onboarding application, this Client Fee Schedule sets out the commercial terms applicable to your ACBM relationship.',
+      intro: "Following approval of your onboarding application, this Client Fee Schedule sets out the commercial terms applicable to your relationship with Arie Capital Investment (ACBM) Ltd (‘ACBM’).",
       note: 'The fees below reflect the applicable service scope and should be read together with the relevant third-party charges, operational conditions and contractual terms.',
       blocks: [
         {
           id: uid(), type: 'feeGrid', title: 'Applicable Fees',
           profiles: [
             { label: '', fees: [
-              { label: 'Onboarding Fee', value: 'USD 2,000' },
+              { label: 'Onboarding Fee', value: 'USD 2,500' },
               { label: 'Monthly Service Fee', value: 'USD 150 / month' },
               { label: 'Payment Transaction Fee', value: 'USD 40 / payment' }
             ] }

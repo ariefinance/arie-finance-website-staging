@@ -183,7 +183,8 @@
     const pages = packBlocks((doc.blocks || []).map(b => ({ block: b })), availFirst, availCont);
     lastPack = { availFirst, availCont, hdrH, topH, contTopH, footH, pages: pages.map(p => p.map(i => Math.round(i.height))) };
     const n = pages.length;
-    return pages.map((items, i) => '<div class="sheet" data-sheet="fee" data-page="' + (i + 1) + '">' + watermark() + '<div class="body">' + header() +
+    const brandAttr = ' data-brand="' + esc(D.activeBrand) + '"';
+    return pages.map((items, i) => '<div class="sheet"' + brandAttr + ' data-sheet="fee" data-page="' + (i + 1) + '">' + watermark() + '<div class="body">' + header() +
       (i === 0 ? feeTop(doc) : feeContTop(doc)) + items.map(it => '<div class="blk">' + it.html + '</div>').join('') + '</div>' +
       footer(left + pageNo(i + 1, n)) + '</div>');
   }
@@ -256,7 +257,8 @@
     const name = doc.clientName;
     const cl = currencyList(doc.accounts);
     const curLine = doc.coverCurrencyLine.replace('{currencies}', cl || '—');
-    const open = (cls) => '<div class="sheet' + (cls ? ' ' + cls : '') + '" data-sheet="wp">' + watermark() + '<div class="body">' + header();
+    const brandAttr = ' data-brand="' + esc(D.activeBrand) + '"';
+    const open = (cls) => '<div class="sheet' + (cls ? ' ' + cls : '') + '"' + brandAttr + ' data-sheet="wp">' + watermark() + '<div class="body">' + header();
     const close = (pg) => '</div>' + wpFooter(doc, pg) + '</div>';
 
     // Cover

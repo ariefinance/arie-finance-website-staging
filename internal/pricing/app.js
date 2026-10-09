@@ -455,7 +455,8 @@
     const brandWrap = document.getElementById('entity-switch');
     if (brandWrap) brandWrap.innerHTML = brandBtns;
     const modes = D.brand().modes;
-    const modeBtns = modes.map(m => '<button type="button" data-mode="' + m + '" class="' + (m === state.mode ? 'active' : '') + '">' + esc(MODE_NAMES[m] || m) + '</button>').join('');
+    const labels = (D.brand().modeLabels || {});
+    const modeBtns = modes.map(m => '<button type="button" data-mode="' + m + '" class="' + (m === state.mode ? 'active' : '') + '">' + esc(labels[m] || MODE_NAMES[m] || m) + '</button>').join('');
     const modeWrap = document.querySelector('.modes');
     if (modeWrap) modeWrap.innerHTML = modeBtns;
   }
@@ -606,8 +607,11 @@
   function fileTitle() {
     const d = doc();
     const prefix = D.brand().filenamePrefix || 'ARIE';
-    if (state.mode === 'indicative') return prefix + '_Indicative_Fee_Schedule';
-    if (state.mode === 'client') return prefix + '_Client_Fee_Schedule_' + X.safe(d.preparedFor) + '_' + X.safe(d.date);
+    // Mode slug: use the document's own title when present, so ACBM's single mode uses the
+    // "Indicative Fee Schedule" title that renders on the page instead of a hardcoded "Client".
+    const titleSlug = X.safe(d.title || state.mode);
+    if (state.mode === 'indicative') return prefix + '_' + (titleSlug || 'Indicative_Fee_Schedule');
+    if (state.mode === 'client') return prefix + '_' + (titleSlug || 'Client_Fee_Schedule') + '_' + X.safe(d.preparedFor) + '_' + X.safe(d.date);
     return prefix + '_Welcome_Pack_' + X.safe(d.clientName) + '_' + X.safe(d.date);
   }
 

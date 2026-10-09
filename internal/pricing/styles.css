@@ -5,6 +5,18 @@
 @font-face { font-family: 'Newsreader'; font-weight: 200 800; font-style: normal; font-display: swap; src: url("assets/newsreader-latin.woff2") format('woff2'); unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD; }
 @font-face { font-family: 'Newsreader'; font-weight: 200 800; font-style: normal; font-display: swap; src: url("assets/newsreader-latin-ext.woff2") format('woff2'); unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C0, U+2113, U+2C60-2C7F, U+A720-A7FF; }
 
+/* ACBM visual theme — teal palette on white paper, scoped to any .sheet whose data-brand="acbm".
+   Overrides the --paper / --paper-2 page colors, --gold* accents, --rule* separators, and --sand
+   (used by subtitles). ARIE sheets are untouched. The ACBM sheet also loses the watermark
+   backdrop (render.js emits no watermark imgs under ACBM) which this CSS reinforces for safety. */
+.sheet[data-brand="acbm"] {
+  --paper: #FFFFFF; --paper-2: #F7FAFB;
+  --gold: #1B4C58; --gold-2: #164049; --gold-3: #6FA4AE;
+  --rule: #D4E1E4; --rule-2: #DFE8EA; --rule-3: #B9CDD2;
+  --sand: #5A6A6E;
+}
+.sheet[data-brand="acbm"] .wm { display: none; }
+.sheet[data-brand="acbm"] .hdr-rule { background: rgba(27,76,88,0.5); }
 :root {
   --navy: #06113A; --navy-2: #0C1B45; --ink: #16151F; --slate: #3A4256; --gold: #C99B3F; --gold-2: #B88A32; --gold-3: #E6CB86;
   --sand: #9A9078; --paper: #F6F1E6; --paper-2: #FDFBF6; --rule: #E4D8BE; --rule-2: #EADFC6; --rule-3: #DBCBA0; --desk: #CFC7B4;

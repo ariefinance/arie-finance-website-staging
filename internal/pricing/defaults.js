@@ -135,46 +135,22 @@
     ]
   });
 
-  function acbmIndicative() {
+  // ACBM has ONE fee-schedule mode. The ARIE "Indicative" vs "Client" split does not apply —
+  // ACBM's single fee schedule carries client fields (preparedFor / reference / date), is titled
+  // "Indicative Fee Schedule" per the reference, and is also what gets allocated a reference.
+  function acbmClient() {
     return {
-      kind: 'indicative',
+      kind: 'client',
       eyebrow: 'ACBM',
       title: 'Indicative Fee Schedule',
       subtitle: 'For International Business Clients',
-      clientFields: false,
+      clientFields: true,
       preparedFor: '', reference: '', date: '',
       intro: "Arie Capital Investment (ACBM) Ltd (‘ACBM’) provides relationship-led international payment services for globally active businesses, supported by structured onboarding and a dedicated Relationship Manager.",
       note: 'The fees below are indicative and intended as a guide only. Final pricing is subject to onboarding and compliance approval and may vary according to the client profile, jurisdiction, ownership structure, expected transaction activity and service requirements.',
       blocks: [
         {
           id: uid(), type: 'feeGrid', title: 'Fee Structure',
-          profiles: [
-            { label: '', fees: [
-              { label: 'Onboarding Fee', value: 'USD 2,500' },
-              { label: 'Monthly Service Fee', value: 'USD 150 / month' },
-              { label: 'Payment Transaction Fee', value: 'USD 40 / payment' }
-            ] }
-          ]
-        },
-        ACBM_THIRD_PARTY(),
-        ACBM_ADDITIONAL(),
-        ACBM_CONDITIONS()
-      ]
-    };
-  }
-  function acbmClient() {
-    return {
-      kind: 'client',
-      eyebrow: 'ACBM',
-      title: 'Client Fee Schedule',
-      subtitle: 'Client-Specific Commercial Terms',
-      clientFields: true,
-      preparedFor: '', reference: '', date: '',
-      intro: "Following approval of your onboarding application, this Client Fee Schedule sets out the commercial terms applicable to your relationship with Arie Capital Investment (ACBM) Ltd (‘ACBM’).",
-      note: 'The fees below reflect the applicable service scope and should be read together with the relevant third-party charges, operational conditions and contractual terms.',
-      blocks: [
-        {
-          id: uid(), type: 'feeGrid', title: 'Applicable Fees',
           profiles: [
             { label: '', fees: [
               { label: 'Onboarding Fee', value: 'USD 2,500' },
@@ -218,10 +194,19 @@
       licence: 'Payment Intermediary Services Licence · GB25205028',
       footer: { web: 'www.ariefinance.com', email: 'customercare@ariefinance.com', phone: '+230 468 6497' },
       modes: ['indicative', 'client', 'welcome'],
+      // Default per-mode button labels. Omitted brands fall back to the global MODE_NAMES map.
       filenamePrefix: 'ARIE',
       referenceRegex: /\b(ARIE-FS-[A-Z0-9-]+)\b/i,
       docxCreator: 'ARIE Document Builder',
       statePropPrefix: 'ARIE_STATE_',
+      // Visual theme — ARIE's existing navy + gold on cream paper.
+      theme: {
+        navy: '06113A', navy2: '0C1B45', slate: '3A4256', sand: '9A9078',
+        gold: 'C99B3F', gold2: 'B88A32', gold3: 'E6CB86',
+        paper: 'F6F1E6', paper2: 'FDFBF6',
+        rule: 'E4D8BE', rule2: 'EADFC6', rule3: 'DBCBA0',
+        headFill: 'F1E7CE', tileFill: 'FDFBF6'
+      },
       indicative: arieIndicative,
       client: arieClient,
       welcome: arieWelcome
@@ -237,12 +222,22 @@
       regulator: null,
       licence: null,
       footer: null,
-      modes: ['indicative', 'client'],
+      // ACBM has a SINGLE fee-schedule mode — Indicative and Client are the same document under ACBM.
+      modes: ['client'],
+      modeLabels: { client: 'Fee Schedule' },
       filenamePrefix: 'ACBM',
       referenceRegex: /\b(ACBM-FS-[A-Z0-9-]+)\b/i,
       docxCreator: 'ACBM Document Builder',
       statePropPrefix: 'ACBM_STATE_',
-      indicative: acbmIndicative,
+      // Visual theme — ACBM uses teal (sampled from the logo) on white paper, no gold accents.
+      // Replaces every "gold" accent with teal in both the HTML and DOCX outputs.
+      theme: {
+        navy: '1F2A3A', navy2: '2A3645', slate: '3A4256', sand: '5A6A6E',
+        gold: '1B4C58', gold2: '164049', gold3: '6FA4AE',
+        paper: 'FFFFFF', paper2: 'F7FAFB',
+        rule: 'D4E1E4', rule2: 'DFE8EA', rule3: 'B9CDD2',
+        headFill: 'EAF2F4', tileFill: 'F7FAFB'
+      },
       client: acbmClient
       // No welcome(): ACBM has no Welcome Pack.
     }
@@ -253,8 +248,8 @@
   function setBrand(id) { if (BRANDS[id]) activeBrand = id; }
 
   window.ARIE_DEFAULTS = {
-    VERSION: '0.7.0',
-    SCHEMA_VERSION: 4,
+    VERSION: '0.7.1',
+    SCHEMA_VERSION: 5,
     BRANDS,
     brand,
     setBrand,

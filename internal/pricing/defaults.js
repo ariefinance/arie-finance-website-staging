@@ -205,7 +205,7 @@
         gold: 'C99B3F', gold2: 'B88A32', gold3: 'E6CB86',
         paper: 'F6F1E6', paper2: 'FDFBF6',
         rule: 'E4D8BE', rule2: 'EADFC6', rule3: 'DBCBA0',
-        headFill: 'F1E7CE', tileFill: 'FDFBF6'
+        headFill: 'F1E7CE', headText: '06113A', tileFill: 'FDFBF6'
       },
       indicative: arieIndicative,
       client: arieClient,
@@ -216,9 +216,11 @@
       label: 'ACBM',
       displayName: 'Arie Capital Investment (ACBM) Ltd',
       eyebrow: 'ACBM',
-      // ACBM uses its own logo variant (teal mark + dark grey "ARIE FINANCE" wordmark). Watermark
-      // marks are intentionally omitted — the ACBM sheet renders without the watermark backdrop.
-      assets: { logoWide: 'ACBM_LOGO_WIDE', markA: null, markB: null },
+      // ACBM uses its own logo variant (teal mark + dark grey "ARIE FINANCE" wordmark) plus two
+      // teal-palette watermark assets: ACBM_MARK_A is a slim diagonal panel, ACBM_MARK_B carries
+      // the signature teal gradient footer bar. render.js emits both <img> tags; styles.css
+      // positions them per brand.
+      assets: { logoWide: 'ACBM_LOGO_WIDE', markA: 'ACBM_MARK_A', markB: 'ACBM_MARK_B' },
       regulator: null,
       licence: null,
       footer: null,
@@ -236,7 +238,9 @@
         gold: '1B4C58', gold2: '164049', gold3: '6FA4AE',
         paper: 'FFFFFF', paper2: 'F7FAFB',
         rule: 'D4E1E4', rule2: 'DFE8EA', rule3: 'B9CDD2',
-        headFill: 'EAF2F4', tileFill: 'F7FAFB'
+        // Correspondent-bank table header: deep teal (sampled from the logo) with white text,
+        // matching the user's icons. ARIE keeps its beige-on-navy combination unchanged.
+        headFill: '1B4C58', headText: 'FFFFFF', tileFill: 'F7FAFB'
       },
       client: acbmClient
       // No welcome(): ACBM has no Welcome Pack.

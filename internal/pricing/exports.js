@@ -40,6 +40,7 @@
   const SLATE = () => theme().slate;
   const RULE = () => theme().rule;
   const HEAD_FILL = () => theme().headFill;
+  const HEAD_TEXT = () => theme().headText || theme().navy;
   const TILE_FILL = () => theme().tileFill;
 
   function lib() { return window.docx; }
@@ -155,7 +156,7 @@
         out.push(sectionHeading(b.title));
         const cols = (b.columns && b.columns.length) ? b.columns : ['Item'];
         const w = Math.floor(W_TOTAL / cols.length);
-        const rows = [new d.TableRow({ tableHeader: true, children: cols.map(c => cell(ptext(c.toUpperCase(), { size: 16, bold: true, color: NAVY(), characterSpacing: 40 }, { spacing: { after: 0 } }), { shading: { fill: HEAD_FILL(), type: d.ShadingType.CLEAR, color: 'auto' } })) })];
+        const rows = [new d.TableRow({ tableHeader: true, children: cols.map(c => cell(ptext(c.toUpperCase(), { size: 16, bold: true, color: HEAD_TEXT(), characterSpacing: 40 }, { spacing: { after: 0 } }), { shading: { fill: HEAD_FILL(), type: d.ShadingType.CLEAR, color: 'auto' } })) })];
         for (const r of (b.rows || [])) rows.push(new d.TableRow({ children: cols.map((c, i) => cell(para(multi(r[i] || '', i === 0 ? { color: NAVY(), bold: true } : {}), { spacing: { after: 0 } }))) }));
         out.push(table(rows, cols.map(() => w)));
         if (b.note) out.push(ptext(b.note, { size: 18 }, { spacing: { before: 120 } }));
@@ -194,7 +195,7 @@
     // Same helper as the PDF sheets: a field confirmed N/A prints "Not applicable" and never its value.
     const na = (f) => { const fv = R.fieldValue(a, f); return fv.empty ? '—' : fv.text; };
     const addr = R.fieldValue(a, 'bankAddress');
-    const head = new d.TableRow({ children: [cell(ptext((a.currency || '') + ' ACCOUNT', { size: 19, bold: true, color: NAVY(), characterSpacing: 80 }, { spacing: { after: 0 } }), { columnSpan: 2, shading: { fill: HEAD_FILL(), type: d.ShadingType.CLEAR, color: 'auto' } })] });
+    const head = new d.TableRow({ children: [cell(ptext((a.currency || '') + ' ACCOUNT', { size: 19, bold: true, color: HEAD_TEXT(), characterSpacing: 80 }, { spacing: { after: 0 } }), { columnSpan: 2, shading: { fill: HEAD_FILL(), type: d.ShadingType.CLEAR, color: 'auto' } })] });
     const row = (l, r) => new d.TableRow({ cantSplit: true, children: [cell(l, { shading: { fill: TILE_FILL(), type: d.ShadingType.CLEAR, color: 'auto' } }), cell(r, { shading: { fill: TILE_FILL(), type: d.ShadingType.CLEAR, color: 'auto' } })] });
     return table([head,
       new d.TableRow({ children: [cell(kv('Beneficiary name', na('beneficiaryName')), { columnSpan: 2, shading: { fill: TILE_FILL(), type: d.ShadingType.CLEAR, color: 'auto' } })] }),

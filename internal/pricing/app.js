@@ -307,6 +307,15 @@
   function feeControls(d, key) {
     const p = 'docs.' + key;
     let h = secH('Document');
+    // ACBM has a single document mode. The user may want to export it either as a Client Fee
+    // Schedule (with Prepared For / Reference / Issue Date) or as an Indicative Fee Schedule
+    // (no client-specific details). This toggle flips d.clientFields; when turned off, the
+    // meta row and the Generate Reference button disappear and preflight stops requiring those
+    // fields. ARIE already has separate 'indicative' and 'client' modes so the toggle isn't
+    // exposed there.
+    if (D.activeBrand === 'acbm' && key === 'client') {
+      h += '<label class="check" style="margin:4px 0 12px"><input type="checkbox" data-act="toggleClientFields"' + (d.clientFields ? ' checked' : '') + '> Client-specific document (show Prepared For / Reference / Issue Date). Uncheck to generate an Indicative Fee Schedule without client details.</label>';
+    }
     if (d.clientFields) {
       h += notice('error', 'Client legal name, reference and issue date are required before export.');
       // Auto-allocation is wired for both ARIE and ACBM Client Fee Schedules — one shared
@@ -512,6 +521,15 @@
     moveAcct(el) { if (swap(w().accounts, +el.dataset.i, +el.dataset.d)) renderAll(); },
     openAcct(el) { openAccount = openAccount === el.dataset.id ? null : el.dataset.id; renderControls(); },
     toggleNa(el) { const a = w().accounts[+el.dataset.i]; a.na = a.na || {}; a.na[el.dataset.f] = !a.na[el.dataset.f]; markDuplicates(); renderAll(); },
+    toggleClientFields(el) {
+      const d = doc();
+      d.clientFields = el.checked;
+      // Clear the client-only fields when switching off so stale values don't resurface if the
+      // user toggles back on later. Allocation key is cleared too — Indicative schedules carry
+      // no reference, and reusing an allocated key for a later client would be unsafe.
+      if (!d.clientFields) { d.preparedFor = ''; d.reference = ''; d.allocationKey = ''; }
+      renderAll();
+    },
     viewSource(el) { const f = files.wiring[el.dataset.id]; if (!f) return; const url = URL.createObjectURL(new Blob([f.buf], { type: 'application/pdf' })); window.open(url, '_blank'); setTimeout(() => URL.revokeObjectURL(url), 60000); },
     feeSource(el) { w().feeSource = el.value; renderAll(); },
     ackMismatch() { w().mismatchAck = coherenceRaw().map(i => i.msg).join('\n'); renderAll(); },

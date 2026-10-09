@@ -145,8 +145,8 @@
     return {
       kind: 'client',
       eyebrow: 'ACBM',
-      title: 'Indicative Fee Schedule',
-      subtitle: 'For International Business Clients',
+      title: 'Client Fee Schedule',
+      subtitle: 'Client-Specific Commercial Terms',
       clientFields: true,
       preparedFor: '', reference: '', date: '',
       intro: "Following approval of your onboarding application, this Client Fee Schedule sets out the commercial terms applicable to your Arie Capital Investment (ACBM) Ltd (‘ACBM’) relationship.",

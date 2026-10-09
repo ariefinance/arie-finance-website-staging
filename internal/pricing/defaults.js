@@ -231,8 +231,9 @@
       label: 'ACBM',
       displayName: 'Arie Capital Investment (ACBM) Ltd',
       eyebrow: 'ACBM',
-      // ACBM uses the ARIE Finance logo on its documents (confirmed by the user).
-      assets: { logoWide: 'LOGO_WIDE', markA: 'MARK_A', markB: 'MARK_B' },
+      // ACBM uses its own logo variant (teal mark + dark grey "ARIE FINANCE" wordmark). Watermark
+      // marks are intentionally omitted — the ACBM sheet renders without the watermark backdrop.
+      assets: { logoWide: 'ACBM_LOGO_WIDE', markA: null, markB: null },
       regulator: null,
       licence: null,
       footer: null,

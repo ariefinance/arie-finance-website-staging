@@ -130,7 +130,9 @@
     id: uid(), type: 'bullets', title: 'Important Conditions',
     items: [
       'Account funding: the account should be funded within one month with an aggregate minimum balance of USD 5,000, or equivalent.',
-      'Additional third-party, correspondent-bank and foreign exchange charges may apply depending on the payment route, currency and transaction requirements.',
+      // (The "Additional third-party, correspondent-bank and foreign exchange charges may apply…"
+      // line is already printed as the note under the Correspondent Bank Fees table; repeating it
+      // as a bullet here duplicates it and pushes the schedule onto a second page.)
       "All services remain subject to ACBM's standard terms, ongoing compliance requirements and applicable third-party conditions."
     ]
   });

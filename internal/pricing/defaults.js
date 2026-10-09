@@ -149,8 +149,8 @@
       subtitle: 'For International Business Clients',
       clientFields: true,
       preparedFor: '', reference: '', date: '',
-      intro: "Arie Capital Investment (ACBM) Ltd (‘ACBM’) provides relationship-led international payment services for globally active businesses, supported by structured onboarding and a dedicated Relationship Manager.",
-      note: 'The fees below are indicative and intended as a guide only. Final pricing is subject to onboarding and compliance approval and may vary according to the client profile, jurisdiction, ownership structure, expected transaction activity and service requirements.',
+      intro: "Following approval of your onboarding application, this Client Fee Schedule sets out the commercial terms applicable to your Arie Capital Investment (ACBM) Ltd (‘ACBM’) relationship.",
+      note: 'The fees below reflect the applicable service scope and should be read together with the relevant third-party charges, operational conditions and contractual terms.',
       blocks: [
         {
           id: uid(), type: 'feeGrid', title: 'Fee Structure',

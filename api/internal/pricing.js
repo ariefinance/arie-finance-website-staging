@@ -96,8 +96,8 @@ function readBody(req) {
 let _redisInstance = null;
 function getRedis() {
   if (_redisInstance) return _redisInstance;
-  const url = process.env.UPSTASH_REDIS_REST_URL;
-  const token = process.env.UPSTASH_REDIS_REST_TOKEN;
+  const url = process.env.UPSTASH_REDIS_REST_KV_REST_API_URL;
+  const token = process.env.UPSTASH_REDIS_REST_KV_REST_API_TOKEN;
   if (!url || !token) return null;
   _redisInstance = new Redis({ url, token });
   return _redisInstance;

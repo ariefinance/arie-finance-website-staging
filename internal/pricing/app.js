@@ -304,21 +304,38 @@
     const p = 'docs.' + key;
     let h = secH('Document');
     if (d.clientFields) {
-      h += notice('error', 'Client legal name, reference and issue date are required before export.') +
-        fld('Client legal name', inp(p + '.preparedFor', d.preparedFor, 'Client legal name (required)'));
+      h += notice('error', 'Client legal name, reference and issue date are required before export.');
       // Auto-allocation is wired for ARIE Client Fee Schedules only; ACBM references stay manual.
       const canAutoAllocate = D.activeBrand === 'arie' && state.mode === 'client';
+      // Lock-on-allocation: an auto-allocated reference (allocationKey present + reference set)
+      // locks BOTH the reference and the client legal name. This prevents the register entry
+      // ending up associated with a different client than the document carries. To work on a new
+      // client, staff click Start New Client. Historical / manually-typed references (no
+      // allocationKey) stay fully editable so legacy ARIE documents are unaffected.
+      const locked = canAutoAllocate && !!d.allocationKey && !!d.reference;
+      const nameInput = locked
+        ? '<input class="in locked" id="f_' + (p + '.preparedFor').replace(/\./g, '_') + '" value="' + esc(d.preparedFor) + '" readonly aria-readonly="true" title="Locked to the allocated reference. Click Start New Client to change.">'
+        : inp(p + '.preparedFor', d.preparedFor, 'Client legal name (required)');
+      h += fld('Client legal name', nameInput);
       if (canAutoAllocate) {
-        const genLabel = d.reference ? 'Allocated' : 'Generate Reference';
-        const genDisabled = d.reference ? ' disabled title="A reference is already allocated to this client. To replace it, clear the field first."' : '';
+        const genLabel = locked ? 'Allocated' : 'Generate Reference';
+        const genTitle = locked ? 'Locked to this client. Click Start New Client to allocate a reference for a different client.' : 'Allocate the next official reference from the shared register.';
+        const genDisabled = locked || !!d.reference ? ' disabled title="' + esc(genTitle) + '"' : '';
+        const refInput = locked
+          ? '<input class="in locked" id="f_' + (p + '.reference').replace(/\./g, '_') + '" value="' + esc(d.reference) + '" readonly aria-readonly="true" title="' + esc(genTitle) + '">'
+          : inp(p + '.reference', d.reference, 'Click Generate to allocate');
         h += '<div class="row">' +
           '<div class="field"><label>Reference</label><div style="display:flex;gap:6px">' +
-            inp(p + '.reference', d.reference, 'Click Generate to allocate') +
+            refInput +
             '<button type="button" class="link-btn gen-ref" data-act="generateRef"' + genDisabled + '>' + genLabel + '</button>' +
           '</div></div>' +
           fld('Issue date', inp(p + '.date', d.date, 'DD Month YYYY')) +
           '</div>';
-        h += '<p class="hint">Click Generate Reference to allocate the next official number from the shared register. The allocation is saved to this client and preserved across edits, re-exports and reloads.</p>';
+        if (locked) {
+          h += '<p class="hint"><b>Reference and client name are locked</b> to <code>' + esc(d.reference) + '</code> &middot; ' + esc(d.preparedFor) + '. To allocate a reference for a different client, click <b>Start New Client</b>.</p>';
+        } else {
+          h += '<p class="hint">Click Generate Reference to allocate the next official number from the shared register. Once allocated the reference and client name become locked to each other and are preserved across edits, re-exports and reloads.</p>';
+        }
       } else {
         h += '<div class="row">' + fld('Reference', inp(p + '.reference', d.reference, 'e.g. ARIE-FS-2026-XXX')) + fld('Issue date', inp(p + '.date', d.date, 'DD Month YYYY')) + '</div>';
       }
@@ -503,7 +520,21 @@
       const d = doc();
       if (D.activeBrand !== 'arie' || state.mode !== 'client') return;
       if (!d.preparedFor || !d.preparedFor.trim()) { showModal({ title: 'Client legal name required', text: 'Enter the client legal name before allocating a reference.' }); return; }
-      if (d.reference && d.reference.trim()) { showModal({ title: 'A reference is already allocated', text: 'This Client Fee Schedule already carries reference <b>' + esc(d.reference) + '</b>. To replace it, clear the reference field first, then click Generate Reference again. (The old reference stays recorded in the register against this client.)' }); return; }
+      // If this document already carries an auto-allocated reference, do NOT re-allocate — the
+      // reference and client name are locked together. The only way to allocate for a different
+      // client is Start New Client; the only way to recover from a wrong allocation is also
+      // Start New Client (the old entry stays in the register against the original client name).
+      if (d.allocationKey && d.reference) {
+        showModal({ title: 'Already allocated', text: 'This Client Fee Schedule is already allocated as <b>' + esc(d.reference) + '</b> for <b>' + esc(d.preparedFor) + '</b>. To work on a different client, click <b>Start New Client</b>.' });
+        return;
+      }
+      // Manually-typed historical reference (no allocationKey). Refuse to overwrite it from here
+      // — staff must clear it first (or Start New Client). This prevents an auto-allocation from
+      // silently replacing a hand-typed reference the staff member meant to keep.
+      if (!d.allocationKey && d.reference && d.reference.trim()) {
+        showModal({ title: 'Reference already set', text: 'A reference is already in the field (<b>' + esc(d.reference) + '</b>). Clear it first if you want to allocate a new one from the register.' });
+        return;
+      }
       // Idempotency key persists on the document so a retry after a reload / network blip
       // reuses the same slot in the register rather than consuming a new counter value.
       if (!d.allocationKey) { d.allocationKey = randomId(); persist(); }
@@ -515,11 +546,19 @@
         });
         const j = await resp.json().catch(() => ({}));
         if (!resp.ok) {
+          // 409 means the server refused to hand this key over to a different client. The
+          // document's allocationKey is already committed to someone else — clear it client-side
+          // so the staff member's only path forward is Start New Client, which is the fix.
+          if (resp.status === 409 && j.error === 'allocation_key_bound_to_other_client') {
+            d.allocationKey = ''; persist();
+          }
           showModal({ title: 'Could not allocate a reference', text: esc(j.message || j.error || ('HTTP ' + resp.status)) });
           return;
         }
         d.reference = j.reference;
-        // The allocationKey stays on the document; a repeat click after reload returns the SAME reference.
+        // The allocationKey stays on the document; a repeat allocation attempt (same key, same
+        // client name) returns the SAME reference. A repeat attempt with a different client name
+        // is refused server-side (409).
         renderAll();
         toast('Allocated ' + j.reference + (j.reused ? ' (already assigned to this client)' : ''), 'info');
       } catch (e) {

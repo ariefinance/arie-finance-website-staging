@@ -42,6 +42,7 @@ a { color: var(--navy); text-decoration: none; }
 .gen-ref { background: var(--navy); color: #fff; border: 1px solid var(--navy); padding: 8px 12px; border-radius: 6px; font-size: 12px; font-weight: 700; cursor: pointer; white-space: nowrap; }
 .gen-ref:hover:not([disabled]) { background: var(--navy-2); }
 .gen-ref[disabled] { opacity: 0.5; cursor: default; }
+.in.locked { background: #f5f2e8; color: var(--navy); font-weight: 600; cursor: not-allowed; }
 .ref-history-table { width: 100%; border-collapse: collapse; font-size: 12.5px; margin-top: 10px; }
 .ref-history-table th, .ref-history-table td { padding: 6px 8px; text-align: left; border-bottom: 1px solid #e9e4d8; }
 .ref-history-table th { background: #faf7ee; color: var(--navy); font-weight: 700; font-size: 11px; text-transform: uppercase; letter-spacing: 0.04em; }

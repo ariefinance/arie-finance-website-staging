@@ -36,7 +36,8 @@ const CONFIGURED_YEARS = {
   arie: { 2026: { seed: 129 } }
   // acbm: intentionally omitted — ACBM reference numbering is unchanged for now.
 };
-const IDEM_TTL_S = 24 * 60 * 60;   // 24h: covers slow double-click, network retry, tab reload
+// Idempotency keys are PERMANENT: the same key always resolves to the same reference, even weeks
+// later, so a slow retry can never create a second reference for a client that already has one.
 
 const TOKEN_TTL_MS = 12 * 60 * 60 * 1000;
 const MAX_BODY_BYTES = 64 * 1024;
@@ -113,20 +114,26 @@ function referencePrefix(brand, year) {
   return prod ? (brandPrefix + '-FS-' + year + '-') : (brandPrefix + '-FS-' + year + '-PREVIEW-');
 }
 
-// Atomic allocation via Lua on Upstash. Returns {reference, isNew: '1'|'0'}.
-// Flow: if the idempotency key already carries a reference, return it unchanged
-// (double-click / network retry safe); otherwise INCR the counter, format the
-// reference, record the register entry, and bind the idempotency key to it.
-// The counter is seeded with SETNX before the script runs — this is a one-time
-// bootstrap and is a no-op on every subsequent allocation.
+// Atomic allocation via Lua on Upstash. Returns {reference, isNew, storedEntry}.
+// Flow:
+//   1. If the idempotency key already carries a reference, return it with the stored register
+//      entry (double-click / network retry safe; the caller then checks the stored clientName
+//      against the request's clientName and refuses on mismatch).
+//   2. Otherwise INCR the counter, format the reference, record the register entry, and bind
+//      the idempotency key PERMANENTLY to the new reference (no TTL — a retry weeks later
+//      still returns the same reference, never a new one).
+// The counter is seeded with SETNX before the script runs — one-time bootstrap, no-op after.
 const ALLOC_SCRIPT = [
   "local existing = redis.call('GET', KEYS[1])",
-  "if existing then return {existing, '0'} end",
+  "if existing then",
+  "  local stored = redis.call('HGET', KEYS[3], existing)",
+  "  return {existing, '0', stored or ''}",
+  "end",
   "local n = redis.call('INCR', KEYS[2])",
   "local ref = ARGV[1] .. n",
-  "redis.call('SET', KEYS[1], ref, 'EX', tonumber(ARGV[3]))",
+  "redis.call('SET', KEYS[1], ref)",
   "redis.call('HSET', KEYS[3], ref, ARGV[2])",
-  "return {ref, '1'}"
+  "return {ref, '1', ARGV[2]}"
 ].join('\n');
 
 async function allocateRef(redis, brand, year, seed, idempotencyKey, clientName, staff) {
@@ -134,20 +141,16 @@ async function allocateRef(redis, brand, year, seed, idempotencyKey, clientName,
   const idemKey = keyIdem(brand, year, idempotencyKey);
   const registerKey = keyRegister(brand, year);
   const prefix = referencePrefix(brand, year);
-  // SETNX on the counter: initialises only when the key is absent. Seed is
-  // (first-reference - 1) so the first INCR returns the configured start value.
   await redis.set(counterKey, seed, { nx: true });
   const allocatedAt = new Date().toISOString();
   const entry = JSON.stringify({ clientName, entity: brand, allocatedAt, staff: staff || '', env: env() });
-  const resp = await redis.eval(
-    ALLOC_SCRIPT,
-    [idemKey, counterKey, registerKey],
-    [prefix, entry, String(IDEM_TTL_S)]
-  );
-  // Upstash normalises Lua table results into a JS array.
+  const resp = await redis.eval(ALLOC_SCRIPT, [idemKey, counterKey, registerKey], [prefix, entry]);
   const reference = Array.isArray(resp) ? String(resp[0]) : String(resp);
   const isNew = Array.isArray(resp) && String(resp[1]) === '1';
-  return { reference, allocatedAt: isNew ? allocatedAt : null, reused: !isNew };
+  const storedRaw = Array.isArray(resp) ? String(resp[2] || '') : '';
+  let storedEntry = null;
+  if (storedRaw) { try { storedEntry = JSON.parse(storedRaw); } catch (e) { storedEntry = null; } }
+  return { reference, allocatedAt: isNew ? allocatedAt : (storedEntry && storedEntry.allocatedAt) || null, reused: !isNew, storedEntry };
 }
 
 async function registerSearch(redis, q, brandFilter) {
@@ -238,6 +241,12 @@ module.exports = async function handler(req, res) {
       if (!cfg) return res.status(412).json({ ok: false, error: 'year_not_configured', message: 'Year ' + year + ' is not configured for ' + brand.toUpperCase() + '. Confirm the starting-sequence convention with the administrator before allocating the first reference of a new year.' });
       try {
         const result = await allocateRef(redis, brand, year, cfg.seed, idempotencyKey, clientName, staff);
+        // Enforce one-key-per-client. If the idempotency key already carries a reference bound
+        // to a different client name, refuse — never silently reassign or hand back a reference
+        // registered against someone else. This is the server-side guarantee behind the UI lock.
+        if (result.reused && result.storedEntry && String(result.storedEntry.clientName || '').trim() && String(result.storedEntry.clientName).trim().toLowerCase() !== clientName.toLowerCase()) {
+          return res.status(409).json({ ok: false, error: 'allocation_key_bound_to_other_client', message: 'This allocation attempt is already bound to a different client (' + result.storedEntry.clientName + ') and reference ' + result.reference + '. To allocate a new reference, start a new client record.' });
+        }
         return res.status(200).json({ ok: true, reference: result.reference, allocatedAt: result.allocatedAt, reused: result.reused });
       } catch (e) {
         return res.status(500).json({ ok: false, error: 'allocate_failed', message: 'Could not allocate a reference. Please try again.' });

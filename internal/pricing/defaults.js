@@ -219,9 +219,8 @@
       displayName: 'Arie Capital Investment (ACBM) Ltd',
       eyebrow: 'ACBM',
       // ACBM uses its own logo variant (teal mark + dark grey "ARIE FINANCE" wordmark) plus two
-      // teal-palette watermark assets: ACBM_MARK_A is a slim diagonal panel, ACBM_MARK_B carries
-      // the signature teal gradient footer bar. render.js emits both <img> tags; styles.css
-      // positions them per brand.
+      // teal-palette watermark assets: ACBM_MARK_A sits top-left behind the logo as a subtle
+      // decorative panel; ACBM_MARK_B carries the signature teal gradient footer bar.
       assets: { logoWide: 'ACBM_LOGO_WIDE', markA: 'ACBM_MARK_A', markB: 'ACBM_MARK_B' },
       regulator: null,
       licence: null,

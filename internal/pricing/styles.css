@@ -27,7 +27,7 @@
 /* Reset the ARIE-era positioning (right:-70px; top:100px; width:340px) before applying ACBM's. */
 .sheet[data-brand="acbm"] .wm img { position: absolute; max-width: none; opacity: 1; left: auto; right: auto; top: auto; bottom: auto; width: auto; height: auto; }
 .sheet[data-brand="acbm"] .wm .b { left: 0; right: 0; bottom: 0; width: 100%; }
-.sheet[data-brand="acbm"] .wm .a { right: 0; top: 0; width: 220px; opacity: 0.7; }
+.sheet[data-brand="acbm"] .wm .a { left: 0; top: 0; width: 220px; opacity: 0.7; }
 :root {
   --navy: #06113A; --navy-2: #0C1B45; --ink: #16151F; --slate: #3A4256; --gold: #C99B3F; --gold-2: #B88A32; --gold-3: #E6CB86;
   --sand: #9A9078; --paper: #F6F1E6; --paper-2: #FDFBF6; --rule: #E4D8BE; --rule-2: #EADFC6; --rule-3: #DBCBA0; --desk: #CFC7B4;

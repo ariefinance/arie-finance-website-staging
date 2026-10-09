@@ -305,8 +305,23 @@
     let h = secH('Document');
     if (d.clientFields) {
       h += notice('error', 'Client legal name, reference and issue date are required before export.') +
-        fld('Client legal name', inp(p + '.preparedFor', d.preparedFor, 'Client legal name (required)')) +
-        '<div class="row">' + fld('Reference', inp(p + '.reference', d.reference, 'e.g. ARIE-FS-2026-XXX')) + fld('Issue date', inp(p + '.date', d.date, 'DD Month YYYY')) + '</div>';
+        fld('Client legal name', inp(p + '.preparedFor', d.preparedFor, 'Client legal name (required)'));
+      // Auto-allocation is wired for ARIE Client Fee Schedules only; ACBM references stay manual.
+      const canAutoAllocate = D.activeBrand === 'arie' && state.mode === 'client';
+      if (canAutoAllocate) {
+        const genLabel = d.reference ? 'Allocated' : 'Generate Reference';
+        const genDisabled = d.reference ? ' disabled title="A reference is already allocated to this client. To replace it, clear the field first."' : '';
+        h += '<div class="row">' +
+          '<div class="field"><label>Reference</label><div style="display:flex;gap:6px">' +
+            inp(p + '.reference', d.reference, 'Click Generate to allocate') +
+            '<button type="button" class="link-btn gen-ref" data-act="generateRef"' + genDisabled + '>' + genLabel + '</button>' +
+          '</div></div>' +
+          fld('Issue date', inp(p + '.date', d.date, 'DD Month YYYY')) +
+          '</div>';
+        h += '<p class="hint">Click Generate Reference to allocate the next official number from the shared register. The allocation is saved to this client and preserved across edits, re-exports and reloads.</p>';
+      } else {
+        h += '<div class="row">' + fld('Reference', inp(p + '.reference', d.reference, 'e.g. ARIE-FS-2026-XXX')) + fld('Issue date', inp(p + '.date', d.date, 'DD Month YYYY')) + '</div>';
+      }
     }
     h += '<div class="row">' + fld('Eyebrow', inp(p + '.eyebrow', d.eyebrow)) + fld('Title', inp(p + '.title', d.title)) + '</div>' + fld('Subtitle', inp(p + '.subtitle', d.subtitle)) +
       fld('Introduction', ta(p + '.intro', d.intro, '', 70)) + fld('Pricing note', ta(p + '.note', d.note, '', 80));
@@ -483,6 +498,38 @@
         if (state.mode === 'welcome') { files.fee = null; files.tc = null; files.wiring = {}; openAccount = null; }
         renderAll();
       }, continueLabel: 'Reset' });
+    },
+    async generateRef() {
+      const d = doc();
+      if (D.activeBrand !== 'arie' || state.mode !== 'client') return;
+      if (!d.preparedFor || !d.preparedFor.trim()) { showModal({ title: 'Client legal name required', text: 'Enter the client legal name before allocating a reference.' }); return; }
+      if (d.reference && d.reference.trim()) { showModal({ title: 'A reference is already allocated', text: 'This Client Fee Schedule already carries reference <b>' + esc(d.reference) + '</b>. To replace it, clear the reference field first, then click Generate Reference again. (The old reference stays recorded in the register against this client.)' }); return; }
+      // Idempotency key persists on the document so a retry after a reload / network blip
+      // reuses the same slot in the register rather than consuming a new counter value.
+      if (!d.allocationKey) { d.allocationKey = randomId(); persist(); }
+      const btn = document.querySelector('button.gen-ref'); if (btn) { btn.disabled = true; btn.textContent = 'Allocating…'; }
+      try {
+        const resp = await fetch('/api/internal/pricing?action=allocate_ref', {
+          method: 'POST', credentials: 'same-origin', headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ brand: D.activeBrand, clientName: d.preparedFor.trim(), idempotencyKey: d.allocationKey, staff: getStaffId() })
+        });
+        const j = await resp.json().catch(() => ({}));
+        if (!resp.ok) {
+          showModal({ title: 'Could not allocate a reference', text: esc(j.message || j.error || ('HTTP ' + resp.status)) });
+          return;
+        }
+        d.reference = j.reference;
+        // The allocationKey stays on the document; a repeat click after reload returns the SAME reference.
+        renderAll();
+        toast('Allocated ' + j.reference + (j.reused ? ' (already assigned to this client)' : ''), 'info');
+      } catch (e) {
+        showModal({ title: 'Network error', text: 'Could not reach the reference register. Please try again.' });
+      } finally {
+        const b2 = document.querySelector('button.gen-ref'); if (b2 && !d.reference) { b2.disabled = false; b2.textContent = 'Generate Reference'; }
+      }
+    },
+    openHistory() {
+      openReferenceHistory();
     },
     pdf() {
       guardedExport(() => {
@@ -695,6 +742,65 @@
     clearTimeout(toastTimer); toastTimer = setTimeout(() => { t.hidden = true; }, 2600);
   }
 
+  // ---------- Reference register ----------
+  // The staff identifier is a per-browser localStorage value, OPTIONAL. It is sent with each
+  // allocation and recorded in the register entry so the history view shows who allocated what.
+  // No server-side auth is attached to it (the shared passcode is the only auth); it is a label.
+  const STAFF_KEY = 'arie_pricing_staff_id';
+  function getStaffId() { try { return localStorage.getItem(STAFF_KEY) || ''; } catch (e) { return ''; } }
+  function setStaffId(v) { try { localStorage.setItem(STAFF_KEY, String(v || '').slice(0, 40)); } catch (e) { /* ignore */ } }
+  function randomId() {
+    // 128 bits of entropy encoded urlsafe-base64. Crypto.randomUUID would also work.
+    try { return (crypto && crypto.randomUUID) ? crypto.randomUUID() : fallback(); } catch (e) { return fallback(); }
+    function fallback() { let s = ''; for (let i = 0; i < 32; i++) s += Math.floor(Math.random() * 36).toString(36); return s; }
+  }
+
+  function openReferenceHistory() {
+    closeModal();
+    const bg = document.createElement('div'); bg.className = 'modal-bg no-print'; bg.id = 'modal';
+    bg.innerHTML = '<div class="modal" role="dialog" style="min-width:min(640px,95vw);max-width:800px">' +
+      '<div class="m-h">Reference History</div>' +
+      '<div class="m-b">' +
+        '<p class="hint" style="margin:0 0 10px">Search allocated Client Fee Schedule references by client name, reference number or staff identifier.</p>' +
+        '<input id="ref-history-q" class="in" type="search" placeholder="Search…" autocomplete="off" style="width:100%;padding:8px 10px">' +
+        '<div id="ref-history-body"><p class="ref-history-empty">Loading…</p></div>' +
+      '</div>' +
+      '<div class="m-f"><button class="primary" data-m="cancel">Close</button></div></div>';
+    bg.addEventListener('click', (e) => { const b = e.target.closest('[data-m]'); if (b) closeModal(); });
+    document.body.appendChild(bg);
+    const q = document.getElementById('ref-history-q');
+    const body = document.getElementById('ref-history-body');
+    let timer = null, lastReq = 0;
+    function run() {
+      const term = q.value.trim();
+      const myReq = ++lastReq;
+      body.innerHTML = '<p class="ref-history-empty">Searching…</p>';
+      fetch('/api/internal/pricing?action=register_search&q=' + encodeURIComponent(term), { credentials: 'same-origin' })
+        .then(r => r.json().catch(() => ({})))
+        .then(j => {
+          if (myReq !== lastReq) return;
+          if (j && j.ok && Array.isArray(j.results)) {
+            if (!j.results.length) { body.innerHTML = '<p class="ref-history-empty">No references found' + (term ? ' matching "' + esc(term) + '".' : ' yet.') + '</p>'; return; }
+            body.innerHTML = '<table class="ref-history-table"><thead><tr><th>Reference</th><th>Client</th><th>Entity</th><th>Allocated</th><th>Staff</th></tr></thead><tbody>' +
+              j.results.map(r => '<tr><td><b>' + esc(r.reference) + '</b></td><td>' + esc(r.clientName || '—') + '</td><td>' + esc((r.entity || '').toUpperCase()) + '</td><td>' + esc(fmtDate(r.allocatedAt)) + '</td><td>' + esc(r.staff || '') + '</td></tr>').join('') +
+              '</tbody></table>' + (j.results.length >= 200 ? '<p class="hint" style="margin-top:8px">Showing the first 200 results. Narrow your search to see more.</p>' : '');
+          } else if (j && j.error === 'redis_unconfigured') {
+            body.innerHTML = '<p class="ref-history-empty">Reference register is not configured yet. Ask the administrator to connect Upstash Redis in Vercel.</p>';
+          } else {
+            body.innerHTML = '<p class="ref-history-empty">Could not load register.</p>';
+          }
+        })
+        .catch(() => { if (myReq === lastReq) body.innerHTML = '<p class="ref-history-empty">Could not reach the register.</p>'; });
+    }
+    q.addEventListener('input', () => { clearTimeout(timer); timer = setTimeout(run, 250); });
+    run();
+    setTimeout(() => q.focus(), 50);
+  }
+  function fmtDate(iso) {
+    if (!iso) return '—';
+    try { const d = new Date(iso); if (isNaN(d.getTime())) return iso; return d.toLocaleString('en-GB', { day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' }); } catch (e) { return iso; }
+  }
+
   // ---------- Events ----------
   function bind() {
     const pane = document.getElementById('pane');
@@ -745,6 +851,11 @@
 
   // ---------- Boot ----------
   document.getElementById('app-version').textContent = 'v' + D.VERSION;
+  const staffEl = document.getElementById('staff-id');
+  if (staffEl) {
+    staffEl.value = getStaffId();
+    staffEl.addEventListener('input', () => setStaffId(staffEl.value));
+  }
   load();
   bind();
   browserCheck();

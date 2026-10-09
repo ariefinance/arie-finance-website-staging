@@ -1,26 +1,42 @@
 // ============================================================================
 //  ARIE Finance — Document Builder Access API  (Vercel serverless)
 //  Route:  /api/internal/pricing
-//  Purpose: LOGIN / LOGOUT / SESSION-CHECK only.
-//
-//  This tool has ONE dependency: the environment variable
-//    INTERNAL_PRICING_PASSCODE   — the shared staff passcode.
-//
-//  No Redis. No database. No signing-key env var. The HMAC session-signing
-//  key is derived from the passcode itself (SHA-256), so rotating the
-//  passcode automatically invalidates every live cookie.
-//
-//  Cookie:
-//    arie_ip=<token>; Path=/api/internal/pricing; HttpOnly; Secure;
-//            SameSite=Strict; Max-Age=43200
 //
 //  Actions:
-//    POST {action:"login", passcode}   -> sets cookie
-//    POST {action:"logout"}            -> clears cookie
-//    GET  ?action=session              -> { ok:true } when the cookie is valid
+//    POST {action:"login", passcode}                        -> sets cookie
+//    POST {action:"logout"}                                 -> clears cookie
+//    GET  ?action=session                                   -> session check
+//    POST {action:"allocate_ref", brand, clientName,
+//          idempotencyKey, staff?}                          -> allocate a CFS reference
+//    GET  ?action=register_search&q=<text>&brand=<brand>    -> search allocated refs
+//    GET  ?action=register_lookup&reference=<ref>           -> single-ref lookup
+//
+//  Env vars:
+//    INTERNAL_PRICING_PASSCODE   — shared staff passcode (required)
+//    UPSTASH_REDIS_REST_URL      — Upstash Redis REST endpoint
+//    UPSTASH_REDIS_REST_TOKEN    — Upstash Redis REST token
+//
+//  Keys (all namespaced by VERCEL_ENV so preview and production never collide):
+//    pricing:ref:<brand>:<year>:counter:<env>    integer, INCR'd per allocation
+//    pricing:ref:<brand>:<year>:idem:<env>:<k>   idempotency map (24h TTL)
+//    pricing:ref:<brand>:<year>:register:<env>   hash: reference -> JSON entry
+//
+//  Year configuration is explicit — a year not listed here is REFUSED with a
+//  412 error. This prevents an unintended "ARIE-FS-2027-1" allocation when
+//  the first 2027 allocation is attempted; the admin confirms the convention
+//  and extends CONFIGURED_YEARS before the first run of a new year.
 // ============================================================================
 
 const crypto = require('crypto');
+const { Redis } = require('@upstash/redis');
+
+// ARIE Finance's 2026 counter starts at 129 so the first allocation returns 130.
+// Add a new year here only after confirming the starting-sequence convention.
+const CONFIGURED_YEARS = {
+  arie: { 2026: { seed: 129 } }
+  // acbm: intentionally omitted — ACBM reference numbering is unchanged for now.
+};
+const IDEM_TTL_S = 24 * 60 * 60;   // 24h: covers slow double-click, network retry, tab reload
 
 const TOKEN_TTL_MS = 12 * 60 * 60 * 1000;
 const MAX_BODY_BYTES = 64 * 1024;
@@ -71,6 +87,107 @@ function readBody(req) {
   return { body: {} };
 }
 
+// ---------- Redis + register ---------------------------------------------
+
+let _redisInstance = null;
+function getRedis() {
+  if (_redisInstance) return _redisInstance;
+  const url = process.env.UPSTASH_REDIS_REST_URL;
+  const token = process.env.UPSTASH_REDIS_REST_TOKEN;
+  if (!url || !token) return null;
+  _redisInstance = new Redis({ url, token });
+  return _redisInstance;
+}
+
+function env() { return (process.env.VERCEL_ENV || 'development').toLowerCase(); }
+function keyCounter(brand, year)  { return 'pricing:ref:' + brand + ':' + year + ':counter:'  + env(); }
+function keyIdem(brand, year, k)  { return 'pricing:ref:' + brand + ':' + year + ':idem:'     + env() + ':' + k; }
+function keyRegister(brand, year) { return 'pricing:ref:' + brand + ':' + year + ':register:' + env(); }
+
+// Preview and development references carry a visible "-PREVIEW-" segment so
+// a reference from a non-production environment can never be visually
+// confused with a production allocation, even if its key somehow leaked.
+function referencePrefix(brand, year) {
+  const brandPrefix = brand.toUpperCase();
+  const prod = env() === 'production';
+  return prod ? (brandPrefix + '-FS-' + year + '-') : (brandPrefix + '-FS-' + year + '-PREVIEW-');
+}
+
+// Atomic allocation via Lua on Upstash. Returns {reference, isNew: '1'|'0'}.
+// Flow: if the idempotency key already carries a reference, return it unchanged
+// (double-click / network retry safe); otherwise INCR the counter, format the
+// reference, record the register entry, and bind the idempotency key to it.
+// The counter is seeded with SETNX before the script runs — this is a one-time
+// bootstrap and is a no-op on every subsequent allocation.
+const ALLOC_SCRIPT = [
+  "local existing = redis.call('GET', KEYS[1])",
+  "if existing then return {existing, '0'} end",
+  "local n = redis.call('INCR', KEYS[2])",
+  "local ref = ARGV[1] .. n",
+  "redis.call('SET', KEYS[1], ref, 'EX', tonumber(ARGV[3]))",
+  "redis.call('HSET', KEYS[3], ref, ARGV[2])",
+  "return {ref, '1'}"
+].join('\n');
+
+async function allocateRef(redis, brand, year, seed, idempotencyKey, clientName, staff) {
+  const counterKey = keyCounter(brand, year);
+  const idemKey = keyIdem(brand, year, idempotencyKey);
+  const registerKey = keyRegister(brand, year);
+  const prefix = referencePrefix(brand, year);
+  // SETNX on the counter: initialises only when the key is absent. Seed is
+  // (first-reference - 1) so the first INCR returns the configured start value.
+  await redis.set(counterKey, seed, { nx: true });
+  const allocatedAt = new Date().toISOString();
+  const entry = JSON.stringify({ clientName, entity: brand, allocatedAt, staff: staff || '', env: env() });
+  const resp = await redis.eval(
+    ALLOC_SCRIPT,
+    [idemKey, counterKey, registerKey],
+    [prefix, entry, String(IDEM_TTL_S)]
+  );
+  // Upstash normalises Lua table results into a JS array.
+  const reference = Array.isArray(resp) ? String(resp[0]) : String(resp);
+  const isNew = Array.isArray(resp) && String(resp[1]) === '1';
+  return { reference, allocatedAt: isNew ? allocatedAt : null, reused: !isNew };
+}
+
+async function registerSearch(redis, q, brandFilter) {
+  const brands = brandFilter ? [brandFilter] : Object.keys(CONFIGURED_YEARS);
+  const out = [];
+  for (const brand of brands) {
+    if (!CONFIGURED_YEARS[brand]) continue;
+    const years = Object.keys(CONFIGURED_YEARS[brand]);
+    for (const year of years) {
+      const key = keyRegister(brand, year);
+      const all = await redis.hgetall(key);
+      if (!all) continue;
+      for (const [ref, raw] of Object.entries(all)) {
+        let obj;
+        try { obj = typeof raw === 'string' ? JSON.parse(raw) : (raw || {}); } catch (e) { continue; }
+        if (q) {
+          const hay = (ref + ' ' + (obj.clientName || '') + ' ' + (obj.staff || '')).toLowerCase();
+          if (hay.indexOf(q) < 0) continue;
+        }
+        out.push({ reference: ref, clientName: obj.clientName || '', entity: obj.entity || brand, allocatedAt: obj.allocatedAt || '', staff: obj.staff || '', env: obj.env || '' });
+      }
+    }
+  }
+  out.sort((a, b) => (b.allocatedAt || '').localeCompare(a.allocatedAt || ''));
+  return out.slice(0, 200);
+}
+
+async function registerLookup(redis, reference) {
+  for (const brand of Object.keys(CONFIGURED_YEARS)) {
+    for (const year of Object.keys(CONFIGURED_YEARS[brand])) {
+      const raw = await redis.hget(keyRegister(brand, year), reference);
+      if (raw == null) continue;
+      try { return typeof raw === 'string' ? JSON.parse(raw) : raw; } catch (e) { return null; }
+    }
+  }
+  return null;
+}
+
+// -------------------------------------------------------------------------
+
 module.exports = async function handler(req, res) {
   res.setHeader('Cache-Control', 'private, no-store, max-age=0');
   res.setHeader('X-Content-Type-Options', 'nosniff');
@@ -102,6 +219,57 @@ module.exports = async function handler(req, res) {
     if (!verifyToken(sessionToken(req), key)) return res.status(401).json({ ok: false, error: 'unauthenticated' });
 
     if (action === 'session' && method === 'GET') return res.status(200).json({ ok: true });
+
+    if (action === 'allocate_ref') {
+      if (method !== 'POST') { res.setHeader('Allow', 'POST'); return res.status(405).json({ ok: false, error: 'method' }); }
+      const { body, tooLarge } = readBody(req);
+      if (tooLarge) return res.status(413).json({ ok: false, error: 'too_large' });
+      const brand = String((body && body.brand) || '').toLowerCase();
+      const clientName = String((body && body.clientName) || '').trim();
+      const idempotencyKey = String((body && body.idempotencyKey) || '').trim();
+      const staff = String((body && body.staff) || '').trim().slice(0, 120);
+      if (!CONFIGURED_YEARS[brand]) return res.status(400).json({ ok: false, error: 'brand_not_configured', message: 'This brand is not configured for automatic reference allocation.' });
+      if (!clientName) return res.status(400).json({ ok: false, error: 'client_name_required', message: 'Enter the client legal name before allocating a reference.' });
+      if (!idempotencyKey || idempotencyKey.length < 8 || idempotencyKey.length > 128 || !/^[A-Za-z0-9_-]+$/.test(idempotencyKey)) return res.status(400).json({ ok: false, error: 'bad_idempotency_key' });
+      const redis = getRedis();
+      if (!redis) return res.status(503).json({ ok: false, error: 'redis_unconfigured', message: 'Reference register is not configured yet. Ask the administrator to connect Upstash Redis in Vercel.' });
+      const year = new Date().getUTCFullYear();
+      const cfg = CONFIGURED_YEARS[brand][year];
+      if (!cfg) return res.status(412).json({ ok: false, error: 'year_not_configured', message: 'Year ' + year + ' is not configured for ' + brand.toUpperCase() + '. Confirm the starting-sequence convention with the administrator before allocating the first reference of a new year.' });
+      try {
+        const result = await allocateRef(redis, brand, year, cfg.seed, idempotencyKey, clientName, staff);
+        return res.status(200).json({ ok: true, reference: result.reference, allocatedAt: result.allocatedAt, reused: result.reused });
+      } catch (e) {
+        return res.status(500).json({ ok: false, error: 'allocate_failed', message: 'Could not allocate a reference. Please try again.' });
+      }
+    }
+
+    if (action === 'register_search' && method === 'GET') {
+      const redis = getRedis();
+      if (!redis) return res.status(503).json({ ok: false, error: 'redis_unconfigured' });
+      const q = String((req.query && req.query.q) || '').trim().toLowerCase().slice(0, 200);
+      const brandFilter = String((req.query && req.query.brand) || '').toLowerCase();
+      try {
+        const results = await registerSearch(redis, q, brandFilter);
+        return res.status(200).json({ ok: true, results });
+      } catch (e) {
+        return res.status(500).json({ ok: false, error: 'search_failed' });
+      }
+    }
+
+    if (action === 'register_lookup' && method === 'GET') {
+      const redis = getRedis();
+      if (!redis) return res.status(503).json({ ok: false, error: 'redis_unconfigured' });
+      const reference = String((req.query && req.query.reference) || '').trim();
+      if (!/^[A-Z0-9-]{6,80}$/i.test(reference)) return res.status(400).json({ ok: false, error: 'bad_reference' });
+      try {
+        const entry = await registerLookup(redis, reference);
+        if (!entry) return res.status(404).json({ ok: false, error: 'not_found' });
+        return res.status(200).json({ ok: true, reference, entry });
+      } catch (e) {
+        return res.status(500).json({ ok: false, error: 'lookup_failed' });
+      }
+    }
 
     return res.status(400).json({ ok: false, error: 'unknown_action' });
   } catch (err) {

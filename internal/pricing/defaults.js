@@ -254,8 +254,8 @@
   function setBrand(id) { if (BRANDS[id]) activeBrand = id; }
 
   window.ARIE_DEFAULTS = {
-    VERSION: '0.7.1',
-    SCHEMA_VERSION: 5,
+    VERSION: '0.7.2',
+    SCHEMA_VERSION: 6,
     BRANDS,
     brand,
     setBrand,

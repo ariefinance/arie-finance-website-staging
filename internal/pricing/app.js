@@ -145,6 +145,8 @@
       if (!String(d.preparedFor || '').trim()) errors.push('Client legal name is required.');
       if (!String(d.reference || '').trim()) errors.push('Reference is required.');
       if (!String(d.date || '').trim()) errors.push('Issue date is required.');
+      const mismatch = refBrandMismatch(d.reference);
+      if (mismatch) errors.push(mismatch);
     }
     if (!Array.isArray(d.blocks) || !d.blocks.length) errors.push('The document has no sections.');
     (d.blocks || []).forEach(b => {
@@ -164,6 +166,8 @@
     if (mode === 'welcome') {
       if (!d.clientName.trim()) errors.push('Client legal name is required.');
       if (!d.accounts.length) errors.push('At least one funding account is required.');
+      const cfsMismatch = refBrandMismatch(d.cfsRef);
+      if (cfsMismatch) errors.push('Fee schedule reference: ' + cfsMismatch);
       if (d.feeSource === 'current') {
         const r = feeDocIssues(state.docs.client, true);
         r.errors.forEach(e => errors.push('Current Client Fee Schedule: ' + e));
@@ -305,8 +309,10 @@
     let h = secH('Document');
     if (d.clientFields) {
       h += notice('error', 'Client legal name, reference and issue date are required before export.');
-      // Auto-allocation is wired for ARIE Client Fee Schedules only; ACBM references stay manual.
-      const canAutoAllocate = D.activeBrand === 'arie' && state.mode === 'client';
+      // Auto-allocation is wired for both ARIE and ACBM Client Fee Schedules — one shared
+      // sequential counter spans both entities, the brand only decides the prefix (ARIE-FS /
+      // ACBM-FS). Server picks the next number from the pool regardless of entity.
+      const canAutoAllocate = (D.activeBrand === 'arie' || D.activeBrand === 'acbm') && state.mode === 'client';
       // Lock-on-allocation: an auto-allocated reference (allocationKey present + reference set)
       // locks BOTH the reference and the client legal name. This prevents the register entry
       // ending up associated with a different client than the document carries. To work on a new
@@ -317,13 +323,18 @@
         ? '<input class="in locked" id="f_' + (p + '.preparedFor').replace(/\./g, '_') + '" value="' + esc(d.preparedFor) + '" readonly aria-readonly="true" title="Locked to the allocated reference. Click Start New Client to change.">'
         : inp(p + '.preparedFor', d.preparedFor, 'Client legal name (required)');
       h += fld('Client legal name', nameInput);
+      // Brand-aware placeholder — ARIE docs use ARIE-FS-…, ACBM docs use ACBM-FS-….
+      const refPlaceholder = 'e.g. ' + D.brand().filenamePrefix + '-FS-2026-XXX';
+      // Live cross-brand reference warning: if staff type a reference whose prefix belongs to
+      // another brand, flag it immediately. Preflight also blocks export on the same condition.
+      const refMismatch = refBrandMismatch(d.reference);
       if (canAutoAllocate) {
         const genLabel = locked ? 'Allocated' : 'Generate Reference';
         const genTitle = locked ? 'Locked to this client. Click Start New Client to allocate a reference for a different client.' : 'Allocate the next official reference from the shared register.';
         const genDisabled = locked || !!d.reference ? ' disabled title="' + esc(genTitle) + '"' : '';
         const refInput = locked
           ? '<input class="in locked" id="f_' + (p + '.reference').replace(/\./g, '_') + '" value="' + esc(d.reference) + '" readonly aria-readonly="true" title="' + esc(genTitle) + '">'
-          : inp(p + '.reference', d.reference, 'Click Generate to allocate');
+          : inp(p + '.reference', d.reference, locked ? refPlaceholder : 'Click Generate to allocate');
         h += '<div class="row">' +
           '<div class="field"><label>Reference</label><div style="display:flex;gap:6px">' +
             refInput +
@@ -331,13 +342,15 @@
           '</div></div>' +
           fld('Issue date', inp(p + '.date', d.date, 'DD Month YYYY')) +
           '</div>';
+        if (refMismatch) h += notice('error', refMismatch);
         if (locked) {
           h += '<p class="hint"><b>Reference and client name are locked</b> to <code>' + esc(d.reference) + '</code> &middot; ' + esc(d.preparedFor) + '. To allocate a reference for a different client, click <b>Start New Client</b>.</p>';
         } else {
           h += '<p class="hint">Click Generate Reference to allocate the next official number from the shared register. Once allocated the reference and client name become locked to each other and are preserved across edits, re-exports and reloads.</p>';
         }
       } else {
-        h += '<div class="row">' + fld('Reference', inp(p + '.reference', d.reference, 'e.g. ARIE-FS-2026-XXX')) + fld('Issue date', inp(p + '.date', d.date, 'DD Month YYYY')) + '</div>';
+        h += '<div class="row">' + fld('Reference', inp(p + '.reference', d.reference, refPlaceholder)) + fld('Issue date', inp(p + '.date', d.date, 'DD Month YYYY')) + '</div>';
+        if (refMismatch) h += notice('error', refMismatch);
       }
     }
     h += '<div class="row">' + fld('Eyebrow', inp(p + '.eyebrow', d.eyebrow)) + fld('Title', inp(p + '.title', d.title)) + '</div>' + fld('Subtitle', inp(p + '.subtitle', d.subtitle)) +
@@ -518,7 +531,7 @@
     },
     async generateRef() {
       const d = doc();
-      if (D.activeBrand !== 'arie' || state.mode !== 'client') return;
+      if ((D.activeBrand !== 'arie' && D.activeBrand !== 'acbm') || state.mode !== 'client') return;
       if (!d.preparedFor || !d.preparedFor.trim()) { showModal({ title: 'Client legal name required', text: 'Enter the client legal name before allocating a reference.' }); return; }
       // If this document already carries an auto-allocated reference, do NOT re-allocate — the
       // reference and client name are locked together. The only way to allocate for a different
@@ -596,6 +609,18 @@
     if (state.mode === 'indicative') return prefix + '_Indicative_Fee_Schedule';
     if (state.mode === 'client') return prefix + '_Client_Fee_Schedule_' + X.safe(d.preparedFor) + '_' + X.safe(d.date);
     return prefix + '_Welcome_Pack_' + X.safe(d.clientName) + '_' + X.safe(d.date);
+  }
+
+  // ---------- Reference brand validation ----------
+  // Returns a human-readable error message when the reference string carries a different brand's
+  // prefix than the active brand, or '' when it is empty or matches. Called from feeControls (for
+  // live display) and from preflight (to block export). The brand of a reference is identified by
+  // its prefix (ARIE-FS- / ACBM-FS-); a reference with no recognised prefix is accepted as-is.
+  function refBrandMismatch(ref) {
+    const b = brandFromReference(ref);
+    if (!b || b === D.activeBrand) return '';
+    const expected = D.brand().filenamePrefix;
+    return 'Reference "' + ref + '" uses the ' + (D.BRANDS[b].filenamePrefix) + '-FS prefix, which belongs to ' + D.BRANDS[b].displayName + '. This document is for ' + D.brand().displayName + ' — use ' + expected + '-FS-… instead.';
   }
 
   // ---------- Brand detection on uploads ----------

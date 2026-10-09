@@ -30,12 +30,15 @@
 const crypto = require('crypto');
 const { Redis } = require('@upstash/redis');
 
-// ARIE Finance's 2026 counter starts at 129 so the first allocation returns 130.
-// Add a new year here only after confirming the starting-sequence convention.
-const CONFIGURED_YEARS = {
-  arie: { 2026: { seed: 129 } }
-  // acbm: intentionally omitted — ACBM reference numbering is unchanged for now.
-};
+// ONE shared sequential counter across both entities. The next number is allocated globally,
+// regardless of brand — e.g. ARIE-FS-2026-131, ACBM-FS-2026-132, ARIE-FS-2026-133. The prefix is
+// chosen at allocation time from the request's active brand. The 2026 counter starts at 129 so
+// the first production allocation returns 130, preserving ARIE's expected numbering history.
+// Add a new year here ONLY after confirming the starting-sequence convention with the admin.
+const CONFIGURED_YEARS = { 2026: { seed: 129 } };
+// Brands eligible to allocate from the shared counter. Both ARIE and ACBM may allocate; the
+// prefix differs per brand (ARIE-FS vs ACBM-FS) but the number is drawn from the shared pool.
+const ALLOCATION_BRANDS = { arie: true, acbm: true };
 // Idempotency keys are PERMANENT: the same key always resolves to the same reference, even weeks
 // later, so a slow retry can never create a second reference for a client that already has one.
 
@@ -101,9 +104,11 @@ function getRedis() {
 }
 
 function env() { return (process.env.VERCEL_ENV || 'development').toLowerCase(); }
-function keyCounter(brand, year)  { return 'pricing:ref:' + brand + ':' + year + ':counter:'  + env(); }
-function keyIdem(brand, year, k)  { return 'pricing:ref:' + brand + ':' + year + ':idem:'     + env() + ':' + k; }
-function keyRegister(brand, year) { return 'pricing:ref:' + brand + ':' + year + ':register:' + env(); }
+// Keys are brand-agnostic — one counter + one register per year, shared across both entities.
+// Production and preview are kept isolated by the per-env namespace suffix.
+function keyCounter(year)  { return 'pricing:ref:shared:' + year + ':counter:'  + env(); }
+function keyIdem(year, k)  { return 'pricing:ref:shared:' + year + ':idem:'     + env() + ':' + k; }
+function keyRegister(year) { return 'pricing:ref:shared:' + year + ':register:' + env(); }
 
 // Preview and development references carry a visible "-PREVIEW-" segment so
 // a reference from a non-production environment can never be visually
@@ -137,9 +142,9 @@ const ALLOC_SCRIPT = [
 ].join('\n');
 
 async function allocateRef(redis, brand, year, seed, idempotencyKey, clientName, staff) {
-  const counterKey = keyCounter(brand, year);
-  const idemKey = keyIdem(brand, year, idempotencyKey);
-  const registerKey = keyRegister(brand, year);
+  const counterKey = keyCounter(year);
+  const idemKey = keyIdem(year, idempotencyKey);
+  const registerKey = keyRegister(year);
   const prefix = referencePrefix(brand, year);
   await redis.set(counterKey, seed, { nx: true });
   const allocatedAt = new Date().toISOString();
@@ -154,24 +159,19 @@ async function allocateRef(redis, brand, year, seed, idempotencyKey, clientName,
 }
 
 async function registerSearch(redis, q, brandFilter) {
-  const brands = brandFilter ? [brandFilter] : Object.keys(CONFIGURED_YEARS);
   const out = [];
-  for (const brand of brands) {
-    if (!CONFIGURED_YEARS[brand]) continue;
-    const years = Object.keys(CONFIGURED_YEARS[brand]);
-    for (const year of years) {
-      const key = keyRegister(brand, year);
-      const all = await redis.hgetall(key);
-      if (!all) continue;
-      for (const [ref, raw] of Object.entries(all)) {
-        let obj;
-        try { obj = typeof raw === 'string' ? JSON.parse(raw) : (raw || {}); } catch (e) { continue; }
-        if (q) {
-          const hay = (ref + ' ' + (obj.clientName || '') + ' ' + (obj.staff || '')).toLowerCase();
-          if (hay.indexOf(q) < 0) continue;
-        }
-        out.push({ reference: ref, clientName: obj.clientName || '', entity: obj.entity || brand, allocatedAt: obj.allocatedAt || '', staff: obj.staff || '', env: obj.env || '' });
+  for (const year of Object.keys(CONFIGURED_YEARS)) {
+    const all = await redis.hgetall(keyRegister(year));
+    if (!all) continue;
+    for (const [ref, raw] of Object.entries(all)) {
+      let obj;
+      try { obj = typeof raw === 'string' ? JSON.parse(raw) : (raw || {}); } catch (e) { continue; }
+      if (brandFilter && String(obj.entity || '').toLowerCase() !== brandFilter) continue;
+      if (q) {
+        const hay = (ref + ' ' + (obj.clientName || '') + ' ' + (obj.staff || '')).toLowerCase();
+        if (hay.indexOf(q) < 0) continue;
       }
+      out.push({ reference: ref, clientName: obj.clientName || '', entity: obj.entity || '', allocatedAt: obj.allocatedAt || '', staff: obj.staff || '', env: obj.env || '' });
     }
   }
   out.sort((a, b) => (b.allocatedAt || '').localeCompare(a.allocatedAt || ''));
@@ -179,12 +179,10 @@ async function registerSearch(redis, q, brandFilter) {
 }
 
 async function registerLookup(redis, reference) {
-  for (const brand of Object.keys(CONFIGURED_YEARS)) {
-    for (const year of Object.keys(CONFIGURED_YEARS[brand])) {
-      const raw = await redis.hget(keyRegister(brand, year), reference);
-      if (raw == null) continue;
-      try { return typeof raw === 'string' ? JSON.parse(raw) : raw; } catch (e) { return null; }
-    }
+  for (const year of Object.keys(CONFIGURED_YEARS)) {
+    const raw = await redis.hget(keyRegister(year), reference);
+    if (raw == null) continue;
+    try { return typeof raw === 'string' ? JSON.parse(raw) : raw; } catch (e) { return null; }
   }
   return null;
 }
@@ -231,14 +229,14 @@ module.exports = async function handler(req, res) {
       const clientName = String((body && body.clientName) || '').trim();
       const idempotencyKey = String((body && body.idempotencyKey) || '').trim();
       const staff = String((body && body.staff) || '').trim().slice(0, 120);
-      if (!CONFIGURED_YEARS[brand]) return res.status(400).json({ ok: false, error: 'brand_not_configured', message: 'This brand is not configured for automatic reference allocation.' });
+      if (!ALLOCATION_BRANDS[brand]) return res.status(400).json({ ok: false, error: 'brand_not_configured', message: 'This brand is not configured for automatic reference allocation.' });
       if (!clientName) return res.status(400).json({ ok: false, error: 'client_name_required', message: 'Enter the client legal name before allocating a reference.' });
       if (!idempotencyKey || idempotencyKey.length < 8 || idempotencyKey.length > 128 || !/^[A-Za-z0-9_-]+$/.test(idempotencyKey)) return res.status(400).json({ ok: false, error: 'bad_idempotency_key' });
       const redis = getRedis();
       if (!redis) return res.status(503).json({ ok: false, error: 'redis_unconfigured', message: 'Reference register is not configured yet. Ask the administrator to connect Upstash Redis in Vercel.' });
       const year = new Date().getUTCFullYear();
-      const cfg = CONFIGURED_YEARS[brand][year];
-      if (!cfg) return res.status(412).json({ ok: false, error: 'year_not_configured', message: 'Year ' + year + ' is not configured for ' + brand.toUpperCase() + '. Confirm the starting-sequence convention with the administrator before allocating the first reference of a new year.' });
+      const cfg = CONFIGURED_YEARS[year];
+      if (!cfg) return res.status(412).json({ ok: false, error: 'year_not_configured', message: 'Year ' + year + ' is not configured. Confirm the starting-sequence convention with the administrator before allocating the first reference of a new year.' });
       try {
         const result = await allocateRef(redis, brand, year, cfg.seed, idempotencyKey, clientName, staff);
         // Enforce one-key-per-client. If the idempotency key already carries a reference bound

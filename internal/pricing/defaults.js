@@ -120,7 +120,10 @@
     id: uid(), type: 'table', title: 'Correspondent Bank Fees',
     columns: ['Charge', 'Incoming', 'Outgoing'],
     rows: [['Correspondent-Bank / SWIFT Charges', 'Not applicable', '0.15%\nMinimum USD 70 · Maximum USD 150\nPlus applicable SWIFT charges']],
-    note: 'Additional third-party, correspondent-bank and foreign exchange charges may apply depending on the payment route, currency and transaction requirements.'
+    // Note intentionally empty — the same "Additional third-party…" line appears as the second
+    // bullet under Important Conditions, where the user wants it. Keeping it in both places
+    // duplicates text and pushes the schedule onto a second page.
+    note: ''
   });
   const ACBM_ADDITIONAL = () => ({
     id: uid(), type: 'feeList', title: 'General Fees',
@@ -130,9 +133,7 @@
     id: uid(), type: 'bullets', title: 'Important Conditions',
     items: [
       'Account funding: the account should be funded within one month with an aggregate minimum balance of USD 5,000, or equivalent.',
-      // (The "Additional third-party, correspondent-bank and foreign exchange charges may apply…"
-      // line is already printed as the note under the Correspondent Bank Fees table; repeating it
-      // as a bullet here duplicates it and pushes the schedule onto a second page.)
+      'Additional third-party, correspondent-bank and foreign exchange charges may apply depending on the payment route, currency and transaction requirements.',
       "All services remain subject to ACBM's standard terms, ongoing compliance requirements and applicable third-party conditions."
     ]
   });

@@ -27,7 +27,7 @@ const sanitizeHtml = require('sanitize-html');
 
 const OWNER = 'ariefinance';
 const REPO = 'arie-finance-website-staging';
-const SITE = 'https://insights.ariefinance.com';
+const SITE = 'https://www.ariefinance.com';
 const COOKIE = 'arie_ins';
 const TOKEN_TTL_MS = 8 * 60 * 60 * 1000;      // ~8 hours
 const MAX_BODY_BYTES = 1 * 1024 * 1024;        // 1 MB article payload cap
@@ -494,7 +494,7 @@ function renderListingRegion(articles) {
 function renderHomeRegion(articles) {
   const list = sortArticles(articles).slice(0, 3);
   if (list.length === 0) return '';
-  const cards = list.map((a) => `      <a href="${SITE}/insights/${a.slug}/" style="display:block;text-decoration:none;background:#fff;border:1px solid #E8E4DA;border-radius:6px;padding:22px;">
+  const cards = list.map((a) => `      <a href="/insights/${a.slug}/" style="display:block;text-decoration:none;background:#fff;border:1px solid #E8E4DA;border-radius:6px;padding:22px;">
         <span style="font-family:'Hanken Grotesk',sans-serif;font-size:11px;font-weight:600;letter-spacing:1.5px;text-transform:uppercase;color:#6B5D30;display:block;margin-bottom:8px;">${escapeHtml(a.category)}</span>
         <span style="font-family:'Newsreader',Georgia,serif;font-size:19px;font-weight:500;color:#06113A;line-height:1.3;display:block;margin-bottom:8px;">${escapeHtml(a.title)}</span>
         <span style="font-size:13px;color:#6B6456;">${formatDate(a.published)}</span>
@@ -504,7 +504,7 @@ function renderHomeRegion(articles) {
   <div style="max-width:1080px;margin:0 auto;">
     <div style="display:flex;align-items:baseline;justify-content:space-between;gap:16px;flex-wrap:wrap;margin-bottom:24px;">
       <h2 style="font-family:'Newsreader',Georgia,serif;font-size:28px;font-weight:400;color:#06113A;margin:0;">Latest Insights</h2>
-      <a href="${SITE}/insights/" style="font-size:14px;font-weight:600;color:#06113A;text-decoration:none;">View all insights &rarr;</a>
+      <a href="/insights/" style="font-size:14px;font-weight:600;color:#06113A;text-decoration:none;">View all insights &rarr;</a>
     </div>
     <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:20px;">
 ${cards}

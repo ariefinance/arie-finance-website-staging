@@ -6,19 +6,27 @@
   'use strict';
   const D = window.ARIE_DEFAULTS, R = window.ARIE_RENDER, W = window.ARIE_WIRING, X = window.ARIE_EXPORT, IO = window.ARIE_DOCXIO;
   const esc = R.esc;
-  const STORE_KEY = 'arie_docbuilder_session_v2';
+  // Per-brand sessionStorage so switching entity does NOT destroy the other brand's in-progress work.
+  // Each brand keeps its own state (and its own 'files' snapshot is reset in memory on switch because
+  // uploaded PDFs are never persisted anyway — same as before).
+  const STORE_KEY = (brandId) => 'arie_docbuilder_session_v2_' + (brandId || D.activeBrand);
   const MODE_NAMES = { indicative: 'Indicative Fee Schedule', client: 'Client Fee Schedule', welcome: 'Welcome Pack' };
 
   // ---------- State ----------
   const todayStr = () => new Date().toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' });
+  // A fresh state only includes modes the active brand supports. Date fields default to today.
   function freshState() {
-    const s = { mode: 'indicative', docs: { indicative: D.indicative(), client: D.client(), welcome: D.welcome() } };
-    s.docs.client.date = todayStr();
-    s.docs.welcome.date = todayStr();
-    return s;
+    const modes = D.brand().modes;
+    const docs = {};
+    if (modes.indexOf('indicative') >= 0) docs.indicative = D.indicative();
+    if (modes.indexOf('client') >= 0) { docs.client = D.client(); docs.client.date = todayStr(); }
+    if (modes.indexOf('welcome') >= 0 && D.welcome()) { docs.welcome = D.welcome(); docs.welcome.date = todayStr(); }
+    const mode = modes[0] || 'indicative';
+    return { mode, docs };
   }
   let state = freshState();
-  // Memory only, never persisted: uploaded files and their derived data.
+  // Memory only, never persisted: uploaded files and their derived data. These do NOT survive a
+  // brand switch — same guarantee the tool has always had across page reloads.
   //   fee:    { name, kind:'pdf'|'docx', buf, pages?:[dataURL], meta?:{name,reference,date}, feeDoc?:state }
   //   tc:     { name, buf, pages }
   //   wiring: { [accountId]: { name, buf } }
@@ -27,14 +35,38 @@
 
   // Temporary session recovery is stamped with a schema version. State written by an older build is
   // discarded rather than migrated: it is a few minutes of unsaved work, never the record of anything.
+  // State is keyed per brand, so loading never touches another brand's record.
   function load() {
     try {
-      const raw = JSON.parse(sessionStorage.getItem(STORE_KEY) || 'null');
-      if (raw && raw.schemaVersion === D.SCHEMA_VERSION && raw.state && raw.state.docs) { state = raw.state; return; }
-      if (raw) sessionStorage.removeItem(STORE_KEY);
+      const raw = JSON.parse(sessionStorage.getItem(STORE_KEY()) || 'null');
+      if (raw && raw.schemaVersion === D.SCHEMA_VERSION && raw.state && raw.state.docs) {
+        // Guard: a stored mode the current brand does not support (shouldn't happen, but a safety net)
+        // falls back to the brand's first mode.
+        const modes = D.brand().modes;
+        if (modes.indexOf(raw.state.mode) < 0) raw.state.mode = modes[0] || 'indicative';
+        state = raw.state; return;
+      }
+      if (raw) sessionStorage.removeItem(STORE_KEY());
     } catch (e) { /* storage unavailable: run from defaults */ }
   }
-  function persist() { try { sessionStorage.setItem(STORE_KEY, JSON.stringify({ schemaVersion: D.SCHEMA_VERSION, appVersion: D.VERSION, state })); } catch (e) { /* ignore */ } }
+  function persist() { try { sessionStorage.setItem(STORE_KEY(), JSON.stringify({ schemaVersion: D.SCHEMA_VERSION, appVersion: D.VERSION, brand: D.activeBrand, state })); } catch (e) { /* ignore */ } }
+
+  // Switches the active entity. Each brand owns its own sessionStorage slot, so switching to the other
+  // entity restores whatever work was in progress for that brand and leaves this brand's work untouched.
+  // In-memory uploads (wiring PDFs, attached T&C, attached fee schedule) are dropped on switch, same as
+  // on reload — they are not persisted and must be re-attached. The access gate / session cookie is
+  // unaffected (brand selection is a UI choice, not an authentication boundary).
+  function switchBrand(brandId) {
+    if (!D.BRANDS[brandId] || brandId === D.activeBrand) return;
+    persist();                       // save current brand's work to its slot
+    D.setBrand(brandId);
+    files = { fee: null, tc: null, wiring: {} };
+    openAccount = null;
+    state = freshState();            // seed defaults for the new brand before load() restores if present
+    load();
+    renderAll();
+    toast('Switched to ' + D.brand().label + '.', 'info');
+  }
 
   const getPath = (obj, path) => path.split('.').reduce((o, k) => (o == null ? undefined : o[k]), obj);
   function setPath(obj, path, value) {
@@ -113,6 +145,8 @@
       if (!String(d.preparedFor || '').trim()) errors.push('Client legal name is required.');
       if (!String(d.reference || '').trim()) errors.push('Reference is required.');
       if (!String(d.date || '').trim()) errors.push('Issue date is required.');
+      const mismatch = refBrandMismatch(d.reference);
+      if (mismatch) errors.push(mismatch);
     }
     if (!Array.isArray(d.blocks) || !d.blocks.length) errors.push('The document has no sections.');
     (d.blocks || []).forEach(b => {
@@ -132,6 +166,8 @@
     if (mode === 'welcome') {
       if (!d.clientName.trim()) errors.push('Client legal name is required.');
       if (!d.accounts.length) errors.push('At least one funding account is required.');
+      const cfsMismatch = refBrandMismatch(d.cfsRef);
+      if (cfsMismatch) errors.push('Fee schedule reference: ' + cfsMismatch);
       if (d.feeSource === 'current') {
         const r = feeDocIssues(state.docs.client, true);
         r.errors.forEach(e => errors.push('Current Client Fee Schedule: ' + e));
@@ -271,10 +307,60 @@
   function feeControls(d, key) {
     const p = 'docs.' + key;
     let h = secH('Document');
+    // ACBM has a single document mode. The user may want to export it either as a Client Fee
+    // Schedule (with Prepared For / Reference / Issue Date) or as an Indicative Fee Schedule
+    // (no client-specific details). This toggle flips d.clientFields; when turned off, the
+    // meta row and the Generate Reference button disappear and preflight stops requiring those
+    // fields. ARIE already has separate 'indicative' and 'client' modes so the toggle isn't
+    // exposed there.
+    if (D.activeBrand === 'acbm' && key === 'client') {
+      h += '<label class="check" style="margin:4px 0 12px"><input type="checkbox" data-act="toggleClientFields"' + (d.clientFields ? ' checked' : '') + '> Client-specific document (show Prepared For / Reference / Issue Date). Uncheck to generate an Indicative Fee Schedule without client details.</label>';
+    }
     if (d.clientFields) {
-      h += notice('error', 'Client legal name, reference and issue date are required before export.') +
-        fld('Client legal name', inp(p + '.preparedFor', d.preparedFor, 'Client legal name (required)')) +
-        '<div class="row">' + fld('Reference', inp(p + '.reference', d.reference, 'e.g. ARIE-FS-2026-XXX')) + fld('Issue date', inp(p + '.date', d.date, 'DD Month YYYY')) + '</div>';
+      h += notice('error', 'Client legal name, reference and issue date are required before export.');
+      // Auto-allocation is wired for both ARIE and ACBM Client Fee Schedules — one shared
+      // sequential counter spans both entities, the brand only decides the prefix (ARIE-FS /
+      // ACBM-FS). Server picks the next number from the pool regardless of entity.
+      const canAutoAllocate = (D.activeBrand === 'arie' || D.activeBrand === 'acbm') && state.mode === 'client';
+      // Lock-on-allocation: an auto-allocated reference (allocationKey present + reference set)
+      // locks BOTH the reference and the client legal name. This prevents the register entry
+      // ending up associated with a different client than the document carries. To work on a new
+      // client, staff click Start New Client. Historical / manually-typed references (no
+      // allocationKey) stay fully editable so legacy ARIE documents are unaffected.
+      const locked = canAutoAllocate && !!d.allocationKey && !!d.reference;
+      const nameInput = locked
+        ? '<input class="in locked" id="f_' + (p + '.preparedFor').replace(/\./g, '_') + '" value="' + esc(d.preparedFor) + '" readonly aria-readonly="true" title="Locked to the allocated reference. Click Start New Client to change.">'
+        : inp(p + '.preparedFor', d.preparedFor, 'Client legal name (required)');
+      h += fld('Client legal name', nameInput);
+      // Brand-aware placeholder — ARIE docs use ARIE-FS-…, ACBM docs use ACBM-FS-….
+      const refPlaceholder = 'e.g. ' + D.brand().filenamePrefix + '-FS-2026-XXX';
+      // Live cross-brand reference warning: if staff type a reference whose prefix belongs to
+      // another brand, flag it immediately. Preflight also blocks export on the same condition.
+      const refMismatch = refBrandMismatch(d.reference);
+      if (canAutoAllocate) {
+        const genLabel = locked ? 'Allocated' : 'Generate Reference';
+        const genTitle = locked ? 'Locked to this client. Click Start New Client to allocate a reference for a different client.' : 'Allocate the next official reference from the shared register.';
+        const genDisabled = locked || !!d.reference ? ' disabled title="' + esc(genTitle) + '"' : '';
+        const refInput = locked
+          ? '<input class="in locked" id="f_' + (p + '.reference').replace(/\./g, '_') + '" value="' + esc(d.reference) + '" readonly aria-readonly="true" title="' + esc(genTitle) + '">'
+          : inp(p + '.reference', d.reference, locked ? refPlaceholder : 'Click Generate to allocate');
+        h += '<div class="row">' +
+          '<div class="field"><label>Reference</label><div style="display:flex;gap:6px">' +
+            refInput +
+            '<button type="button" class="link-btn gen-ref" data-act="generateRef"' + genDisabled + '>' + genLabel + '</button>' +
+          '</div></div>' +
+          fld('Issue date', inp(p + '.date', d.date, 'DD Month YYYY')) +
+          '</div>';
+        if (refMismatch) h += notice('error', refMismatch);
+        if (locked) {
+          h += '<p class="hint"><b>Reference and client name are locked</b> to <code>' + esc(d.reference) + '</code> &middot; ' + esc(d.preparedFor) + '. To allocate a reference for a different client, click <b>Start New Client</b>.</p>';
+        } else {
+          h += '<p class="hint">Click Generate Reference to allocate the next official number from the shared register. Once allocated the reference and client name become locked to each other and are preserved across edits, re-exports and reloads.</p>';
+        }
+      } else {
+        h += '<div class="row">' + fld('Reference', inp(p + '.reference', d.reference, refPlaceholder)) + fld('Issue date', inp(p + '.date', d.date, 'DD Month YYYY')) + '</div>';
+        if (refMismatch) h += notice('error', refMismatch);
+      }
     }
     h += '<div class="row">' + fld('Eyebrow', inp(p + '.eyebrow', d.eyebrow)) + fld('Title', inp(p + '.title', d.title)) + '</div>' + fld('Subtitle', inp(p + '.subtitle', d.subtitle)) +
       fld('Introduction', ta(p + '.intro', d.intro, '', 70)) + fld('Pricing note', ta(p + '.note', d.note, '', 80));
@@ -366,8 +452,22 @@
     const el = document.getElementById('pane');
     const d = doc();
     el.innerHTML = state.mode === 'welcome' ? welcomeControls(d) : feeControls(d, state.mode);
-    document.querySelectorAll('.modes button').forEach(b => b.classList.toggle('active', b.dataset.mode === state.mode));
+    renderBrandAndModes();
     document.getElementById('brand-sub').textContent = state.mode === 'welcome' ? 'Attach the fee schedule, drop the wiring PDFs, review, export.' : 'Edit any field, add or remove sections, then export.';
+  }
+
+  // Rebuilds the Entity segmented control and the Mode buttons from the active brand so switching
+  // entities (or booting) always shows exactly the modes the brand supports.
+  function renderBrandAndModes() {
+    const brands = D.BRANDS;
+    const brandBtns = Object.keys(brands).map(id => '<button type="button" data-brand="' + id + '" class="' + (id === D.activeBrand ? 'active' : '') + '">' + esc(brands[id].label) + '</button>').join('');
+    const brandWrap = document.getElementById('entity-switch');
+    if (brandWrap) brandWrap.innerHTML = brandBtns;
+    const modes = D.brand().modes;
+    const labels = (D.brand().modeLabels || {});
+    const modeBtns = modes.map(m => '<button type="button" data-mode="' + m + '" class="' + (m === state.mode ? 'active' : '') + '">' + esc(labels[m] || MODE_NAMES[m] || m) + '</button>').join('');
+    const modeWrap = document.querySelector('.modes');
+    if (modeWrap) modeWrap.innerHTML = modeBtns;
   }
 
   function renderAll() { renderDesk(); renderControls(); persist(); }
@@ -396,7 +496,8 @@
     state = freshState();
     files = { fee: null, tc: null, wiring: {} };
     openAccount = null;
-    try { sessionStorage.removeItem(STORE_KEY); } catch (e) { /* ignore */ }
+    // Only clears the active brand's slot; the other brand's work (if any) is left alone.
+    try { sessionStorage.removeItem(STORE_KEY()); } catch (e) { /* ignore */ }
     renderAll();
     toast('Cleared. Ready for a new client.', 'info');
   }
@@ -420,6 +521,15 @@
     moveAcct(el) { if (swap(w().accounts, +el.dataset.i, +el.dataset.d)) renderAll(); },
     openAcct(el) { openAccount = openAccount === el.dataset.id ? null : el.dataset.id; renderControls(); },
     toggleNa(el) { const a = w().accounts[+el.dataset.i]; a.na = a.na || {}; a.na[el.dataset.f] = !a.na[el.dataset.f]; markDuplicates(); renderAll(); },
+    toggleClientFields(el) {
+      const d = doc();
+      d.clientFields = el.checked;
+      // Clear the client-only fields when switching off so stale values don't resurface if the
+      // user toggles back on later. Allocation key is cleared too — Indicative schedules carry
+      // no reference, and reusing an allocated key for a later client would be unsafe.
+      if (!d.clientFields) { d.preparedFor = ''; d.reference = ''; d.allocationKey = ''; }
+      renderAll();
+    },
     viewSource(el) { const f = files.wiring[el.dataset.id]; if (!f) return; const url = URL.createObjectURL(new Blob([f.buf], { type: 'application/pdf' })); window.open(url, '_blank'); setTimeout(() => URL.revokeObjectURL(url), 60000); },
     feeSource(el) { w().feeSource = el.value; renderAll(); },
     ackMismatch() { w().mismatchAck = coherenceRaw().map(i => i.msg).join('\n'); renderAll(); },
@@ -437,6 +547,60 @@
         if (state.mode === 'welcome') { files.fee = null; files.tc = null; files.wiring = {}; openAccount = null; }
         renderAll();
       }, continueLabel: 'Reset' });
+    },
+    async generateRef() {
+      const d = doc();
+      if ((D.activeBrand !== 'arie' && D.activeBrand !== 'acbm') || state.mode !== 'client') return;
+      if (!d.preparedFor || !d.preparedFor.trim()) { showModal({ title: 'Client legal name required', text: 'Enter the client legal name before allocating a reference.' }); return; }
+      // If this document already carries an auto-allocated reference, do NOT re-allocate — the
+      // reference and client name are locked together. The only way to allocate for a different
+      // client is Start New Client; the only way to recover from a wrong allocation is also
+      // Start New Client (the old entry stays in the register against the original client name).
+      if (d.allocationKey && d.reference) {
+        showModal({ title: 'Already allocated', text: 'This Client Fee Schedule is already allocated as <b>' + esc(d.reference) + '</b> for <b>' + esc(d.preparedFor) + '</b>. To work on a different client, click <b>Start New Client</b>.' });
+        return;
+      }
+      // Manually-typed historical reference (no allocationKey). Refuse to overwrite it from here
+      // — staff must clear it first (or Start New Client). This prevents an auto-allocation from
+      // silently replacing a hand-typed reference the staff member meant to keep.
+      if (!d.allocationKey && d.reference && d.reference.trim()) {
+        showModal({ title: 'Reference already set', text: 'A reference is already in the field (<b>' + esc(d.reference) + '</b>). Clear it first if you want to allocate a new one from the register.' });
+        return;
+      }
+      // Idempotency key persists on the document so a retry after a reload / network blip
+      // reuses the same slot in the register rather than consuming a new counter value.
+      if (!d.allocationKey) { d.allocationKey = randomId(); persist(); }
+      const btn = document.querySelector('button.gen-ref'); if (btn) { btn.disabled = true; btn.textContent = 'Allocating…'; }
+      try {
+        const resp = await fetch('/api/internal/pricing?action=allocate_ref', {
+          method: 'POST', credentials: 'same-origin', headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ brand: D.activeBrand, clientName: d.preparedFor.trim(), idempotencyKey: d.allocationKey, staff: getStaffId() })
+        });
+        const j = await resp.json().catch(() => ({}));
+        if (!resp.ok) {
+          // 409 means the server refused to hand this key over to a different client. The
+          // document's allocationKey is already committed to someone else — clear it client-side
+          // so the staff member's only path forward is Start New Client, which is the fix.
+          if (resp.status === 409 && j.error === 'allocation_key_bound_to_other_client') {
+            d.allocationKey = ''; persist();
+          }
+          showModal({ title: 'Could not allocate a reference', text: esc(j.message || j.error || ('HTTP ' + resp.status)) });
+          return;
+        }
+        d.reference = j.reference;
+        // The allocationKey stays on the document; a repeat allocation attempt (same key, same
+        // client name) returns the SAME reference. A repeat attempt with a different client name
+        // is refused server-side (409).
+        renderAll();
+        toast('Allocated ' + j.reference + (j.reused ? ' (already assigned to this client)' : ''), 'info');
+      } catch (e) {
+        showModal({ title: 'Network error', text: 'Could not reach the reference register. Please try again.' });
+      } finally {
+        const b2 = document.querySelector('button.gen-ref'); if (b2 && !d.reference) { b2.disabled = false; b2.textContent = 'Generate Reference'; }
+      }
+    },
+    openHistory() {
+      openReferenceHistory();
     },
     pdf() {
       guardedExport(() => {
@@ -460,9 +624,49 @@
 
   function fileTitle() {
     const d = doc();
-    if (state.mode === 'indicative') return 'ARIE_Indicative_Fee_Schedule';
-    if (state.mode === 'client') return 'ARIE_Client_Fee_Schedule_' + X.safe(d.preparedFor) + '_' + X.safe(d.date);
-    return 'ARIE_Welcome_Pack_' + X.safe(d.clientName) + '_' + X.safe(d.date);
+    const prefix = D.brand().filenamePrefix || 'ARIE';
+    // Mode slug: use the document's own title when present, so ACBM's single mode uses the
+    // "Indicative Fee Schedule" title that renders on the page instead of a hardcoded "Client".
+    const titleSlug = X.safe(d.title || state.mode);
+    if (state.mode === 'indicative') return prefix + '_' + (titleSlug || 'Indicative_Fee_Schedule');
+    if (state.mode === 'client') return prefix + '_' + (titleSlug || 'Client_Fee_Schedule') + '_' + X.safe(d.preparedFor) + '_' + X.safe(d.date);
+    return prefix + '_Welcome_Pack_' + X.safe(d.clientName) + '_' + X.safe(d.date);
+  }
+
+  // ---------- Reference brand validation ----------
+  // Returns a human-readable error message when the reference string carries a different brand's
+  // prefix than the active brand, or '' when it is empty or matches. Called from feeControls (for
+  // live display) and from preflight (to block export). The brand of a reference is identified by
+  // its prefix (ARIE-FS- / ACBM-FS-); a reference with no recognised prefix is accepted as-is.
+  function refBrandMismatch(ref) {
+    const b = brandFromReference(ref);
+    if (!b || b === D.activeBrand) return '';
+    const expected = D.brand().filenamePrefix;
+    return 'Reference "' + ref + '" uses the ' + (D.BRANDS[b].filenamePrefix) + '-FS prefix, which belongs to ' + D.BRANDS[b].displayName + '. This document is for ' + D.brand().displayName + ' — use ' + expected + '-FS-… instead.';
+  }
+
+  // ---------- Brand detection on uploads ----------
+  // Returns the brand id ('arie' | 'acbm') encoded in a reference string, or '' when the prefix
+  // doesn't match any configured brand (older files, hand-typed references, blank).
+  function brandFromReference(ref) {
+    const r = String(ref || '').trim().toUpperCase();
+    if (!r) return '';
+    for (const id of Object.keys(D.BRANDS)) {
+      const prefix = (D.BRANDS[id].filenamePrefix || '').toUpperCase();
+      if (prefix && r.indexOf(prefix + '-FS-') === 0) return id;
+    }
+    return '';
+  }
+  // Infer the brand of an embedded CFS state. Reference prefix wins; eyebrow is a weaker fallback
+  // (users can edit the eyebrow freely). Returns '' when neither can identify a brand.
+  function brandOfFeeDoc(feeDoc) {
+    const byRef = brandFromReference(feeDoc && feeDoc.reference);
+    if (byRef) return byRef;
+    const eye = String((feeDoc && feeDoc.eyebrow) || '').trim().toUpperCase();
+    for (const id of Object.keys(D.BRANDS)) {
+      if (eye && eye === String(D.BRANDS[id].eyebrow || '').toUpperCase()) return id;
+    }
+    return '';
   }
 
   // ---------- File handling ----------
@@ -521,6 +725,16 @@
             renderAll(); return;
           }
           const feeDoc = r.state;
+          // Cross-brand attachment guard: the attached CFS must belong to the active brand. Brand is
+          // inferred from the reference prefix (ARIE-FS-… / ACBM-FS-…) and, as a safety net, from the
+          // stored eyebrow string. An ACBM Welcome Pack doesn't exist in UI, so in practice this
+          // catches an ACBM CFS attached to an ARIE Welcome Pack.
+          const attachedBrandDocx = brandOfFeeDoc(feeDoc);
+          if (attachedBrandDocx && attachedBrandDocx !== D.activeBrand) {
+            files.fee = null;
+            showModal({ title: 'Wrong entity', text: 'This Client Fee Schedule was issued by ' + esc(D.BRANDS[attachedBrandDocx].displayName) + ', but the current Welcome Pack is for ' + esc(D.brand().displayName) + '. Switch entity, or attach the Client Fee Schedule issued by ' + esc(D.brand().displayName) + ' instead.' });
+            renderAll(); return;
+          }
           files.fee = { name: f.name, kind: 'docx', buf, feeDoc, meta: { name: feeDoc.preparedFor, reference: feeDoc.reference, date: feeDoc.date } };
         } else {
           if (!(await sizeGuard(f, buf))) return;
@@ -528,6 +742,13 @@
           if (meta.docType === 'indicative' || meta.docType === 'welcome') {
             files.fee = null;
             showModal({ title: 'Wrong document type', text: 'This PDF is ' + (meta.docType === 'indicative' ? 'an Indicative Fee Schedule' : 'a Welcome Pack') + ', not a Client Fee Schedule. Attach this client\u2019s final Client Fee Schedule PDF instead.' });
+            renderAll(); return;
+          }
+          // Cross-brand attachment guard for PDFs: the reference prefix identifies the issuing brand.
+          const attachedBrandPdf = brandFromReference(meta.reference);
+          if (attachedBrandPdf && attachedBrandPdf !== D.activeBrand) {
+            files.fee = null;
+            showModal({ title: 'Wrong entity', text: 'This Client Fee Schedule PDF (reference ' + esc(meta.reference) + ') was issued by ' + esc(D.BRANDS[attachedBrandPdf].displayName) + ', but the current Welcome Pack is for ' + esc(D.brand().displayName) + '. Switch entity, or attach the Client Fee Schedule issued by ' + esc(D.brand().displayName) + ' instead.' });
             renderAll(); return;
           }
           const pages = await W.renderPages(buf.slice(0), 2.5);
@@ -607,6 +828,65 @@
     clearTimeout(toastTimer); toastTimer = setTimeout(() => { t.hidden = true; }, 2600);
   }
 
+  // ---------- Reference register ----------
+  // The staff identifier is a per-browser localStorage value, OPTIONAL. It is sent with each
+  // allocation and recorded in the register entry so the history view shows who allocated what.
+  // No server-side auth is attached to it (the shared passcode is the only auth); it is a label.
+  const STAFF_KEY = 'arie_pricing_staff_id';
+  function getStaffId() { try { return localStorage.getItem(STAFF_KEY) || ''; } catch (e) { return ''; } }
+  function setStaffId(v) { try { localStorage.setItem(STAFF_KEY, String(v || '').slice(0, 40)); } catch (e) { /* ignore */ } }
+  function randomId() {
+    // 128 bits of entropy encoded urlsafe-base64. Crypto.randomUUID would also work.
+    try { return (crypto && crypto.randomUUID) ? crypto.randomUUID() : fallback(); } catch (e) { return fallback(); }
+    function fallback() { let s = ''; for (let i = 0; i < 32; i++) s += Math.floor(Math.random() * 36).toString(36); return s; }
+  }
+
+  function openReferenceHistory() {
+    closeModal();
+    const bg = document.createElement('div'); bg.className = 'modal-bg no-print'; bg.id = 'modal';
+    bg.innerHTML = '<div class="modal" role="dialog" style="min-width:min(640px,95vw);max-width:800px">' +
+      '<div class="m-h">Reference History</div>' +
+      '<div class="m-b">' +
+        '<p class="hint" style="margin:0 0 10px">Search allocated Client Fee Schedule references by client name, reference number or staff identifier.</p>' +
+        '<input id="ref-history-q" class="in" type="search" placeholder="Search…" autocomplete="off" style="width:100%;padding:8px 10px">' +
+        '<div id="ref-history-body"><p class="ref-history-empty">Loading…</p></div>' +
+      '</div>' +
+      '<div class="m-f"><button class="primary" data-m="cancel">Close</button></div></div>';
+    bg.addEventListener('click', (e) => { const b = e.target.closest('[data-m]'); if (b) closeModal(); });
+    document.body.appendChild(bg);
+    const q = document.getElementById('ref-history-q');
+    const body = document.getElementById('ref-history-body');
+    let timer = null, lastReq = 0;
+    function run() {
+      const term = q.value.trim();
+      const myReq = ++lastReq;
+      body.innerHTML = '<p class="ref-history-empty">Searching…</p>';
+      fetch('/api/internal/pricing?action=register_search&q=' + encodeURIComponent(term), { credentials: 'same-origin' })
+        .then(r => r.json().catch(() => ({})))
+        .then(j => {
+          if (myReq !== lastReq) return;
+          if (j && j.ok && Array.isArray(j.results)) {
+            if (!j.results.length) { body.innerHTML = '<p class="ref-history-empty">No references found' + (term ? ' matching "' + esc(term) + '".' : ' yet.') + '</p>'; return; }
+            body.innerHTML = '<table class="ref-history-table"><thead><tr><th>Reference</th><th>Client</th><th>Entity</th><th>Allocated</th><th>Staff</th></tr></thead><tbody>' +
+              j.results.map(r => '<tr><td><b>' + esc(r.reference) + '</b></td><td>' + esc(r.clientName || '—') + '</td><td>' + esc((r.entity || '').toUpperCase()) + '</td><td>' + esc(fmtDate(r.allocatedAt)) + '</td><td>' + esc(r.staff || '') + '</td></tr>').join('') +
+              '</tbody></table>' + (j.results.length >= 200 ? '<p class="hint" style="margin-top:8px">Showing the first 200 results. Narrow your search to see more.</p>' : '');
+          } else if (j && j.error === 'redis_unconfigured') {
+            body.innerHTML = '<p class="ref-history-empty">Reference register is not configured yet. Ask the administrator to connect Upstash Redis in Vercel.</p>';
+          } else {
+            body.innerHTML = '<p class="ref-history-empty">Could not load register.</p>';
+          }
+        })
+        .catch(() => { if (myReq === lastReq) body.innerHTML = '<p class="ref-history-empty">Could not reach the register.</p>'; });
+    }
+    q.addEventListener('input', () => { clearTimeout(timer); timer = setTimeout(run, 250); });
+    run();
+    setTimeout(() => q.focus(), 50);
+  }
+  function fmtDate(iso) {
+    if (!iso) return '—';
+    try { const d = new Date(iso); if (isNaN(d.getTime())) return iso; return d.toLocaleString('en-GB', { day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' }); } catch (e) { return iso; }
+  }
+
   // ---------- Events ----------
   function bind() {
     const pane = document.getElementById('pane');
@@ -628,16 +908,24 @@
       if (el.dataset.act === 'openAcct' && e.target.closest('.acct-edit')) return;
       const fn = ACTIONS[el.dataset.act]; if (fn) { e.preventDefault(); fn(el); }
     });
-    document.querySelectorAll('.modes button').forEach(b => b.addEventListener('click', () => {
-      state.mode = b.dataset.mode;
-      if (state.mode === 'welcome') { const d = w(), c = state.docs.client; if (d.feeSource === 'current') { if (!d.clientName && c.preparedFor) d.clientName = c.preparedFor; if (!d.cfsRef && c.reference) d.cfsRef = c.reference; } }
-      renderAll();
-    }));
+    // Delegated so re-rendered mode / entity buttons keep working.
+    document.addEventListener('click', (e) => {
+      const mb = e.target.closest('.modes button[data-mode]');
+      if (mb) {
+        if (!state.docs[mb.dataset.mode]) return;    // ignore a mode this brand doesn't offer
+        state.mode = mb.dataset.mode;
+        if (state.mode === 'welcome') { const d = w(), c = state.docs.client; if (d.feeSource === 'current') { if (!d.clientName && c.preparedFor) d.clientName = c.preparedFor; if (!d.cfsRef && c.reference) d.cfsRef = c.reference; } }
+        renderAll();
+        return;
+      }
+      const eb = e.target.closest('#entity-switch button[data-brand]');
+      if (eb) switchBrand(eb.dataset.brand);
+    });
     pane.addEventListener('dragover', (e) => { const z = e.target.closest('.drop'); if (z) { e.preventDefault(); z.classList.add('over'); } });
     pane.addEventListener('dragleave', (e) => { const z = e.target.closest('.drop'); if (z) z.classList.remove('over'); });
     pane.addEventListener('drop', (e) => { const z = e.target.closest('.drop'); if (!z) return; e.preventDefault(); z.classList.remove('over'); handleFiles(z.dataset.drop, e.dataTransfer.files); });
     pane.addEventListener('click', (e) => { const z = e.target.closest('.drop'); if (z && !e.target.closest('button')) z.querySelector('input[type=file]').click(); });
-    window.addEventListener('afterprint', () => { document.title = 'ARIE Document Builder'; });
+    window.addEventListener('afterprint', () => { document.title = 'Document Builder'; });
     window.addEventListener('resize', scheduleDesk);
   }
 
@@ -649,6 +937,11 @@
 
   // ---------- Boot ----------
   document.getElementById('app-version').textContent = 'v' + D.VERSION;
+  const staffEl = document.getElementById('staff-id');
+  if (staffEl) {
+    staffEl.value = getStaffId();
+    staffEl.addEventListener('input', () => setStaffId(staffEl.value));
+  }
   load();
   bind();
   browserCheck();

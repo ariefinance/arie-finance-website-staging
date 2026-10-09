@@ -16,18 +16,37 @@
   const nl = (s) => esc(s).replace(/\n/g, '<br>');
   const ph = (v, fallback) => (v && String(v).trim()) ? esc(v) : '<span class="placeholder">' + esc(fallback) + '</span>';
 
+  // Brand-aware helpers: a brand may hide its header strap-line (regulator + licence) and/or its
+  // footer contacts. ACBM uses the ARIE logo but no strap-line and no footer contacts (confirmed).
+  const brandAsset = (key) => A[(D.brand().assets || {})[key]] || A[key];
+  const brandDisplayName = () => (D.brand && D.brand().displayName) || 'ARIE Finance';
   function header() {
-    return '<div class="hdr"><img src="' + A.LOGO_WIDE + '" alt="ARIE Finance"><div class="reg"><div>' + esc(D.REGULATOR) + '</div><div>' + esc(D.LICENCE) + '</div></div></div><div class="hdr-rule"></div>';
+    const b = D.brand();
+    const strap = (b.regulator || b.licence)
+      ? '<div class="reg"><div>' + esc(b.regulator || '') + '</div><div>' + esc(b.licence || '') + '</div></div>'
+      : '';
+    return '<div class="hdr"><img src="' + brandAsset('logoWide') + '" alt="' + esc(brandDisplayName()) + '">' + strap + '</div><div class="hdr-rule"></div>';
   }
   function watermark() {
-    return '<div class="wm" aria-hidden="true"><img class="a" src="' + A.MARK_A + '" alt=""><img class="b" src="' + A.MARK_B + '" alt=""></div>';
+    const a = brandAsset('markA'), bImg = brandAsset('markB');
+    if (!a && !bImg) return '';
+    return '<div class="wm" aria-hidden="true">' + (a ? '<img class="a" src="' + a + '" alt="">' : '') + (bImg ? '<img class="b" src="' + bImg + '" alt="">' : '') + '</div>';
   }
   function footer(left, right) {
-    const f = D.FOOTER;
-    return '<div class="foot"><div class="pc">' + left + '</div>' + (right != null ? right :
-      '<div class="contacts"><span>' + f.web + '</span><i></i><span>' + f.email + '</span><i></i><span>' + f.phone + '</span></div>') + '</div>';
+    const f = D.brand().footer;
+    const rightCell = right != null
+      ? right
+      : (f
+        ? '<div class="contacts"><span>' + f.web + '</span><i></i><span>' + f.email + '</span><i></i><span>' + f.phone + '</span></div>'
+        : '<div class="contacts"></div>');
+    return '<div class="foot"><div class="pc">' + left + '</div>' + rightCell + '</div>';
   }
-  const secH = (t) => '<div class="sec-h"><span>' + esc(t) + '</span><span></span></div>';
+  // ACBM section headers carry a small teal triangle marker before the title, mimicking the
+  // ACBM A-mark pattern on the reference template. ARIE sheets get no marker.
+  function sectionIcon() {
+    return D.activeBrand === 'acbm' ? '<span class="sec-icon" aria-hidden="true">▸</span>' : '';
+  }
+  const secH = (t) => '<div class="sec-h"><span>' + sectionIcon() + esc(t) + '</span><span></span></div>';
   const pageNo = (i, n) => n > 1 ? '<span class="pg">Page ' + i + ' of ' + n + '</span>' : '';
 
   // "USD 150 / month" -> ["USD 150", "month"]
@@ -169,7 +188,8 @@
     const pages = packBlocks((doc.blocks || []).map(b => ({ block: b })), availFirst, availCont);
     lastPack = { availFirst, availCont, hdrH, topH, contTopH, footH, pages: pages.map(p => p.map(i => Math.round(i.height))) };
     const n = pages.length;
-    return pages.map((items, i) => '<div class="sheet" data-sheet="fee" data-page="' + (i + 1) + '">' + watermark() + '<div class="body">' + header() +
+    const brandAttr = ' data-brand="' + esc(D.activeBrand) + '"';
+    return pages.map((items, i) => '<div class="sheet"' + brandAttr + ' data-sheet="fee" data-page="' + (i + 1) + '">' + watermark() + '<div class="body">' + header() +
       (i === 0 ? feeTop(doc) : feeContTop(doc)) + items.map(it => '<div class="blk">' + it.html + '</div>').join('') + '</div>' +
       footer(left + pageNo(i + 1, n)) + '</div>');
   }
@@ -242,7 +262,8 @@
     const name = doc.clientName;
     const cl = currencyList(doc.accounts);
     const curLine = doc.coverCurrencyLine.replace('{currencies}', cl || '—');
-    const open = (cls) => '<div class="sheet' + (cls ? ' ' + cls : '') + '" data-sheet="wp">' + watermark() + '<div class="body">' + header();
+    const brandAttr = ' data-brand="' + esc(D.activeBrand) + '"';
+    const open = (cls) => '<div class="sheet' + (cls ? ' ' + cls : '') + '"' + brandAttr + ' data-sheet="wp">' + watermark() + '<div class="body">' + header();
     const close = (pg) => '</div>' + wpFooter(doc, pg) + '</div>';
 
     // Cover

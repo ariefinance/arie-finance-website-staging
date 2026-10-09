@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <base href="/internal/pricing/">
 <meta name="robots" content="noindex, nofollow">
-<title>ARIE Document Builder</title>
+<title>Document Builder</title>
 <link rel="icon" href="data:,">
 <link rel="stylesheet" href="styles.css">
 <style>
@@ -32,7 +32,7 @@ body.locked{overflow:hidden}
 <body>
 <div class="ipgate" id="ipgate">
   <div class="ipgate-card">
-    <h1>ARIE Document Builder</h1>
+    <h1>Document Builder</h1>
     <p>Staff-only tool. Enter the access passcode to continue.</p>
     <form id="ipgateForm" autocomplete="off">
       <label for="ipgatePass">Access passcode</label>
@@ -48,12 +48,13 @@ body.locked{overflow:hidden}
   <aside class="controls">
     <div class="brandbar">
       <button type="button" id="btn-signout" aria-label="Sign out of the ARIE Document Builder">Sign out</button>
-      <h1>ARIE Document Builder <span id="app-version"></span></h1>
+      <h1>Document Builder <span id="app-version"></span></h1>
       <p id="brand-sub">Edit any field, add or remove sections, then download.</p>
-      <div class="modes">
-        <button data-mode="indicative">Indicative Fee Schedule</button>
-        <button data-mode="client">Client Fee Schedule</button>
-        <button data-mode="welcome">Welcome Pack</button>
+      <div class="entity" aria-label="Select entity"><span class="entity-lbl">Entity</span><div id="entity-switch" class="entity-switch"></div></div>
+      <div class="modes" aria-label="Select document"></div>
+      <div class="toolbar">
+        <input id="staff-id" class="staff-in" type="text" placeholder="Your initials (optional)" maxlength="40" autocomplete="off" aria-label="Staff identifier for the reference register">
+        <button type="button" class="link-btn" data-act="openHistory">Reference History</button>
       </div>
       <div class="actions">
         <button class="btn-gold" data-act="pdf" id="btn-pdf">Save as PDF</button>

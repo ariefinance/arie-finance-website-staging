@@ -313,8 +313,17 @@
     if (/welcomepack/i.test(head)) meta.docType = 'welcome';
     else if (/indicativefeeschedule/i.test(head)) meta.docType = 'indicative';
     else if (/clientfeeschedule/i.test(head)) meta.docType = 'client';
+    // Reference pattern is widened to any configured brand (ARIE-FS-… / ACBM-FS-…) so an uploaded
+    // Client Fee Schedule from either brand is parsed. Validation at the call site rejects a
+    // cross-brand attachment (e.g. an ARIE CFS attached to an ACBM Welcome Pack — which doesn't
+    // exist in UI anyway, but the regex is kept honest).
+    const BRANDS = (window.ARIE_DEFAULTS && window.ARIE_DEFAULTS.BRANDS) || {};
+    const prefixes = Object.values(BRANDS).map(b => b.filenamePrefix).filter(Boolean);
+    const refRe = prefixes.length
+      ? new RegExp('\\b((' + prefixes.join('|') + ')-FS-[A-Z0-9-]+)\\b', 'i')
+      : /\b(ARIE-FS-[A-Z0-9-]+)\b/i;
     for (const l of lines) {
-      const m = l.text.match(/\b(ARIE-FS-[A-Z0-9-]+)\b/i);
+      const m = l.text.match(refRe);
       if (m && !meta.reference) {
         meta.reference = m[1];
         const before = l.text.slice(0, l.text.indexOf(m[1])).trim();

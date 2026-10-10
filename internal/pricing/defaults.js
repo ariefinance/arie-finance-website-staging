@@ -45,7 +45,7 @@
         {
           id: uid(), type: 'feeGrid', title: 'Fee Structure',
           profiles: [
-            { label: 'Standard Profile', fees: [{ label: 'Onboarding Fee', value: 'From USD 2,000' }, { label: 'Monthly Service Fee', value: 'USD 150 / month' }, { label: 'Payment Transaction Fee', value: 'USD 40 / payment' }] },
+            { label: 'Standard Profile', fees: [{ label: 'Onboarding Fee', value: 'From USD 2,500' }, { label: 'Monthly Service Fee', value: 'USD 150 / month' }, { label: 'Payment Transaction Fee', value: 'USD 40 / payment' }] },
             { label: 'Enhanced Review Profile', fees: [{ label: 'Onboarding Fee', value: 'From USD 5,000' }, { label: 'Monthly Service Fee', value: 'USD 250 / month' }, { label: 'Payment Transaction Fee', value: 'USD 60 / payment' }] }
           ]
         },
@@ -68,7 +68,7 @@
         {
           id: uid(), type: 'feeGrid', title: 'Applicable Fees',
           profiles: [
-            { label: '', fees: [{ label: 'Onboarding Fee', value: 'USD 2,000' }, { label: 'Monthly Service Fee', value: 'USD 150 / month' }, { label: 'Payment Transaction Fee', value: 'USD 40 / payment' }] }
+            { label: '', fees: [{ label: 'Onboarding Fee', value: 'USD 2,500' }, { label: 'Monthly Service Fee', value: 'USD 150 / month' }, { label: 'Payment Transaction Fee', value: 'USD 40 / payment' }] }
           ]
         },
         ARIE_THIRD_PARTY(),
@@ -255,7 +255,7 @@
 
   window.ARIE_DEFAULTS = {
     VERSION: '0.7.3',
-    SCHEMA_VERSION: 7,
+    SCHEMA_VERSION: 8,
     BRANDS,
     brand,
     setBrand,

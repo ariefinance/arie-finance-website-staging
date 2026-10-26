@@ -4,18 +4,18 @@
 
 | Component | Expected path | Key files | Purpose | Documentation status |
 |---|---|---|---|---|
-| Public website | `/` and hash sections | `index.html` | Marketing, service pages, contact, careers, disclosures | Existing README superseded by hub |
+| Public website | `/` and hash sections | `index.html` | Marketing, service pages, contact, careers, disclosures | [Public website guide](guides/PUBLIC-SITE.md) |
 | Website form | `POST /api/website-form` | `api/website-form.js` | Contact and Careers enquiry emails | API notes in previous README; verify runtime |
 | Insights listing | `/insights/` | `insights/index.html`, `insights/insights.css` | Published editorial content | [Publishing](../insights/PUBLISHING.md) |
 | Insights publisher | `/insights/admin/` | `insights/admin/index.html`, `api/insights/*.js` | Admin publishing and article management | [Admin](../insights/ADMIN.md); branch guide historically PR-specific |
-| Onboarding requirements | `/onboarding-requirements/` | `onboarding-requirements/index.html`, `app.js` | Customer onboarding requirements | Dedicated operator guide missing |
+| Onboarding requirements | `/onboarding-requirements/` | `onboarding-requirements/index.html`, `app.js` | Customer onboarding requirements | [Client resources guide](guides/CLIENT-RESOURCES.md) |
 | Onboarding pack PDF | `/documents/ARIE_Finance_Corporate_Onboarding_Pack.pdf` | `documents/*.pdf` | Downloadable corporate onboarding pack | Version/review owner to confirm |
-| Sales tracker | `/salestracker/` | `salestracker/index.html`, `api/salestracker.js` | Sales pipeline management | Dedicated guide missing |
-| Pricing/document builder | `/internal/pricing/` | `internal/pricing/*`, `api/internal/pricing.js` | Pricing/proposal document preparation | [Runtime manifest](../internal/pricing/MANIFEST.txt); operator guide missing |
-| Wire-transfer utility | `/internal/wire-transfer/` | `internal/wire-transfer/*`, `api/internal/wire-transfer.js` | MauBank wire-transfer document preparation | [Manifest](../internal/wire-transfer/MANIFEST.txt); [tests](../internal/wire-transfer/tests/run.js) |
-| Management report builder | `/managementreport/` | `managementreport/index.html`, `api/managementreport.js` | Monthly management report production | [Regression guide](../managementreport/tests/README.md) |
-| Website analytics report | `/managementreport/website-analytics/` | `managementreport/website-analytics/*` | Monthly traffic/search reporting template | [Template guide](../managementreport/website-analytics/README.md) |
-| Logout/session page | `/logout/` | `logout/index.html` | Portal exit and feedback | Dedicated guide missing |
+| Sales tracker | `/salestracker/` | `salestracker/index.html`, `api/salestracker.js` | Sales pipeline management | [Sales Tracker guide](guides/SALES-TRACKER.md) |
+| Pricing/document builder | `/internal/pricing/` | `internal/pricing/*`, `api/internal/pricing.js` | Pricing/proposal document preparation | [Pricing guide](guides/PRICING.md); [manifest](../internal/pricing/MANIFEST.txt) |
+| Wire-transfer utility | `/internal/wire-transfer/` | `internal/wire-transfer/*`, `api/internal/wire-transfer.js` | MauBank wire-transfer document preparation | [Wire-transfer guide](guides/WIRE-TRANSFER.md); [tests](../internal/wire-transfer/tests/run.js) |
+| Management report builder | `/managementreport/` | `managementreport/index.html`, `api/managementreport.js` | Monthly management report production | [Management Report guide](guides/MANAGEMENT-REPORT.md); [regression](../managementreport/tests/README.md) |
+| Website analytics report | `/managementreport/website-analytics/` | `managementreport/website-analytics/*` | Monthly traffic/search reporting template | [Analytics guide](guides/ANALYTICS.md); [template](../managementreport/website-analytics/README.md) |
+| Logout/session page | `/logout/` | `logout/index.html` | Portal exit and feedback | [Public website guide](guides/PUBLIC-SITE.md) |
 | Analytics instrumentation | referenced from site | `assets/analytics.v1.js` | Analytics and consent-dependent tracking | Dedicated implementation guide missing |
 | Routing/security/cache | all deployed paths | `vercel.json`, `robots.txt`, `sitemap.xml` | Redirects, headers and crawling | [Operations](OPERATIONS.md) |
 

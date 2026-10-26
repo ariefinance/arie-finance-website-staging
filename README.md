@@ -1,43 +1,54 @@
-# ARIE Finance — web platform repository
+# ARIE Finance — Platform and Feature Directory
 
-This repository contains the public ARIE Finance website **and multiple operational applications**, serverless APIs, publishing tools, and reporting utilities. The historic name `arie-finance-website-staging` does not imply this is a staging-only environment.
+**This repository contains the public website and ARIE's operational web tools.** Use this page to find a feature, its source and instructions. This is a source-code inventory, not a live-access or security certification.
 
-**Start with the [central documentation hub](docs/README.md).**
+[Documentation hub](docs/README.md) · [Complete route and API inventory](docs/PLATFORM-INVENTORY.md) · [Operations](docs/OPERATIONS.md) · [Verification backlog](docs/VERIFICATION-BACKLOG.md)
 
-## Find a component quickly
+## Public features
 
-| What you need | Documentation |
-|---|---|
-| Complete site/component list, routes and source files | [Platform inventory](docs/PLATFORM-INVENTORY.md) |
-| Safe changes, release checks, environments and access boundaries | [Operations](docs/OPERATIONS.md) |
-| Outstanding documentation, access and verification work | [Verification backlog](docs/VERIFICATION-BACKLOG.md) |
-| Insights publishing | [Admin guide](insights/ADMIN.md) · [manual/historical guide](insights/PUBLISHING.md) |
-| Management Report Builder regression | [Test guide](managementreport/tests/README.md) |
-| Website traffic report | [Analytics report guide](managementreport/website-analytics/README.md) |
-| Pricing/document builder runtime files | [Pricing manifest](internal/pricing/MANIFEST.txt) |
-| MauBank transfer utility runtime files | [Wire-transfer manifest](internal/wire-transfer/MANIFEST.txt) |
+| Feature | Purpose | Expected route | Guide |
+|---|---|---|---|
+| Homepage and services | Public company, services and audience information | `/`, `/#services`, `/#direct-clients`, `/#introducers` | [Public website](docs/guides/PUBLIC-SITE.md) |
+| About, team and compliance | Company and disclosure information | `/#about`, `/#team`, `/#compliance` | [Public website](docs/guides/PUBLIC-SITE.md) |
+| Contact and application enquiry | Client enquiry forms with email delivery | `/#contact` | [Public website](docs/guides/PUBLIC-SITE.md) |
+| Careers and CV | Job enquiry and supported attachment submission | `/#careers` | [Public website](docs/guides/PUBLIC-SITE.md) |
+| Onboarding requirements | Customer information and requirements interface | `/onboarding-requirements/` | [Source](onboarding-requirements/) |
+| Corporate onboarding pack | Downloadable corporate pack | `/documents/ARIE_Finance_Corporate_Onboarding_Pack.pdf` | [Document](documents/ARIE_Finance_Corporate_Onboarding_Pack.pdf) |
+| ARIE Insights | Article listing and published articles | `/insights/` | [Insights guide](docs/guides/INSIGHTS.md) |
+| Online banking | Link to a separate banking portal, not hosted in this repository | `online.ariefinance.com` | External system |
 
-## At a glance
+## Staff features
 
-- **Public website:** `index.html`, website Contact/Careers submission at `api/website-form.js`, `assets/analytics.v1.js`.
-- **Publishing:** `insights/`, `api/insights/`.
-- **Customer resources:** `onboarding-requirements/`, `documents/`.
-- **Sales:** `salestracker/`, `api/salestracker.js`.
-- **Finance/operations:** `internal/pricing/`, `internal/wire-transfer/`, `managementreport/`, corresponding serverless APIs.
-- **Other:** `logout/`, `vercel.json`, `robots.txt`, `sitemap.xml`.
+| Feature | Purpose | Expected route | Guide |
+|---|---|---|---|
+| Sales Tracker | Shared leads, stages, pipeline status, saved versions, history/restore | `/salestracker/` | [Sales](docs/guides/SALES-TRACKER.md) |
+| Pricing and Document Builder | Pricing/document creation, branded exports and reference register | `/internal/pricing/` | [Pricing](docs/guides/PRICING.md) |
+| Management Report Builder | Monthly financial reporting and PDF/PPTX/continuation exports | `/managementreport/` | [Management reporting](docs/guides/MANAGEMENT-REPORT.md) |
+| Website Analytics Report | Traffic, search, conversions and monthly PDF report | `/managementreport/website-analytics/` | [Analytics](docs/guides/ANALYTICS.md) |
+| Wire Transfer Utility | Extract and populate a MauBank transfer form for approval | `/internal/wire-transfer/` | [Wire transfer](docs/guides/WIRE-TRANSFER.md) |
+| Insights Publisher | Create/edit/preview/publish/unpublish articles | `/insights/admin/` | [Insights](docs/guides/INSIGHTS.md) |
+| Article Email Helper | Copy formatted sharing email (does not send email) | `/insights/_email-helper.html` | [Publishing](insights/PUBLISHING.md) |
+| Signed-out page | Post-session experience and feedback capture | `/logout/` | [Source](logout/index.html) |
 
-## Deployment caution
+## Shared services and configuration
 
-The previous README described automatic Vercel production deployments from `main` to `https://www.ariefinance.com`; **verify the current project and branch mappings in Vercel before merging**. The online-banking portal at `https://online.ariefinance.com/online-banking` is a separate service and must not be modified through website changes.
+| Feature | Location | Documentation |
+|---|---|---|
+| Contact and Careers API | [api/website-form.js](api/website-form.js) | [Public website](docs/guides/PUBLIC-SITE.md) |
+| Sales persistence/API | [api/salestracker.js](api/salestracker.js) | [Sales](docs/guides/SALES-TRACKER.md) |
+| Management report sessions/API | [api/managementreport.js](api/managementreport.js) | [Management reporting](docs/guides/MANAGEMENT-REPORT.md) |
+| Pricing references/API | [api/internal/pricing.js](api/internal/pricing.js) | [Pricing](docs/guides/PRICING.md) |
+| Wire transfer sessions/API | [api/internal/wire-transfer.js](api/internal/wire-transfer.js) | [Wire transfer](docs/guides/WIRE-TRANSFER.md) |
+| Insights API | [api/insights/](api/insights/) | [Insights](docs/guides/INSIGHTS.md) |
+| Marketing analytics and consent events | [assets/analytics.v1.js](assets/analytics.v1.js) | [Analytics](docs/guides/ANALYTICS.md) |
+| Redirects/cache/headers | [vercel.json](vercel.json) | [Operations](docs/OPERATIONS.md) |
+| SEO directives | [robots.txt](robots.txt), [sitemap.xml](sitemap.xml) | [Inventory](docs/PLATFORM-INVENTORY.md) |
+| Synthetic regression tests | [managementreport/tests/](managementreport/tests/), [wire transfer tests](internal/wire-transfer/tests/run.js) | [Management report tests](managementreport/tests/README.md) |
 
-This documentation is a repository inventory. It does **not** certify live endpoint health, access permissions, testing status or regulatory approval. In particular, `noindex`, `robots.txt`, and `Cache-Control` are **not substitutes for authentication**.
+## Handover rules
 
-## Contribution rules
+Start from the feature guide, then the linked source. Keep changes on reviewed branches and use synthetic data for tests. Confirm current Vercel deployment mapping before merging. Update related documentation whenever behaviour changes. Do not commit credentials or customer/financial data.
 
-1. Locate the relevant component in the [inventory](docs/PLATFORM-INVENTORY.md).
-2. Work on a branch and open a reviewed PR; preserve unrelated functions.
-3. Use synthetic test data, avoid committing secrets or real client/financial information.
-4. Validate with component-specific tests and a protected preview.
-5. Update the component guide and [inventory](docs/PLATFORM-INVENTORY.md) whenever routes or behaviour change.
+**Important:** `robots.txt`, `noindex` and `no-store` do not restrict access. Some route and operational details need independent production checks; consult the [verification backlog](docs/VERIFICATION-BACKLOG.md).
 
-**Documentation last reorganised:** 26 October 2026. Existing detailed component guides are preserved and any suspected outdated instructions are tracked in the [verification backlog](docs/VERIFICATION-BACKLOG.md).
+**Last reorganised:** 26 October 2026.

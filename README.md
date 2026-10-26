@@ -12,7 +12,7 @@
 | About, team and compliance | Company and disclosure information | `/#about`, `/#team`, `/#compliance` | [Public website](docs/guides/PUBLIC-SITE.md) |
 | Contact and application enquiry | Client enquiry forms with email delivery | `/#contact` | [Public website](docs/guides/PUBLIC-SITE.md) |
 | Careers and CV | Job enquiry and supported attachment submission | `/#careers` | [Public website](docs/guides/PUBLIC-SITE.md) |
-| Onboarding requirements | Customer information and requirements interface | `/onboarding-requirements/` | [Source](onboarding-requirements/) |
+| Onboarding requirements | Customer information and requirements interface | `/onboarding-requirements/` | [Client resources guide](docs/guides/CLIENT-RESOURCES.md) · [Source](onboarding-requirements/) |
 | Corporate onboarding pack | Downloadable corporate pack | `/documents/ARIE_Finance_Corporate_Onboarding_Pack.pdf` | [Document](documents/ARIE_Finance_Corporate_Onboarding_Pack.pdf) |
 | ARIE Insights | Article listing and published articles | `/insights/` | [Insights guide](docs/guides/INSIGHTS.md) |
 | Online banking | Link to a separate banking portal, not hosted in this repository | `online.ariefinance.com` | External system |

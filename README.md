@@ -1,111 +1,54 @@
-# ARIE Finance — Website (Production)
+# ARIE Finance — Platform and Feature Directory
 
-Public marketing website for **ARIE Finance Ltd**, a Mauritius FSC-licensed Payment Intermediary Services provider (Licence No. GB25205028).
+**This repository contains the public website and ARIE's operational web tools.** Use this page to find a feature, its source and instructions. This is a source-code inventory, not a live-access or security certification.
 
-**Status: LIVE.** Served in production at **https://www.ariefinance.com** (apex `ariefinance.com` 308-redirects to `www`). Hosted on Vercel; deployed automatically from the `main` branch of this repository.
+[Documentation hub](docs/README.md) · [Complete route and API inventory](docs/PLATFORM-INVENTORY.md) · [Operations](docs/OPERATIONS.md) · [Verification backlog](docs/VERIFICATION-BACKLOG.md) · [Documentation audit](docs/DOCUMENTATION-AUDIT-2026-10-26.md)
 
-This README describes the repository exactly as it is. There is no `production/` subfolder, no `tests/` folder, and no separate deployment-checklist file — the repository root **is** the deployable Vercel project.
+## Public features
 
----
+| Feature | Purpose | Expected route | Guide |
+|---|---|---|---|
+| Homepage and services | Public company, services and audience information | `/`, `/#services`, `/#direct-clients`, `/#introducers` | [Public website](docs/guides/PUBLIC-SITE.md) |
+| About, team and compliance | Company and disclosure information | `/#about`, `/#team`, `/#compliance` | [Public website](docs/guides/PUBLIC-SITE.md) |
+| Contact and application enquiry | Client enquiry forms with email delivery | `/#contact` | [Public website](docs/guides/PUBLIC-SITE.md) |
+| Careers and CV | Job enquiry and supported attachment submission | `/#careers` | [Public website](docs/guides/PUBLIC-SITE.md) |
+| Onboarding requirements | Customer information and requirements interface | `/onboarding-requirements/` | [Client resources guide](docs/guides/CLIENT-RESOURCES.md) · [Source](onboarding-requirements/) |
+| Corporate onboarding pack | Downloadable corporate pack | `/documents/ARIE_Finance_Corporate_Onboarding_Pack.pdf` | [Document](documents/ARIE_Finance_Corporate_Onboarding_Pack.pdf) |
+| ARIE Insights | Article listing and published articles | `/insights/` | [Insights guide](docs/guides/INSIGHTS.md) |
+| Online banking | Link to a separate banking portal, not hosted in this repository | `online.ariefinance.com` | External system |
 
-## Repository contents
+## Staff features
 
-```text
-index.html            The entire public website (single bundled file, ~7.4 MB).
-                      Site markup is a JSON-encoded template inside a
-                      <script type="__bundler/template"> block; a loader parses
-                      it and renders the document at runtime.
-api/website-form.js   Vercel serverless function. Handles Contact and Careers
-                      form submissions and sends email over SMTP.
-vercel.json           URL redirects (14) + HTTP security headers (see below).
-robots.txt            Allows all crawlers; points to the sitemap.
-sitemap.xml           Single-URL sitemap for https://www.ariefinance.com/.
-favicon.png           Site favicon.
-og-image.png          Open Graph / social-share image.
-package.json          Declares the nodemailer dependency and Node 24.x engine.
-package-lock.json     Locked dependency tree.
-README.md             This file.
-```
+| Feature | Purpose | Expected route | Guide |
+|---|---|---|---|
+| Sales Tracker | Shared leads, stages, pipeline status, saved versions, history/restore | `/salestracker/` | [Sales](docs/guides/SALES-TRACKER.md) |
+| Pricing and Document Builder | Pricing/document creation, branded exports and reference register | `/internal/pricing/` | [Pricing](docs/guides/PRICING.md) |
+| Management Report Builder | Monthly financial reporting and PDF/PPTX/continuation exports | `/managementreport/` | [Management reporting](docs/guides/MANAGEMENT-REPORT.md) |
+| Website Analytics Report | Traffic, search, conversions and monthly PDF report | `/managementreport/website-analytics/` | [Analytics](docs/guides/ANALYTICS.md) |
+| Wire Transfer Utility | Extract and populate a MauBank transfer form for approval | `/internal/wire-transfer/` | [Wire transfer](docs/guides/WIRE-TRANSFER.md) |
+| Insights Publisher | Create/edit/preview/publish/unpublish articles | `/insights/admin/` | [Insights](docs/guides/INSIGHTS.md) |
+| Article Email Helper | Copy formatted sharing email (does not send email) | `/insights/_email-helper.html` | [Publishing](insights/PUBLISHING.md) |
+| Signed-out page | Post-session experience and feedback capture | `/logout/` | [Source](logout/index.html) |
 
-That is the complete file list.
+## Shared services and configuration
 
-## Build & deploy
+| Feature | Location | Documentation |
+|---|---|---|
+| Contact and Careers API | [api/website-form.js](api/website-form.js) | [Public website](docs/guides/PUBLIC-SITE.md) |
+| Sales persistence/API | [api/salestracker.js](api/salestracker.js) | [Sales](docs/guides/SALES-TRACKER.md) |
+| Management report sessions/API | [api/managementreport.js](api/managementreport.js) | [Management reporting](docs/guides/MANAGEMENT-REPORT.md) |
+| Pricing references/API | [api/internal/pricing.js](api/internal/pricing.js) | [Pricing](docs/guides/PRICING.md) |
+| Wire transfer sessions/API | [api/internal/wire-transfer.js](api/internal/wire-transfer.js) | [Wire transfer](docs/guides/WIRE-TRANSFER.md) |
+| Insights API | [api/insights/](api/insights/) | [Insights](docs/guides/INSIGHTS.md) |
+| Marketing analytics and consent events | [assets/analytics.v1.js](assets/analytics.v1.js) | [Analytics](docs/guides/ANALYTICS.md) |
+| Redirects/cache/headers | [vercel.json](vercel.json) | [Operations](docs/OPERATIONS.md) |
+| SEO directives | [robots.txt](robots.txt), [sitemap.xml](sitemap.xml) | [Inventory](docs/PLATFORM-INVENTORY.md) |
+| Synthetic regression tests | [managementreport/tests/](managementreport/tests/), [wire transfer tests](internal/wire-transfer/tests/run.js) | [Management report tests](managementreport/tests/README.md) |
 
-- **No build step / framework.** Vercel serves `index.html` and runs `api/website-form.js` on the same origin.
-- **Production branch:** `main`. Every push to `main` auto-deploys to production on Vercel (team: ARIE FINANCE).
-- **Deployment protection:** Standard — generated `*.vercel.app` preview URLs require login; the production custom domain is public.
+## Handover rules
 
-## Routing (`vercel.json`)
+Start from the feature guide, then the linked source. Keep changes on reviewed branches and use synthetic data for tests. Confirm current Vercel deployment mapping before merging. Update related documentation whenever behaviour changes. Do not commit credentials or customer/financial data.
 
-**Redirects** — 14 legacy paths (from the previous Framer site) 308-redirect into single-page hash routes:
+**Important:** `robots.txt`, `noindex` and `no-store` do not restrict access. Some route and operational details need independent production checks; consult the [verification backlog](docs/VERIFICATION-BACKLOG.md).
 
-```text
-/services /solutions                         -> /#services
-/about                                       -> /#about
-/contact /open-account                       -> /#contact
-/team                                        -> /#team
-/join                                        -> /#careers
-/events                                      -> /#home
-/terms /legal /privacy /cookie
-/customer-security /faqs                      -> /#compliance
-```
-
-**Security headers** — applied to all routes `/(.*)`:
-
-```text
-X-Content-Type-Options: nosniff
-Referrer-Policy: strict-origin-when-cross-origin
-X-Frame-Options: SAMEORIGIN
-Permissions-Policy: camera=(), microphone=(), geolocation=(), payment=(), usb=(), interest-cohort=()
-```
-
-HSTS is applied automatically by Vercel. No Content-Security-Policy is set (the bundled file uses inline scripts/styles; a CSP would need report-only testing first).
-
-## Serverless form handler (`api/website-form.js`)
-
-- **Runtime:** Node.js 24.x. **Route:** `POST /api/website-form`. **Email:** Nodemailer over SMTP.
-- Accepts only `contact` and `careers`. Enforces: POST-only; server-side origin allow-list; required fields, length limits, email validation, explicit consent; honeypot; HTML-escaping and email-header-injection protection; best-effort in-memory rate limiting and duplicate protection; success only after SMTP confirms send.
-- **CV upload (Careers):** 3 MB max; PDF/DOC/DOCX allow-list with magic-byte checks, strict base64 validation, and genuine DOCX OOXML structure validation (rejects DTD/entity/encrypted/traversal/symlink/zip-bomb). No file is written to disk or retained after the send attempt.
-- Cross-instance rate limiting is enforced at the edge by a Vercel Firewall rule: `POST /api/website-form` limited to 10 requests per IP per 10 minutes (429 + 10-min block when exceeded).
-
-### Required environment variables (Vercel -> Settings -> Environment Variables)
-
-```text
-SMTP_HOST
-SMTP_PORT
-SMTP_SECURE
-SMTP_USER
-SMTP_PASS            (secret)
-FORM_FROM_EMAIL
-FORM_TO_EMAIL        = customercare@ariefinance.com
-ALLOWED_ORIGIN       = https://ariefinance.com,https://www.ariefinance.com
-```
-
-`ALLOW_LOCAL_ORIGINS` is NOT set in production (local-dev only). SMTP credentials must never appear in `index.html`, client-side JS, source control, or logs.
-
-## External links
-
-The header **Log in** button opens the online-banking portal in a new tab: `https://online.ariefinance.com/online-banking`. `online.ariefinance.com` is a separate DNS record (Azure Front Door), independent of the website, and must not be altered during any website DNS change.
-
-## DNS (reference)
-
-Managed at OVH. Only two records point to the website:
-
-```text
-@   A     216.150.1.1
-www CNAME 67a414678b5934c7.vercel-dns-017.com.
-```
-
-All email (Microsoft 365 MX/SPF/DKIM/DMARC), Teams, Resend (`notifications.*`) and `online.*` records are independent of the website and unaffected by website deploys.
-
-## Editing the site
-
-Content lives inside the JSON-encoded template string in `index.html`. To change copy/CSS: decode the template (JSON.parse the `__bundler/template` script contents), edit, re-encode (JSON.stringify, then escape `</` to `<\/` so the script does not close early), and commit `index.html` to `main`. Vercel redeploys automatically.
-
-## Verification checklist (post-deploy)
-
-1. https://www.ariefinance.com loads over valid HTTPS; `ariefinance.com` redirects to `www`.
-2. Submit one Contact enquiry; confirm receipt at customercare@ariefinance.com.
-3. Submit one Careers application with a real PDF/DOCX; confirm the attachment arrives and opens.
-4. Confirm Microsoft 365 email and online.ariefinance.com still work.
-5. Check the site at desktop / tablet / mobile widths.
+**Last reorganised:** 26 October 2026.

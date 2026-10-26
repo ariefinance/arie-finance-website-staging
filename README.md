@@ -2,7 +2,7 @@
 
 **This repository contains the public website and ARIE's operational web tools.** Use this page to find a feature, its source and instructions. This is a source-code inventory, not a live-access or security certification.
 
-[Documentation hub](docs/README.md) · [Complete route and API inventory](docs/PLATFORM-INVENTORY.md) · [Operations](docs/OPERATIONS.md) · [Verification backlog](docs/VERIFICATION-BACKLOG.md)
+[Documentation hub](docs/README.md) · [Complete route and API inventory](docs/PLATFORM-INVENTORY.md) · [Operations](docs/OPERATIONS.md) · [Verification backlog](docs/VERIFICATION-BACKLOG.md) · [Documentation audit](docs/DOCUMENTATION-AUDIT-2026-10-26.md)
 
 ## Public features
 

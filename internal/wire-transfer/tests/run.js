@@ -89,6 +89,9 @@ async function run() {
   await test('Beneficiary Address cleaned', () => assert.strictEqual(t.beneficiaryAddress, '3rd Floor, KPMG Building, Ebene, 124324'));
   await test('Beneficiary Account Number -> accountNumber', () => assert.strictEqual(t.accountNumber, '001015435042701'));
   await test('Beneficiary IBAN -> iban (upper, no spaces)', () => assert.strictEqual(t.iban, 'AE970260001015435042701'));
+  await test('Beneficiary SWIFT/BIC -> swift (upper, no spaces)', () => assert.strictEqual(t.swift, 'EBILAEAD'));
+  await test('Beneficiary Bank Address -> bankAddress', () => assert.strictEqual(t.bankAddress, 'Baniyas Rd, Deira, Dubai'));
+  await test('Registered Office Address -> address (sender)', () => assert.strictEqual(t.address, '3rd Floor, KPMG Building, Ebene, 124324'));
   await test('Purpose cleaned COMPUTER_SERVICES -> Computer services', () => assert.strictEqual(t.purpose, 'Computer services'));
   await test('Country carried as context', () => assert.strictEqual(t.country, 'United Arab Emirates'));
   await test('Reference carried as context', () => assert.strictEqual(t.reference, 'Manual test'));

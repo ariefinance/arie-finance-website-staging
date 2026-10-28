@@ -36,6 +36,12 @@ Beneficiary Account Number: 001015435042701
 Beneficiary IBAN: AE970260001015435042701
 
 
+Beneficiary SWIFT/BIC: EBILAEAD
+
+
+Beneficiary Bank Address: Baniyas Rd, Deira, Dubai
+
+
 Transfer Currency: USD
 
 
@@ -65,6 +71,9 @@ Sender Name: ARIE Finance Limited
 
 
 Sender Account Number: 00000016
+
+
+Registered Office Address: 3rd Floor, KPMG Building, Ebene, 124324
 
 
 Reference: Manual test

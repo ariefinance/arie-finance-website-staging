@@ -41,7 +41,10 @@
     "sender name": "client", "sender account number": "debitAccount",
     "transfer currency": "currency", "transfer amount": "amount",
     "beneficiary bank name": "beneficiaryBank",
-    "beneficiary account number": "accountNumber", "beneficiary iban": "iban"
+    "beneficiary account number": "accountNumber", "beneficiary iban": "iban",
+    "beneficiary swift": "swift", "beneficiary bic": "swift",
+    "beneficiary swift/bic": "swift", "beneficiary swift / bic": "swift",
+    "registered office address": "address", "registered office": "address"
     // "Source Amount" / "Source Currency" are deliberately absent —
     // the beneficiary leg (Transfer Amount / Transfer Currency) always wins.
   };

@@ -13,6 +13,7 @@
 | Sales tracker | `/salestracker/` | `salestracker/index.html`, `api/salestracker.js` | Sales pipeline management | [Sales Tracker guide](guides/SALES-TRACKER.md) |
 | Pricing/document builder | `/internal/pricing/` | `internal/pricing/*`, `api/internal/pricing.js` | Pricing/proposal document preparation | [Pricing guide](guides/PRICING.md); [manifest](../internal/pricing/MANIFEST.txt) |
 | Wire-transfer utility | `/internal/wire-transfer/` | `internal/wire-transfer/*`, `api/internal/wire-transfer.js` | MauBank wire-transfer document preparation | [Wire-transfer guide](guides/WIRE-TRANSFER.md); [tests](../internal/wire-transfer/tests/run.js) |
+| Correspondence Studio (holidays) | `/internal/holidays/` | `internal/holidays/*`, `api/internal/holidays.js` | Staff tool for drafting ARIE holiday / out-of-office correspondence | [Holidays guide](guides/HOLIDAYS.md) |
 | Management report builder | `/managementreport/` | `managementreport/index.html`, `api/managementreport.js` | Monthly management report production | [Management Report guide](guides/MANAGEMENT-REPORT.md); [regression](../managementreport/tests/README.md) |
 | Website analytics report | `/managementreport/website-analytics/` | `managementreport/website-analytics/*` | Monthly traffic/search reporting template | [Analytics guide](guides/ANALYTICS.md); [template](../managementreport/website-analytics/README.md) |
 | Logout/session page | `/logout/` | `logout/index.html` | Portal exit and feedback | [Public website guide](guides/PUBLIC-SITE.md) |
@@ -35,6 +36,7 @@ The website is primarily single-page: the Vercel redirects map legacy page URLs 
 - `api/managementreport.js` — management report backend
 - `api/internal/pricing.js` — pricing/document builder backend
 - `api/internal/wire-transfer.js` — wire transfer backend
+- `api/internal/holidays.js` — Correspondence Studio access control (login/logout/session)
 
 These are serverless functions in the same repository; do not infer access-control strength from their `/internal/` or `/api/` prefixes.
 

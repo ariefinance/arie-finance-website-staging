@@ -14,6 +14,7 @@
 | P1 | No complete operator guides in-repo for Sales Tracker, onboarding requirements, pricing and logout. | Write guides with screenshots, permissions, inputs, workflow, errors and escalation after live owner walkthrough. |
 | P1 | No central matrix of component owner, access tier, data destination, support channel and recovery owner. | Management to assign each row in platform inventory; avoid guessed names. |
 | P1 | Current Vercel project/production branch/DNS and SMTP/Redis config live outside GitHub. | Read-only verification by authorised operator; document redacted settings and rollback. |
+| P1 | `/internal/holidays/studio.html` is a pre-built React bundle whose source is not in this repository; updates mean replacing the file wholesale. | Decide on a long-term maintenance path (keep bundler author on retainer, vendor the source, or rebuild natively if the tool proves durable). |
 | P2 | Documentation references testing outcomes and dates from earlier phases. | Revalidate against current commit and preserve evidence as historical, not evergreen PASS claims. |
 | P2 | Public landing page bundled in a single large `index.html` file. | Document exact safe-edit method and smoke test; do not refactor site merely to improve documentation. |
 

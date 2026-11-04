@@ -31,6 +31,7 @@
 | Pricing | Access, calculations, document render and export using synthetic inputs |
 | Management reporting | Run [regression suite](../managementreport/tests/README.md); use Finance-approved external reconciliation where required |
 | Wire transfer | Run [synthetic harness](../internal/wire-transfer/tests/run.js); verify no unintended submission or leakage |
+| Correspondence Studio (holidays) | Confirm gate rejects an empty / wrong passcode, studio loads after a valid one, Sign out clears the cookie; replacing `studio.html` with a new bundle still renders behind the gate. Nothing composed should leave the browser. |
 | Onboarding | Check download/link correctness and compliance-approved requirements |
 | Analytics | Consent behaviour, expected events, no real-data leakage, reporting template consistency |
 | Routing | HTTP redirects, cache headers, noindex directives, and no change to online-banking portal |
@@ -49,6 +50,7 @@
 Do not publish live values. Env **names** and deployment scope should be confirmed in Vercel:
 - Forms: `SMTP_HOST`, `SMTP_PORT`, `SMTP_SECURE`, `SMTP_USER`, `SMTP_PASS`, `FORM_FROM_EMAIL`, `FORM_TO_EMAIL`, `ALLOWED_ORIGIN`.
 - Insights: `INSIGHTS_ADMIN_PASSWORD`, `INSIGHTS_SESSION_SECRET`, `INSIGHTS_GITHUB_TOKEN`, `INSIGHTS_GITHUB_BRANCH`.
+- Internal tools (staff passcodes): `INTERNAL_PRICING_PASSCODE`, `INTERNAL_WIRE_TRANSFER_PASSCODE`, `INTERNAL_HOLIDAYS_PASSCODE`. `INTERNAL_HOLIDAYS_PASSCODE` falls back to `INTERNAL_WIRE_TRANSFER_PASSCODE` if unset; set the dedicated variable when the two should diverge. Each tool derives its own HMAC session-signing key from its passcode, so rotating a passcode invalidates every live cookie for that tool only.
 - Additional API secrets and storage configuration: **inventory against serverless code and Vercel settings before documenting**.
 - Production and Preview should use separate appropriately scoped credentials/branches.
 

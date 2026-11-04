@@ -1,6 +1,6 @@
 # ARIE Finance web platform — documentation hub
 
-**Scope:** repository `ariefinance/arie-finance-website-staging`. **Updated:** 26 October 2026. This is a *repository inventory*, not evidence that any specific route is reachable, authenticated, healthy, or approved for production use.
+**Scope:** repository `ariefinance/arie-finance-website-staging`. **Updated:** 4 November 2026. This is a *repository inventory*, not evidence that any specific route is reachable, authenticated, healthy, or approved for production use.
 
 ## Start here
 
@@ -12,6 +12,7 @@
 | Use/regress the Management Report Builder | [Management Report regression guide](../managementreport/tests/README.md), [test environment](../managementreport/tests/env/ENVIRONMENT.md) |
 | Prepare the monthly website analytics report | [Website analytics report guide](../managementreport/website-analytics/README.md) |
 | Identify runtime files for pricing or wire-transfer tool | [Pricing manifest](../internal/pricing/MANIFEST.txt), [Wire-transfer manifest](../internal/wire-transfer/MANIFEST.txt) |
+| Draft a staff holiday / office-closure notice | [Correspondence Studio guide](guides/HOLIDAYS.md) |
 | Review open documentation/operational risks | [Verification backlog](VERIFICATION-BACKLOG.md) |
 
 ## Site map
@@ -21,8 +22,9 @@
 3. **Customer information:** onboarding requirements page and downloadable corporate onboarding pack.
 4. **Internal commercial:** Sales Tracker and pricing/document builder.
 5. **Internal finance:** Management Report Builder, website analytics report, MauBank wire-transfer utility.
-6. **Session utility:** logout/portal feedback page.
-7. **Backend APIs:** website form, Insights, sales, reporting, pricing and wire transfer.
+6. **Internal operations:** Correspondence Studio for staff holiday / office-closure notices.
+7. **Session utility:** logout/portal feedback page.
+8. **Backend APIs:** website form, Insights, sales, reporting, pricing, wire transfer and Correspondence Studio access.
 
 See [Platform inventory](PLATFORM-INVENTORY.md) for exact repository paths and API routes.
 
@@ -40,4 +42,5 @@ See [Platform inventory](PLATFORM-INVENTORY.md) for exact repository paths and A
 
 ## Change history
 
+- **2026-11-04:** Correspondence Studio (holidays) added at `/internal/holidays/`; self-contained React bundle hosted behind the shared staff passcode. See [Correspondence Studio guide](guides/HOLIDAYS.md).
 - **2026-10-26:** central documentation navigation and repository-level inventory introduced. Historical guides preserved; contradictions tracked rather than silently rewritten.

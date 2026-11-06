@@ -119,9 +119,7 @@ kbd{font-family:var(--sans);font-size:11px;border:1px solid var(--line-2);border
             display:inline-flex;align-items:center;gap:8px;text-decoration:none}
 .aside .btn:hover{border-color:var(--gold);color:var(--gold)}
 .aside .btn[aria-expanded="true"]{background:var(--ink);color:var(--paper);border-color:var(--ink)}
-#guide-panel{display:none;margin-top:16px}
-#guide-panel[hidden]{display:none!important}
-.guide-open #guide-panel{display:block}
+#guide-panel{margin-top:16px}
 
 footer{margin-top:64px;padding-top:16px;border-top:1px solid var(--line);display:flex;justify-content:space-between;
        gap:16px;flex-wrap:wrap;font-size:12.5px;color:var(--faint)}
@@ -457,6 +455,8 @@ function paint(){
   /* Useful links: ARIE-only items hidden under ACBM; "both" always shown. */
   const uTotal = USEFUL.filter(u => u.company === 'both' || u.company === key).length;
   const uItems = USEFUL.filter(u => (u.company === 'both' || u.company === key) && matches(u, f));
+  /* Enter-to-open fallback: if the main list produced no URL, use the first filtered Useful link. */
+  if (!firstHit) firstHit = (uItems.find(u => u.url) || {}).url || null;
   document.getElementById('useful').style.display = uItems.length ? '' : 'none';
   document.getElementById('useful-note').textContent =
     key === 'arie' ? 'Supporting resources for ARIE Finance.' : 'Supporting resources for ACBM.';

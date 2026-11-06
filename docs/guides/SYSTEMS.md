@@ -23,7 +23,7 @@ The directory uses six task groups per entity. Only populated groups render; emp
 The ACBM "Pricing / Fee Schedule" row points to the same `/internal/pricing` URL as ARIE's entry; the Pricing tool has its own brand switcher that the user picks inside the tool, so this directory does not and cannot preselect the brand automatically.
 
 ## Audience tags
-Rows are marked `Staff` or `Client-facing` only where the distinction prevents confusion (currently the two RegMind links and ARIE Online Banking). Rows without a working destination (currently Allica) render a non-clickable "Link unavailable" tag and keep their existing provider contact as a secondary mailto link.
+Rows are marked `Staff` or `Client-facing` only where the distinction prevents confusion (currently the two RegMind links and ARIE Online Banking). Rows without a working destination (currently Allica) render a non-clickable "Link unavailable" tag and keep their existing provider contact as a copy-email button (click copies the address to the clipboard — same behaviour as the current directory, not a `mailto:` link).
 
 ## Search
 Search filters names, purposes, hostnames and provider contacts across the selected company's task groups and Useful links. A small set of practical terms expands to useful synonyms: `tt`, `transfer`, `statement`, `pricing`, `onboarding`. The query is preserved when the user switches company, results refresh, and empty groups hide. The no-results empty state names the selected company and offers a Clear-search button.

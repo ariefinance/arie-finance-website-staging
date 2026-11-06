@@ -1569,8 +1569,8 @@ body{ padding-bottom:var(--cookie-space, 0px); }
 /* ===== 2026-11 consolidated polish — additive, scoped overrides ===== */
 /* Home services: intro is first in the DOM (mobile reading order) and sits in the right column on desktop */
 @media (min-width:1061px){ .client-layout.flip > .client-intro{ order:2; } }
-/* Hero illustration: "Illustrative preview" label moved off the logo, clearer contrast */
-.pv-pill{ top:auto!important; bottom:16px; left:auto; right:20px; color:#7A5A1E; background:#fff; border-color:rgba(184,147,85,.6); box-shadow:0 2px 8px -4px rgba(6,17,58,.25); }
+/* Hero illustration: "Illustrative preview" label sits above the mock-up (never over its content), clearer contrast */
+.pv-pill{ position:static!important; display:inline-block; margin:0 0 8px 2px; color:#7A5A1E; background:#fff; border-color:rgba(184,147,85,.6); }
 /* Contact consent: checkbox aligned to the first line, normal body-text spacing */
 .checkbox-row{ align-items:start!important; }
 .checkbox-row > input[type="checkbox"]{ width:18px!important; height:18px!important; min-height:0!important; padding:0!important; margin:2px 0 0!important; }

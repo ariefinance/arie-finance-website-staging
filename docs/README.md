@@ -15,6 +15,7 @@
 | Draft a staff holiday / office-closure notice | [Correspondence Studio guide](guides/HOLIDAYS.md) |
 | Prepare a MauBank TT instruction | [TT Instruction guide](guides/TT-INSTRUCTION.md) |
 | Generate a client statement | [Statement Generator guide](guides/STATEMENTS.md) |
+| Find a platform or in-house tool the team uses | [Systems directory](guides/SYSTEMS.md) |
 | Review open documentation/operational risks | [Verification backlog](VERIFICATION-BACKLOG.md) |
 
 ## Site map
@@ -24,7 +25,7 @@
 3. **Customer information:** onboarding requirements page and downloadable corporate onboarding pack.
 4. **Internal commercial:** Sales Tracker and pricing/document builder.
 5. **Internal finance:** Management Report Builder, website analytics report, MauBank wire-transfer utility.
-6. **Internal operations:** Correspondence Studio for staff holiday / office-closure notices; MauBank TT Instruction; ARIE Statement Generator.
+6. **Internal operations:** Correspondence Studio for staff holiday / office-closure notices; MauBank TT Instruction; ARIE Statement Generator; Systems directory (landing page linking every tool and platform).
 7. **Session utility:** logout/portal feedback page.
 8. **Backend APIs:** website form, Insights, sales, reporting, pricing, wire transfer and Correspondence Studio access.
 

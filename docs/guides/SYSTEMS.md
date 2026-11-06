@@ -26,19 +26,18 @@ Same passcode pattern as the other `/internal/*` tools. The API reads `INTERNAL_
 
 Pricing and Sales tracker are not in these columns — they live in **Internal tools**. RegMind Back Office + Portal are the only entries carrying audience tags. Allica preserves its provider contact as a copy-email button (click copies to clipboard) and shows "Link unavailable" in place of a destination.
 
-## Internal tools — tile launcher
+## Internal tools — grouped tile launcher
 
-Three columns on desktop, two on tablet, one on mobile. Each tile has a small outline icon, the tool's name and one short complete description. The whole tile is a link; opens in a new tab.
+Four sections inside the Internal tools tab, each with the same compact heading style used on the ARIE / ACBM tabs. Tiles below each heading use three columns on desktop, two on tablet, one on mobile. Each tile has a small outline icon, the tool's name and one short complete description; the whole tile is a link that opens in a new tab.
 
-- Pricing + welcome pack generator
-- Sales tracker
-- MauBank wire-transfer utility
-- MauBank TT Instruction
-- Statement generator
-- Holidays Announcement
-- Management Report Builder
-- Insights Publisher
-- Onboarding requirements
+The tab uses a compact single-line heading ("Internal tools", ~30 px) and no introductory paragraph — the tabs, section headings and search already explain the page.
+
+| Group | Tools (display order) |
+| --- | --- |
+| Sales & onboarding | Sales tracker · Pricing & welcome packs · Onboarding requirements |
+| Payments | MauBank wire-transfer utility · MauBank TT Instruction |
+| Finance & reporting | Statement generator · Management Report Builder |
+| Communications | Holidays Announcement · Insights Publisher |
 
 ## Search
 Per-tab. Filters names, purposes, hostnames and provider contacts. Small synonym set for `tt`, `transfer`, `statement`, `pricing`, `onboarding`. Enter opens the first filtered result. Switching tabs preserves the query.

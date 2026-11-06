@@ -41,6 +41,12 @@ h1{font-family:var(--serif);font-weight:300;font-size:clamp(40px,7vw,72px);line-
    margin:0;color:var(--ink)}
 h1 .ent{display:block;font-style:italic;color:var(--gold)}
 .blurb{max-width:46ch;margin:18px 0 0;color:var(--quiet);font-size:15.5px}
+/* Compact hero — used for the Internal tools tab, where the tabs
+   and search already explain the page. */
+.hero--compact{padding:34px 0 18px}
+.hero--compact h1{font-size:30px;line-height:1.1}
+.hero--compact h1 .ent{display:inline;font-style:normal;color:var(--ink)}
+.hero--compact .blurb{display:none}
 
 /* search */
 .find{position:sticky;top:0;z-index:5;background:var(--paper);padding:18px 0 14px;border-bottom:1px solid var(--line);
@@ -100,17 +106,17 @@ kbd{font-family:var(--sans);font-size:11px;border:1px solid var(--line-2);border
 .note-c p{margin:0;font-size:13.5px;color:var(--quiet)}
 .blank{padding:26px 2px;color:var(--faint);font-size:14.5px;border-bottom:1px solid var(--line)}
 
-/* Internal tools — launcher tile grid. */
-.tiles{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px;margin-top:20px}
-.tile{position:relative;display:flex;flex-direction:column;gap:6px;padding:16px 18px;background:var(--card);
-      border:1px solid var(--line);border-radius:10px;text-decoration:none;color:inherit;
-      transition:border-color .12s ease,box-shadow .12s ease,transform .12s ease}
-.tile:hover,.tile:focus-visible{border-color:var(--gold);box-shadow:0 2px 10px rgba(0,0,0,.04);outline:none}
+/* Internal tools — tile grid, grouped under compact section headings. */
+.tiles{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;margin-top:10px}
+.tile{position:relative;display:flex;flex-direction:column;gap:6px;padding:14px 16px;background:var(--card);
+      border:1px solid var(--line);border-radius:8px;text-decoration:none;color:inherit;
+      transition:border-color .12s ease,background .12s ease}
+.tile:hover,.tile:focus-visible{border-color:var(--gold);background:#FBF8F0;outline:none}
 .tile .tile-h{display:flex;align-items:center;gap:10px}
-.tile .ic{width:20px;height:20px;flex:none;color:var(--gold);stroke:currentColor;fill:none;stroke-width:1.6;
+.tile .ic{width:18px;height:18px;flex:none;color:var(--gold);stroke:currentColor;fill:none;stroke-width:1.5;
           stroke-linecap:round;stroke-linejoin:round}
-.tile .nm{font-family:var(--serif);font-size:17px;font-weight:400;color:var(--ink);line-height:1.2}
-.tile .ds{font-size:12.5px;color:var(--quiet);line-height:1.5;margin:0}
+.tile .nm{font-family:var(--serif);font-size:16px;font-weight:400;color:var(--ink);line-height:1.2}
+.tile .ds{font-size:12px;color:var(--quiet);line-height:1.5;margin:0}
 
 /* Secondary actions (Payment guide) */
 .aside{margin-top:36px;padding-top:24px;border-top:1px solid var(--line);display:flex;gap:10px;flex-wrap:wrap}
@@ -208,27 +214,35 @@ const REGBO    = { name:'RegMind Back Office', url:'https://onboarding.ariefinan
                    desc:'Review and manage onboarding applications', audience:'staff' };
 const REGPT    = { name:'RegMind Portal', url:'https://onboarding.ariefinance.com/portal',
                    desc:'Start an application or sign in to the client portal', audience:'client' };
-/* Internal in-house tools (hosted on ariefinance.com). "icon" picks a glyph
-   from ICONS below; descriptions are complete and short. */
-const INTERNAL_TOOLS = [
-  { name:'Pricing + welcome pack generator', url:'/internal/pricing/', icon:'tag',
-    desc:'Build client pricing and produce the welcome pack.' },
-  { name:'Sales tracker', url:'/salestracker/', icon:'chart',
-    desc:'Track leads, opportunities and outreach activity.' },
-  { name:'MauBank wire-transfer utility', url:'/internal/wire-transfer/', icon:'send',
-    desc:'Turn a cross-border request email into a filled MauBank TT PDF.' },
-  { name:'MauBank TT Instruction', url:'/internal/tt/', icon:'doc',
-    desc:'Prepare MauBank TT instructions manually.' },
-  { name:'Statement generator', url:'/internal/statements/', icon:'receipt',
-    desc:'Produce client statements from transaction data.' },
-  { name:'Holidays Announcement', url:'/internal/holidays/', icon:'megaphone',
-    desc:'Draft ARIE holiday and out-of-office notices.' },
-  { name:'Management Report Builder', url:'/managementreport/', icon:'chart',
-    desc:'Produce the monthly management report.' },
-  { name:'Insights Publisher', url:'/insights/admin/', icon:'pen',
-    desc:'Publish and edit Insights articles.' },
-  { name:'Onboarding requirements', url:'/onboarding-requirements/', icon:'list',
-    desc:'Customer onboarding requirements reference.' }
+/* Internal in-house tools, grouped by what the employee is trying to do.
+   Display order inside each group matches the spec. */
+const INTERNAL_GROUPS = [
+  { name:'Sales & onboarding', items:[
+    { name:'Sales tracker', url:'/salestracker/', icon:'chart',
+      desc:'Track leads, opportunities and outreach activity.' },
+    { name:'Pricing & welcome packs', url:'/internal/pricing/', icon:'tag',
+      desc:'Build client pricing and produce the welcome pack.' },
+    { name:'Onboarding requirements', url:'/onboarding-requirements/', icon:'list',
+      desc:'Customer onboarding requirements reference.' }
+  ]},
+  { name:'Payments', items:[
+    { name:'MauBank wire-transfer utility', url:'/internal/wire-transfer/', icon:'send',
+      desc:'Turn a cross-border request email into a filled MauBank TT PDF.' },
+    { name:'MauBank TT Instruction', url:'/internal/tt/', icon:'doc',
+      desc:'Prepare MauBank TT instructions manually.' }
+  ]},
+  { name:'Finance & reporting', items:[
+    { name:'Statement generator', url:'/internal/statements/', icon:'receipt',
+      desc:'Produce client statements from transaction data.' },
+    { name:'Management Report Builder', url:'/managementreport/', icon:'chart',
+      desc:'Produce the monthly management report.' }
+  ]},
+  { name:'Communications', items:[
+    { name:'Holidays Announcement', url:'/internal/holidays/', icon:'megaphone',
+      desc:'Draft ARIE holiday and out-of-office notices.' },
+    { name:'Insights Publisher', url:'/insights/admin/', icon:'pen',
+      desc:'Publish and edit Insights articles.' }
+  ]}
 ];
 
 /* Thin outline SVG glyphs for the tool tiles (currentColor stroke). */
@@ -259,7 +273,7 @@ const DATA = {
     { name:'Accounting', items:[ XERO ] },
     { name:'Banking partners', items:[ AFRASIA, MERCURY, MAU ] }
   ]},
-  internal: { label:'Internal tools', tiles: INTERNAL_TOOLS }
+  internal: { label:'Internal tools', groups: INTERNAL_GROUPS, kind:'tiles' }
 };
 
 const host = u => { try { return new URL(u).hostname.replace(/^www\./,''); } catch(e){ return u; } };
@@ -428,49 +442,46 @@ function paint(){
   const key = entity();
   const d = DATA[key];
   const isInternal = key === 'internal';
+  /* Compact hero on the Internal tab \u2014 tabs + search already explain the page. */
+  document.querySelector('.hero').classList.toggle('hero--compact', isInternal);
   document.querySelector('.hero h1').innerHTML = isInternal
-    ? 'Internal<span class="ent">tools</span>'
+    ? 'Internal tools'
     : 'Systems for<span class="ent">' + esc(d.label) + '</span>';
-  document.querySelector('.blurb').textContent = isInternal
-    ? 'ARIE tools built in-house. Pick one and it opens in a new tab.'
-    : 'Every platform the team signs into, grouped by what you are trying to do. Pick one and it opens in a new tab.';
+  if (!isInternal) {
+    document.querySelector('.blurb').textContent =
+      'Every platform the team signs into, grouped by what you are trying to do. Pick one and it opens in a new tab.';
+  }
   const f = document.getElementById('q').value.trim();
   const list = document.getElementById('list');
   let shown = 0, total = 0; firstHit = null;
 
-  if (isInternal) {
-    total = d.tiles.length;
-    const tiles = d.tiles.filter(it => matches(it, f));
-    shown = tiles.length;
-    if (!firstHit) firstHit = tiles.find(it => it.url)?.url || null;
-    list.innerHTML = tiles.length
-      ? '<div class="tiles">' + tiles.map(it => `
+  const groupsHtml = d.groups.map(g => {
+    total += g.items.length;
+    const items = g.items.filter(it => matches(it, f));
+    if (!items.length) return '';
+    if (!firstHit) firstHit = items.find(it => it.url)?.url || null;
+    shown += items.length;
+    if (d.kind === 'tiles') {
+      return `<section class="grp"><h2>${esc(g.name)}</h2>
+        <div class="tiles">${items.map(it => `
           <a class="tile" href="${esc(it.url)}" target="_blank" rel="noopener noreferrer">
             <div class="tile-h">${ICONS[it.icon] || ICONS.doc}<span class="nm">${esc(it.name)}</span></div>
             <p class="ds">${esc(it.desc)}</p>
-          </a>`).join('') + '</div>'
-      : emptyBlank(d.label, f);
-  } else {
-    const html = d.groups.map(g => {
-      total += g.items.length;
-      const items = g.items.filter(it => matches(it, f));
-      if (!items.length) return '';
-      if (!firstHit) firstHit = items.find(it => it.url)?.url || null;
-      shown += items.length;
-      return `<section class="grp"><h2>${esc(g.name)}</h2>
-        <div class="rows">${items.map(it => `
-          <div class="row${it.url ? '' : ' nolink'}">
-            <span class="nm">${it.url
-              ? `<a class="open" href="${esc(it.url)}" target="_blank" rel="noopener noreferrer">${esc(it.name)}</a>`
-              : esc(it.name)}</span>
-            <span class="tag">${audienceTag(it) || (it.url ? esc(host(it.url)) : '')}</span>
-            <div class="meta"><span class="ds">${esc(it.desc)}</span>${it.contact ? `
-              <button class="ct" type="button" data-email="${esc(it.contact.email)}"
-                title="Click to copy the address">${esc(it.contact.name)}, ${esc(it.contact.email)}</button>` : ''}</div>
-          </div>`).join('')}</div></section>`;
-    }).join('');
-    list.innerHTML = html || emptyBlank(d.label, f);
-  }
+          </a>`).join('')}</div></section>`;
+    }
+    return `<section class="grp"><h2>${esc(g.name)}</h2>
+      <div class="rows">${items.map(it => `
+        <div class="row${it.url ? '' : ' nolink'}">
+          <span class="nm">${it.url
+            ? `<a class="open" href="${esc(it.url)}" target="_blank" rel="noopener noreferrer">${esc(it.name)}</a>`
+            : esc(it.name)}</span>
+          <span class="tag">${audienceTag(it) || (it.url ? esc(host(it.url)) : '')}</span>
+          <div class="meta"><span class="ds">${esc(it.desc)}</span>${it.contact ? `
+            <button class="ct" type="button" data-email="${esc(it.contact.email)}"
+              title="Click to copy the address">${esc(it.contact.name)}, ${esc(it.contact.email)}</button>` : ''}</div>
+        </div>`).join('')}</div></section>`;
+  }).join('');
+  list.innerHTML = groupsHtml || emptyBlank(d.label, f);
   document.getElementById('tally').textContent = f ? `${shown} of ${total} entries` : `${total} entries`;
   document.title = 'Systems \u2014 ' + d.label;
 }

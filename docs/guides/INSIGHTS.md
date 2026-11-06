@@ -15,3 +15,6 @@ Obtain editorial/compliance approval, open the authorised publisher, preview the
 - Publishing uses a Git token and session control; never include their values in documentation.
 
 **Unverified:** current editor deployment status, publication permissions and configured publishing branch.
+
+## Navigation while no articles are published
+**Since 6 November 2026** the Insights link is hidden from the header and footer navigation, so visitors aren't sent to an empty listing. `/insights/` itself still works. When the first approved article is published, restore the link in `index.html`: put `<a href="/insights/">Insights</a>` back where the `ARIE_INSIGHTS_NAV` comment sits in the header, and after "Careers" in the footer "Company" list.

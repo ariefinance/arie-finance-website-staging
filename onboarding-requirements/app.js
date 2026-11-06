@@ -334,9 +334,9 @@
       var btn = h('button', {
         type: 'button', class: 'cat-chip',
         'aria-pressed': String(active),
-        style: 'background:' + (active ? '#06113A' : '#f5f5f3') +
-               ';border:' + (active ? '1px solid #06113A' : '1px dashed #d4d4d0') +
-               ';color:' + (active ? '#fff' : '#888'),
+        style: 'background:' + (active ? '#06113A' : '#fff') +
+               ';border:' + (active ? '1px solid #06113A' : '1px solid #C9CDD8') +
+               ';color:' + (active ? '#fff' : '#1a1a1a'),
         disabled: !!d.always,
         onclick: d.always ? null : function () {
           state.cats[d.k] = !state.cats[d.k];
@@ -349,7 +349,7 @@
           class: 'ck', 'aria-hidden': 'true',
           style: 'background:' + (active ? 'rgba(255,255,255,.2)' : 'transparent') +
                  ';color:' + (active ? '#fff' : 'transparent') +
-                 ';border:' + (active ? 'none' : '1.5px solid #ccc')
+                 ';border:' + (active ? 'none' : '1.5px solid #8A90A2')
         }, active ? '✓' : ''),
         h('span', { class: 'lbl' }, lbl),
         d.always ? h('span', { class: 'always' }, 'Always included') : null

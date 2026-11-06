@@ -9,7 +9,7 @@
 <link rel="apple-touch-icon" href="/favicon.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,wght@0,300;0,400;0,500;0,600;0,700;1,400&family=DM+Serif+Display&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,wght@0,300;0,400;0,500;0,600;0,700;1,400&family=DM+Serif+Display&family=Hanken+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
 <style>
 *{margin:0;padding:0;box-sizing:border-box}
 :root{
@@ -174,6 +174,36 @@ dialog#gen-modal::backdrop{background:rgba(10,10,20,.55);backdrop-filter:blur(4p
 
 /* ----- Print safety: suppress on-screen chrome ----- */
 @media print{.no-print,.site-hdr,.site-foot,dialog{display:none !important}}
+
+/* ----- 2026-11 polish: align with the main ARIE site (fonts, text contrast, dialog, assistance) ----- */
+body{font-family:'Hanken Grotesk','DM Sans',system-ui,-apple-system,BlinkMacSystemFont,sans-serif}
+.h1{font-family:'Hanken Grotesk',system-ui,sans-serif;font-weight:700;letter-spacing:-.02em;color:var(--navy)}
+.eyebrow{color:#8F6B25}
+.modal-head .title,.preview-head .co{font-family:'Hanken Grotesk',system-ui,sans-serif;font-weight:700;letter-spacing:-.01em}
+.lead{color:#454E66;font-size:clamp(14px,1.5vw,16px);line-height:1.7}
+.card p,.card--recommended p{color:#4F566B;font-size:13.5px}
+.pack-text .s{color:#4F566B;font-size:12.5px}
+.note{font-size:12.5px;color:#6B5418}
+.sec-label{color:#6B7180}
+.acc-item .note-s{font-size:12px;color:#6B7180}
+.acc-item .inline-dl .hint{font-size:11px;color:#6B7180}
+.acc-ppn{font-size:12px;color:#5A6072}
+.sub-label,.cond-q .help{font-size:12.5px;color:#4F566B}
+.preview-head .meta{font-size:12.5px;color:#5A6072}
+.site-hdr .ver{color:#8A8F9C}
+.site-foot .c{font-size:11px;color:#8A8F9C}
+/* Checklist dialog: restore centring removed by the global margin reset */
+dialog#gen-modal{margin:auto}
+/* Human assistance */
+.help-card{display:flex;align-items:center;justify-content:space-between;gap:20px;flex-wrap:wrap;background:var(--surface);border:1px solid var(--rule);border-left:3px solid #C99B3F;border-radius:10px;padding:20px 22px;margin:0 0 24px}
+.help-text{flex:1 1 280px}
+.help-card h2{font-size:15px;font-weight:700;color:var(--navy);margin-bottom:4px}
+.help-card p{font-size:13px;line-height:1.6;color:#4F566B}
+.help-actions{display:flex;flex-direction:column;align-items:flex-start;gap:6px}
+.help-actions .btn{text-decoration:none;margin-bottom:4px}
+.help-link{font-size:13px;color:var(--indigo);text-decoration:none;font-weight:500}
+.help-link:hover{text-decoration:underline}
+@media (max-width:520px){.help-actions{width:100%}.help-actions .btn{width:100%;text-align:center}}
 </style>
 </head>
 <body>
@@ -230,6 +260,18 @@ dialog#gen-modal::backdrop{background:rgba(10,10,20,.55);backdrop-filter:blur(4p
     <div id="reqs-anchor" class="sec-label">Full requirements</div>
     <div id="landing-sections"></div>
 
+<aside class="help-card no-print" aria-labelledby="help-title">
+      <div class="help-text">
+        <h2 id="help-title">Questions about your documents?</h2>
+        <p>Our onboarding team can help you confirm which documents apply to your company structure.</p>
+      </div>
+      <div class="help-actions">
+        <a class="btn btn-primary" href="/?topic=support#contact">Speak to our team</a>
+        <a class="help-link" href="tel:+2304686497">+230 468 6497</a>
+        <a class="help-link" href="mailto:customercare@ariefinance.com">customercare@ariefinance.com</a>
+      </div>
+    </aside>
+
     <div class="dl-cta">
       <div class="lbl">Need a printable copy of all requirements?</div>
       <button type="button" class="btn btn-outline" id="btn-dl-generic-bottom">Download Generic Checklist (PDF)</button>
@@ -257,7 +299,18 @@ dialog#gen-modal::backdrop{background:rgba(10,10,20,.55);backdrop-filter:blur(4p
         <div class="meta"><span id="pv-structure"></span><br><span id="pv-conds"></span></div>
       </div>
       <div id="preview-sections"></div>
-    </div>
+      <aside class="help-card no-print" aria-labelledby="help-title-pv">
+        <div class="help-text">
+          <h2 id="help-title-pv">Need help with a requirement?</h2>
+          <p>Our onboarding team can help you confirm which documents apply to your company structure.</p>
+        </div>
+        <div class="help-actions">
+          <a class="btn btn-primary" href="/?topic=support#contact">Speak to our team</a>
+          <a class="help-link" href="tel:+2304686497">+230 468 6497</a>
+          <a class="help-link" href="mailto:customercare@ariefinance.com">customercare@ariefinance.com</a>
+        </div>
+      </aside>
+      </div>
   </section>
 </main>
 
@@ -302,6 +355,6 @@ dialog#gen-modal::backdrop{background:rgba(10,10,20,.55);backdrop-filter:blur(4p
 
 <script src="/onboarding-requirements/vendor/html2canvas.min.js" defer></script>
 <script src="/onboarding-requirements/vendor/jspdf.umd.min.js" defer></script>
-<script src="/onboarding-requirements/app.js?v=2026-10-02-r2" defer></script>
+<script src="/onboarding-requirements/app.js?v=2026-11-06-r1" defer></script>
 </body>
 </html>

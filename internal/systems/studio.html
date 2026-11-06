@@ -1,0 +1,439 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>ARIE Finance — Systems (Copy)</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Hanken+Grotesk:wght@400;500;600&family=Newsreader:ital,opsz,wght@0,6..72,300;0,6..72,400;0,6..72,500;1,6..72,300;1,6..72,400&display=swap" rel="stylesheet">
+<style>
+:root{
+  --ink:#0B1437; --ink-2:#1A2444; --quiet:#4B5470; --faint:#8A8878;
+  --paper:#FAF9F5; --card:#FFFFFF; --wash:#F1EADC; --wash-2:#E7DCC4;
+  --gold:#A8813B; --gold-2:#C19A3E; --line:#E2DCCD; --line-2:#D3CBB6;
+  --sans:"Hanken Grotesk",system-ui,-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+  --serif:"Newsreader",Georgia,"Times New Roman",serif;
+  box-sizing:border-box;
+  padding-top:env(safe-area-inset-top,0px); padding-bottom:env(safe-area-inset-bottom,0px);
+}
+
+
+*,*::before,*::after{box-sizing:inherit}
+html{scroll-padding-top:calc(env(safe-area-inset-top,0px) + 84px)}
+body{margin:0;background:var(--paper);color:var(--ink-2);font-family:var(--sans);font-size:15px;line-height:1.55;-webkit-font-smoothing:antialiased}
+:focus-visible{outline:2px solid var(--gold);outline-offset:3px}
+.shell{max-width:1060px;margin:0 auto;padding:0 32px 96px}
+
+/* masthead */
+.mast{display:flex;align-items:center;justify-content:space-between;gap:24px;padding:26px 0 0}
+.mark{width:132px;color:var(--ink);flex:none}
+.switch{display:flex;background:var(--card);border:1px solid var(--line);border-radius:999px;padding:4px;gap:2px}
+.switch button{appearance:none;border:0;background:none;font:inherit;font-size:14px;font-weight:500;color:var(--quiet);
+  padding:7px 18px;border-radius:999px;cursor:pointer;display:flex;align-items:center;gap:8px;white-space:nowrap}
+.switch button b{font-family:var(--serif);font-weight:400;font-size:13px;color:var(--faint)}
+.switch button[aria-selected="true"]{background:var(--ink);color:var(--paper)}
+.switch button[aria-selected="true"] b{color:var(--gold-2)}
+
+/* hero */
+.hero{padding:52px 0 26px;border-bottom:1px solid var(--line)}
+h1{font-family:var(--serif);font-weight:300;font-size:clamp(40px,7vw,72px);line-height:1;letter-spacing:-.02em;
+   margin:0;color:var(--ink)}
+h1 .ent{display:block;font-style:italic;color:var(--gold)}
+.blurb{max-width:46ch;margin:18px 0 0;color:var(--quiet);font-size:15.5px}
+
+/* search */
+.find{position:sticky;top:0;z-index:5;background:var(--paper);padding:18px 0 14px;border-bottom:1px solid var(--line);
+      display:flex;align-items:baseline;gap:16px;flex-wrap:wrap}
+.find input{flex:1;min-width:220px;background:transparent;border:0;border-bottom:1.5px solid var(--line-2);
+  padding:6px 2px;font-family:var(--serif);font-size:20px;color:var(--ink);font-weight:300}
+.find input:focus{outline:none;border-bottom-color:var(--gold)}
+.find input::placeholder{color:var(--faint);font-style:italic}
+.tally{font-size:13px;color:var(--faint);white-space:nowrap}
+kbd{font-family:var(--sans);font-size:11px;border:1px solid var(--line-2);border-bottom-width:2px;border-radius:4px;
+    padding:1px 5px;color:var(--faint);background:var(--card)}
+
+/* groups and rows */
+.grp{display:grid;grid-template-columns:172px 1fr;gap:0 28px;padding:34px 0 0}
+.grp h2{font-family:var(--serif);font-weight:400;font-size:19px;color:var(--ink);margin:14px 0 0;
+        position:sticky;top:76px;align-self:start;line-height:1.25}
+.grp .note{font-size:12.5px;color:var(--faint);margin-top:4px}
+.rows{display:flex;flex-direction:column;border-top:1px solid var(--line)}
+.row{position:relative;display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.2fr) 195px;align-items:baseline;gap:6px 22px;
+     padding:15px 14px 15px 12px;border-bottom:1px solid var(--line);text-decoration:none;color:inherit;
+     border-left:2px solid transparent;transition:background .12s ease,border-color .12s ease}
+.row:has(.open:hover),.row:has(.open:focus-visible){background:var(--wash);border-left-color:var(--gold)}
+.row.nolink{background:transparent}
+.open{color:inherit;text-decoration:none}
+.open::after{content:"";position:absolute;inset:0}
+.ct{position:relative;z-index:1;display:block;margin-top:5px;padding:0;border:0;background:none;font:inherit;
+    font-size:12.5px;color:var(--gold);text-align:left;cursor:copy;width:fit-content;max-width:100%}
+.ct::before{content:"Contact ";color:var(--faint)}
+.ct:hover{text-decoration:underline;text-underline-offset:3px}
+.ct.done{color:var(--quiet)}
+.ct.done::before{content:"Copied "}
+.row .nm{font-family:var(--serif);font-size:22px;font-weight:400;color:var(--ink);line-height:1.2}
+.row .ds{font-size:13.5px;color:var(--quiet)}
+.row .hs{font-size:12px;color:var(--faint);justify-self:end;text-align:right;word-break:break-word}
+.row:has(.open:hover) .hs,.row:has(.open:focus-visible) .hs{color:var(--gold)}
+.row.nolink .hs{font-style:italic}
+.chartcard{margin:24px 0 0;background:var(--card);border:1px solid var(--line);border-radius:14px;padding:22px 18px}
+.chartcard svg{display:block;width:100%;height:auto}
+.key{display:flex;gap:26px;flex-wrap:wrap;margin:24px 0 0;font-size:13.5px;color:var(--quiet)}
+.key span{display:flex;align-items:center;gap:9px}
+.key i{width:14px;height:14px;border-radius:4px;display:inline-block}
+.k-auto{background:#EDF1F8;border:1px solid #C9D4E8}
+.k-manual{background:var(--wash);border:1px solid var(--line-2)}
+.sec{margin:42px 0 0;padding-top:24px;border-top:1px solid var(--line)}
+.sec h2{font-family:var(--serif);font-weight:300;font-size:clamp(22px,3vw,30px);margin:0;color:var(--ink)}
+.sec p{max-width:56ch;color:var(--quiet);margin:10px 0 0}
+.notes{display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:16px;margin-top:26px}
+.note-c{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:18px 20px}
+.note-c.beige{background:var(--wash);border-color:var(--line-2)}
+.note-c h3{font-family:var(--serif);font-weight:400;font-size:18px;margin:0 0 6px;color:var(--ink)}
+.note-c p{margin:0;font-size:13.5px;color:var(--quiet)}
+.blank{padding:26px 2px;color:var(--faint);font-size:14.5px;border-bottom:1px solid var(--line)}
+
+footer{margin-top:64px;padding-top:16px;border-top:1px solid var(--line);display:flex;justify-content:space-between;
+       gap:16px;flex-wrap:wrap;font-size:12.5px;color:var(--faint)}
+footer span:last-child{color:var(--gold)}
+
+@media (max-width:900px){
+  .row{grid-template-columns:minmax(0,1fr) minmax(0,1.1fr) 150px}
+}
+@media (max-width:760px){
+  .shell{padding:0 20px 64px}
+  .mast{flex-direction:column;align-items:flex-start;gap:16px}
+  .hero{padding:32px 0 20px}
+  .grp{grid-template-columns:1fr;gap:0}
+  .grp h2{position:static;margin:0 0 10px}
+  .row{grid-template-columns:1fr;padding:14px 10px}
+  .row .hs{justify-self:start;text-align:left;margin-top:4px}
+}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+</head>
+<body>
+<div class="shell">
+  <div class="mast">
+    <svg class="mark" viewBox="0 0 396 94" role="img" aria-label="ARIE Finance"><defs><linearGradient id="lg" x1="82" y1="87" x2="82" y2="7" gradientUnits="userSpaceOnUse"><stop stop-color="#241F86"/><stop offset="1" stop-color="#4940D6"/></linearGradient></defs><path d="M11.0614 80.4441L127.778 11.2672C131.539 9.03804 136.402 10.7353 137.959 14.8209L161.821 77.4418C163.579 82.0553 160.171 87.0001 155.234 87.0001L127.149 87.0001C125.138 87.0001 123.222 86.1406 121.885 84.6381L105.648 66.3987C103.515 64.0025 100.033 63.349 97.1764 64.8086L55.2553 86.2282C54.2624 86.7355 53.1633 87.0001 52.0482 87.0001L12.8583 87.0001C9.27394 87.0001 7.97797 82.2716 11.0614 80.4441Z" fill="url(#lg)"/><path d="M88.1037 86.508C86.5213 86.508 85.2012 85.2031 85.6183 83.6766C86.1064 81.8899 87.0528 80.2432 88.3855 78.9106C90.4004 76.8957 93.1333 75.7637 95.9829 75.7637C98.8324 75.7637 101.565 76.8957 103.58 78.9106C104.913 80.2432 105.859 81.8899 106.347 83.6766C106.764 85.2031 105.444 86.508 103.862 86.508L88.1037 86.508Z" fill="currentColor"/><path d="M238.682 42.875H214.744L210.713 51H197.775L220.244 8.0625H233.182L255.65 51H242.713L238.682 42.875ZM218.9 34.5H234.588L226.775 18.6875L218.9 34.5ZM274.275 51H262.682V8.0625H291.744C294.869 8.0625 297.515 8.38542 299.682 9.03125C301.869 9.67708 303.64 10.5938 304.994 11.7812C306.369 12.9688 307.359 14.4062 307.963 16.0938C308.588 17.7604 308.9 19.625 308.9 21.6875C308.9 23.5 308.64 25.0833 308.119 26.4375C307.619 27.7917 306.932 28.9583 306.057 29.9375C305.203 30.8958 304.203 31.7083 303.057 32.375C301.911 33.0417 300.703 33.5938 299.432 34.0312L313.494 51H299.932L286.932 35.1875H274.275V51ZM297.182 21.625C297.182 20.7917 297.067 20.0833 296.838 19.5C296.63 18.9167 296.255 18.4479 295.713 18.0938C295.171 17.7188 294.442 17.4479 293.525 17.2812C292.63 17.1146 291.505 17.0312 290.15 17.0312H274.275V26.2188H290.15C291.505 26.2188 292.63 26.1354 293.525 25.9688C294.442 25.8021 295.171 25.5417 295.713 25.1875C296.255 24.8125 296.63 24.3333 296.838 23.75C297.067 23.1667 297.182 22.4583 297.182 21.625ZM321.807 51V8.0625H333.4V51H321.807ZM346.869 51V8.0625H390.338V17.2188H358.775V24.3125H388.713V33.4688H358.775V41.8438H390.775V51H346.869ZM206.905 67.5815V71.4326H221.294V76.1538H206.905V85H200.927V62.8604H222.084V67.5815H206.905ZM227.192 85V62.8604H233.17V85H227.192ZM261.03 85L246.093 69.7891V85H240.115V62.8604H246.608L261.562 78.1357V62.8604H267.507V85H261.03ZM292.225 80.8105H279.882L277.804 85H271.133L282.718 62.8604H289.389L300.975 85H294.304L292.225 80.8105ZM282.025 76.4922H290.114L286.086 68.3389L282.025 76.4922ZM325.515 85L310.578 69.7891V85H304.6V62.8604H311.094L326.047 78.1357V62.8604H331.993V85H325.515ZM363.317 83.4854C362.544 83.8076 361.765 84.0977 360.981 84.3555C360.196 84.6133 359.385 84.8335 358.547 85.0161C357.71 85.2095 356.823 85.3545 355.889 85.4512C354.965 85.5479 353.971 85.5962 352.908 85.5962C350.652 85.5962 348.573 85.3545 346.672 84.8711C344.781 84.3877 343.148 83.6626 341.773 82.6958C340.409 81.7183 339.346 80.5044 338.583 79.0542C337.82 77.5933 337.439 75.8906 337.439 73.9463C337.439 72.002 337.82 70.3047 338.583 68.8545C339.346 67.3936 340.409 66.1797 341.773 65.2129C343.148 64.2354 344.781 63.5049 346.672 63.0215C348.573 62.5381 350.652 62.2964 352.908 62.2964C353.971 62.2964 354.965 62.3447 355.889 62.4414C356.823 62.5381 357.71 62.6831 358.547 62.8765C359.385 63.0591 360.196 63.2793 360.981 63.5371C361.765 63.7949 362.544 64.085 363.317 64.4072V69.7891C362.705 69.4561 362.06 69.1284 361.383 68.8062C360.707 68.4731 359.96 68.1777 359.144 67.9199C358.327 67.6514 357.43 67.4365 356.453 67.2754C355.475 67.1035 354.374 67.0176 353.149 67.0176C351.27 67.0176 349.707 67.2109 348.461 67.5977C347.225 67.9844 346.237 68.5 345.496 69.1445C344.754 69.7891 344.233 70.5303 343.933 71.3682C343.632 72.1953 343.482 73.0547 343.482 73.9463C343.482 74.5371 343.546 75.1226 343.675 75.7026C343.804 76.272 344.019 76.8145 344.319 77.3301C344.62 77.835 345.012 78.3022 345.496 78.7319C345.979 79.1616 346.581 79.5322 347.3 79.8438C348.02 80.1553 348.858 80.4023 349.814 80.585C350.781 80.7568 351.893 80.8428 353.149 80.8428C354.374 80.8428 355.475 80.7676 356.453 80.6172C357.43 80.4561 358.327 80.2466 359.144 79.9888C359.96 79.731 360.707 79.4409 361.383 79.1187C362.06 78.7856 362.705 78.4473 363.317 78.1035V83.4854ZM368.892 85V62.8604H391.306V67.5815H375.031V71.2393H390.468V75.9604H375.031V80.2788H391.531V85H368.892Z" fill="currentColor"/></svg>
+    <div class="switch" role="tablist" aria-label="Entity">
+      <button role="tab" id="tab-arie" aria-controls="list" aria-selected="true">ARIE Finance <b>11</b></button>
+      <button role="tab" id="tab-acbm" aria-controls="list" aria-selected="false">ACBM <b>7</b></button>
+      <button role="tab" id="tab-internal" aria-controls="list" aria-selected="false">Internal tools <b>7</b></button>
+      <button role="tab" id="tab-flow" aria-controls="list" aria-selected="false">Payment workflow</button>
+    </div>
+  </div>
+
+  <header class="hero">
+    <h1>Systems for<span class="ent" id="entName">ARIE Finance</span></h1>
+    <p class="blurb">Every platform the team signs into, grouped by what you are trying to do. Pick one and it opens in a new tab.</p>
+  </header>
+
+  <div class="find">
+    <input id="q" type="search" placeholder="Search by name, job or address" aria-label="Search systems" autocomplete="off">
+    <span class="tally"><span id="tally"></span>. Press <kbd>/</kbd> to search, <kbd>Enter</kbd> to open the first result.</span>
+  </div>
+
+  <main id="list" role="tabpanel" aria-labelledby="tab-arie"></main>
+
+  <footer>
+    <span>Internal directory. Access to each system is granted separately.</span>
+    <span>Links reviewed September 2026</span>
+  </footer>
+</div>
+
+<script>
+const MAUBANK = 'https://ib.maubank.mu/corp/AuthenticationController?__START_TRAN_FLAG__=Y&FORMSGROUP_ID__=AuthenticationFG&__EVENT_ID__=LOAD&FG_BUTTONS__=LOAD&ACTION.LOAD=Y&AuthenticationFG.LOGIN_FLAG=1&BANK_ID=12&LANGUAGE_ID=001';
+const KYC = { name:'KYC Portal back office', url:'https://backoffice.bankonboarding.com/',
+              desc:'Open an application file for a client being onboarded' };
+const ACCUITY = { name:'Accuity', url:'https://accuity.worldcompliance.com/SignIn.aspx?ReturnUrl=%2f',
+                  desc:'Screen clients and counterparties against sanctions, PEP and adverse media lists' };
+const MAU = { name:'MauBank', url:MAUBANK, desc:'Corporate internet banking' };
+const XERO = { name:'Xero', url:'https://login.xero.com/identity/user/login',
+               desc:'Bookkeeping, invoicing and the monthly management figures' };
+
+// Tools built in-house, hosted on ariefinance.com. The pricing and sales
+// tracker tools already appear in their functional groups above and are
+// deliberately not duplicated here.
+const INTERNAL_TOOLS = [
+  { name:'MauBank wire-transfer utility', url:'/internal/wire-transfer/',
+    desc:'Turn a cross-border request email into a filled MauBank TT PDF' },
+  { name:'MauBank TT Instruction', url:'/internal/tt/',
+    desc:'Prepare MauBank TT instructions manually' },
+  { name:'Statement generator', url:'/internal/statements/',
+    desc:'Produce client statements from transaction data' },
+  { name:'Holidays Announcement', url:'/internal/holidays/',
+    desc:'Draft ARIE holiday / out-of-office notices' },
+  { name:'Management Report Builder', url:'/managementreport/',
+    desc:'Produce the monthly management report' },
+  { name:'Insights publisher', url:'/insights/admin/',
+    desc:'Publish and edit Insights articles' },
+  { name:'Onboarding requirements', url:'/onboarding-requirements/',
+    desc:'Customer onboarding requirements reference' }
+];
+const INTERNAL_GROUP = { name:'ARIE internal tools', note:'Built in-house, hosted on ariefinance.com', items: INTERNAL_TOOLS };
+
+const DATA = {
+  arie: { label:'ARIE Finance', groups:[
+    { name:'Onboarding', note:'New client files and credentials', items:[
+      KYC,
+      { name:'Onboarding SCV', url:'https://scv.ariefinance.com/home',
+        desc:'Issue client credentials once onboarding is approved' }]},
+    { name:'Payments', note:'Day-to-day operations', items:[
+      { name:'Saascada', url:'https://portal.ariefinance.saascada.io/login',
+        desc:'Core back office for client accounts and payments',
+        contact:{ name:'Thomas Connelly', email:'thomas@saascada.com' } },
+      { name:'Allica payment platform', desc:'Payment platform delivered with Aicura Solutions',
+        contact:{ name:'Hussain Kothari', email:'hussain@aicurasolutions.com' } },
+      { name:'Thunes', url:'https://businesshub.thunes.com/#/main/network',
+        desc:'Back office for payments routed through Thunes' }]},
+    { name:'Compliance', note:'Screening and monitoring', items:[
+      ACCUITY,
+      { name:'ComplyAdvantage', url:'https://arie-finance.tm.complyadvantage.com/',
+        desc:'Review transactions that have been flagged or put on hold',
+        contact:{ name:'Freya Savage', email:'freya.savage@complyadvantage.com' } }]},
+    { name:'Sales and marketing', note:'Pipeline and outreach', items:[
+      { name:'Sales tracker', url:'https://www.ariefinance.com/salestracker',
+        desc:'Track leads, opportunities and outreach activity' },
+      { name:'Pricing and welcome pack generator', url:'https://www.ariefinance.com/internal/pricing',
+        desc:'Build client pricing and produce the welcome pack' }]},
+    { name:'Accounting', note:'Books and reporting', items:[ XERO ]},
+    { name:'Banking partners', note:'Where the funds sit', items:[ MAU ]}
+  ]},
+  acbm: { label:'ACBM', groups:[
+    { name:'Onboarding', note:'New client files and credentials', items:[ KYC ]},
+    { name:'Payments', note:'Day-to-day operations', items:[
+      { name:'ACBM back office', url:'https://backoffice.acbm.mu/',
+        desc:'Client accounts and payments for ACBM' }]},
+    { name:'Compliance', note:'Screening and monitoring', items:[ ACCUITY ]},
+    { name:'Accounting', note:'Books and reporting', items:[ XERO ]},
+    { name:'Banking partners', note:'Where the funds sit', items:[
+      { name:'AfrAsia Bank', url:'https://onlinebanking.afrasiabank.com/en/auth/login', desc:'Corporate internet banking' },
+      { name:'Mercury', url:'https://portal.mercury.global/login', desc:'Corporate banking portal' },
+      MAU ]}
+  ]},
+  internal: { label:'Internal tools', groups:[ INTERNAL_GROUP ]}
+};
+
+const host = u => { try { return new URL(u).hostname.replace(/^www\./,''); } catch(e){ return u; } };
+const esc = s => String(s).replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const FLOW_HTML = `
+<div class="key">
+  <span><i class="k-auto"></i> Runs automatically, no officer input</span>
+  <span><i class="k-manual"></i> Officer action required</span>
+</div>
+<div class="chartcard"><svg viewBox="0 0 760 690" role="img" xmlns="http://www.w3.org/2000/svg">
+      <title>ARIE Finance payment workflow</title>
+      <desc>A client account is created on SCV, the client uploads a payment in the ARIE Allica platform, Saascada receives it, ComplyAdvantage screens it, and Saascada then routes it either to Thunes automatically or to a manual MauBank payment handled by an officer.</desc>
+      <defs>
+        <marker id="ar" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+          <path d="M2 1L8 5L2 9" fill="none" stroke="#9A957F" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+        </marker>
+      </defs>
+      <style>
+        .bx{fill:#FFFFFF;stroke:#D2CAB5;stroke-width:1}
+        .bx-auto{fill:#EDF1F8;stroke:#C9D4E8;stroke-width:1}
+        .bx-man{fill:#F3EEE2;stroke:#D9CDB0;stroke-width:1}
+        .ti{font-family:"Newsreader",Georgia,serif;font-size:18px;fill:#0B1437}
+        .su{font-family:"Hanken Grotesk",Arial,sans-serif;font-size:12.5px;fill:#4E5773}
+        .st{font-family:"Hanken Grotesk",Arial,sans-serif;font-size:11px;fill:#8A8878;letter-spacing:.12em}
+        .fl{stroke:#B7B19A;stroke-width:1.2;fill:none}
+      </style>
+
+      <text class="st" x="220" y="24">STEP 1</text>
+      <rect class="bx" x="220" y="32" width="320" height="62" rx="10"/>
+      <text class="ti" x="380" y="58" text-anchor="middle" dominant-baseline="central">Account created on SCV</text>
+      <text class="su" x="380" y="78" text-anchor="middle" dominant-baseline="central">Onboarding team; login details sent to client</text>
+      <line class="fl" x1="380" y1="94" x2="380" y2="118" marker-end="url(#ar)"/>
+
+      <text class="st" x="220" y="112">STEP 2</text>
+      <rect class="bx" x="220" y="120" width="320" height="62" rx="10"/>
+      <text class="ti" x="380" y="146" text-anchor="middle" dominant-baseline="central">Client in the ARIE (Allica) portal</text>
+      <text class="su" x="380" y="166" text-anchor="middle" dominant-baseline="central">Sees balances and uploads payments</text>
+      <line class="fl" x1="380" y1="182" x2="380" y2="206" marker-end="url(#ar)"/>
+
+      <text class="st" x="220" y="200">STEP 3</text>
+      <rect class="bx-auto" x="220" y="208" width="320" height="62" rx="10"/>
+      <text class="ti" x="380" y="234" text-anchor="middle" dominant-baseline="central">Saascada core banking</text>
+      <text class="su" x="380" y="254" text-anchor="middle" dominant-baseline="central">Payment enters the core system</text>
+      <line class="fl" x1="380" y1="270" x2="380" y2="294" marker-end="url(#ar)"/>
+
+      <text class="st" x="220" y="288">STEP 4</text>
+      <rect class="bx-auto" x="220" y="296" width="320" height="62" rx="10"/>
+      <text class="ti" x="380" y="322" text-anchor="middle" dominant-baseline="central">ComplyAdvantage screening</text>
+      <text class="su" x="380" y="342" text-anchor="middle" dominant-baseline="central">Screened and monitored automatically</text>
+      <line class="fl" x1="380" y1="358" x2="380" y2="382" marker-end="url(#ar)"/>
+
+      <text class="st" x="200" y="376">STEP 5</text>
+      <rect class="bx-auto" x="200" y="384" width="360" height="62" rx="10"/>
+      <text class="ti" x="380" y="410" text-anchor="middle" dominant-baseline="central">Saascada routes the payment</text>
+      <text class="su" x="380" y="430" text-anchor="middle" dominant-baseline="central">By currency and destination country</text>
+
+      <path class="fl" d="M380 446 V478 H210 V500" marker-end="url(#ar)"/>
+      <path class="fl" d="M380 446 V478 H550 V500" marker-end="url(#ar)"/>
+
+      <text class="st" x="70" y="498">AUTOMATIC ROUTE</text>
+      <rect class="bx-auto" x="70" y="508" width="280" height="62" rx="10"/>
+      <text class="ti" x="210" y="534" text-anchor="middle" dominant-baseline="central">Thunes</text>
+      <text class="su" x="210" y="554" text-anchor="middle" dominant-baseline="central">Payment goes out automatically</text>
+
+      <text class="st" x="410" y="498">MANUAL ROUTE</text>
+      <rect class="bx-man" x="410" y="508" width="280" height="62" rx="10"/>
+      <text class="ti" x="550" y="534" text-anchor="middle" dominant-baseline="central">Email to customer care</text>
+      <text class="su" x="550" y="554" text-anchor="middle" dominant-baseline="central">Payment details sent to the team</text>
+      <line class="fl" x1="550" y1="570" x2="550" y2="594" marker-end="url(#ar)"/>
+
+      <rect class="bx-man" x="410" y="604" width="280" height="62" rx="10"/>
+      <text class="ti" x="550" y="630" text-anchor="middle" dominant-baseline="central">MauBank manual payment</text>
+      <text class="su" x="550" y="650" text-anchor="middle" dominant-baseline="central">Officer completes the form and processes</text>
+    </svg></div>
+<section class="sec">
+  <h2>What the officer checks afterwards</h2>
+  <p>Two checks sit outside the automatic flow. Both are done by the officer on the day, not by the system.</p>
+</section>
+<div class="chartcard"><svg viewBox="0 0 760 300" role="img" xmlns="http://www.w3.org/2000/svg">
+      <title>Officer checks after a payment is sent</title>
+      <desc>The officer checks Thunes to confirm each payment was released, and checks ComplyAdvantage for payments on hold, handling soft stops where the payment is released but flagged and hard stops where the payment is blocked.</desc>
+      <text class="st" x="40" y="24">CHECK 1</text>
+      <rect class="bx-man" x="40" y="32" width="330" height="58" rx="10"/>
+      <text class="ti" x="205" y="56" text-anchor="middle" dominant-baseline="central">Thunes</text>
+      <text class="su" x="205" y="76" text-anchor="middle" dominant-baseline="central">Was the payment released?</text>
+      <line class="fl" x1="205" y1="90" x2="205" y2="112" marker-end="url(#ar2)"/>
+
+      <rect class="bx" x="40" y="122" width="330" height="62" rx="10"/>
+      <text class="ti" x="205" y="148" text-anchor="middle" dominant-baseline="central">Released</text>
+      <text class="su" x="205" y="168" text-anchor="middle" dominant-baseline="central">No action needed</text>
+
+      <rect class="bx-man" x="40" y="196" width="330" height="62" rx="10"/>
+      <text class="ti" x="205" y="222" text-anchor="middle" dominant-baseline="central">Failed</text>
+      <text class="su" x="205" y="242" text-anchor="middle" dominant-baseline="central">Officer attends; client uploads it again</text>
+
+      <text class="st" x="390" y="24">CHECK 2</text>
+      <rect class="bx-man" x="390" y="32" width="330" height="58" rx="10"/>
+      <text class="ti" x="555" y="56" text-anchor="middle" dominant-baseline="central">ComplyAdvantage</text>
+      <text class="su" x="555" y="76" text-anchor="middle" dominant-baseline="central">Anything on hold?</text>
+      <line class="fl" x1="555" y1="90" x2="555" y2="112" marker-end="url(#ar2)"/>
+
+      <rect class="bx-man" x="390" y="122" width="330" height="62" rx="10"/>
+      <text class="ti" x="555" y="148" text-anchor="middle" dominant-baseline="central">Soft stop</text>
+      <text class="su" x="555" y="168" text-anchor="middle" dominant-baseline="central">Released but flagged; officer reviews</text>
+
+      <rect class="bx-man" x="390" y="196" width="330" height="62" rx="10"/>
+      <text class="ti" x="555" y="222" text-anchor="middle" dominant-baseline="central">Hard stop</text>
+      <text class="su" x="555" y="242" text-anchor="middle" dominant-baseline="central">Payment blocked; officer attends</text>
+      <defs>
+        <marker id="ar2" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+          <path d="M2 1L8 5L2 9" fill="none" stroke="#9A957F" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+        </marker>
+      </defs>
+      <style>
+        .bx{fill:#FFFFFF;stroke:#D2CAB5;stroke-width:1}
+        .bx-man{fill:#F3EEE2;stroke:#D9CDB0;stroke-width:1}
+        .ti{font-family:"Newsreader",Georgia,serif;font-size:18px;fill:#0B1437}
+        .su{font-family:"Hanken Grotesk",Arial,sans-serif;font-size:12.5px;fill:#4E5773}
+        .st{font-family:"Hanken Grotesk",Arial,sans-serif;font-size:11px;fill:#8A8878;letter-spacing:.12em}
+        .fl{stroke:#B7B19A;stroke-width:1.2;fill:none}
+      </style>
+    </svg></div>
+<div class="notes">
+    <div class="note-c">
+      <h3>Where the hand-off happens</h3>
+      <p>Steps 2 to 5 run without anyone touching them. The first point at which an officer is needed is the email to customercare@ariefinance.com on the manual route, and then the two checks below.</p>
+    </div>
+    <div class="note-c">
+      <h3>What decides the route</h3>
+      <p>Saascada filters each payment on currency and destination country. Corridors supported by Thunes go out automatically; everything else becomes a manual MauBank payment.</p>
+    </div>
+    <div class="note-c beige">
+      <h3>Soft stop and hard stop</h3>
+      <p>A soft stop means the payment is released but flagged, so the officer reviews it after the fact. A hard stop means the payment does not go through at all until the officer deals with it.</p>
+    </div>
+  </div>`;
+const entity = () => document.querySelector('.switch [aria-selected="true"]').id.slice(4);
+let firstHit = null;
+
+function paint(){
+  const key = entity();
+  const isFlow = key === 'flow';
+  document.querySelector('.find').style.display = isFlow ? 'none' : '';
+  const isInternal = key === 'internal';
+  document.querySelector('.hero h1').innerHTML = isFlow
+    ? 'Payment<span class="ent">workflow</span>'
+    : isInternal
+      ? 'ARIE<span class="ent">internal tools</span>'
+      : 'Systems for<span class="ent">' + esc(DATA[key].label) + '</span>';
+  document.querySelector('.blurb').textContent = isFlow
+    ? 'How a payment travels from the client\u2019s upload to the beneficiary, and the points where an officer has to step in.'
+    : isInternal
+      ? 'Tools built in-house, hosted on ariefinance.com. Pick one and it opens in a new tab.'
+      : 'Every platform the team signs into, grouped by what you are trying to do. Pick one and it opens in a new tab.';
+  if (isFlow) {
+    document.getElementById('list').innerHTML = FLOW_HTML;
+    document.title = 'Payment workflow \u2014 ARIE Finance';
+    return;
+  }
+  const d = DATA[key];
+  const f = document.getElementById('q').value.trim().toLowerCase();
+  const match = it => !f || (it.name + ' ' + it.desc + ' ' + (it.url ? host(it.url) : '') + ' ' +
+    (it.contact ? it.contact.name + ' ' + it.contact.email : '')).toLowerCase().includes(f);
+  let shown = 0; firstHit = null;
+  const html = d.groups.map(g => {
+    const items = g.items.filter(match);
+    if (!items.length) return '';
+    if (!firstHit) firstHit = items.find(it => it.url)?.url || null;
+    shown += items.length;
+    return `<section class="grp"><div><h2>${esc(g.name)}</h2><div class="note">${esc(g.note)}</div></div>
+      <div class="rows">${items.map(it => `
+        <div class="row${it.url ? '' : ' nolink'}">
+          <span class="nm">${it.url
+            ? `<a class="open" href="${esc(it.url)}" target="_blank" rel="noopener noreferrer">${esc(it.name)}</a>`
+            : esc(it.name)}</span>
+          <span class="ds">${esc(it.desc)}${it.contact ? `
+            <button class="ct" type="button" data-email="${esc(it.contact.email)}"
+              title="Click to copy the address">${esc(it.contact.name)}, ${esc(it.contact.email)}</button>` : ''}</span>
+          <span class="hs">${it.url ? esc(host(it.url)) : 'Link to follow'}</span>
+        </div>`).join('')}</div></section>`;
+  }).join('');
+  document.getElementById('list').innerHTML = html ||
+    `<p class="blank">No system here matches “${esc(f)}”. Try the other entity, or clear the search.</p>`;
+  const total = d.groups.reduce((a, g) => a + g.items.length, 0);
+  document.getElementById('tally').textContent = f ? `${shown} of ${total} systems` : `${total} systems`;
+  document.title = 'Systems — ' + d.label;
+}
+
+document.querySelectorAll('.switch button').forEach(b => b.addEventListener('click', () => {
+  document.querySelectorAll('.switch button').forEach(x => x.setAttribute('aria-selected', x === b));
+  document.getElementById('list').setAttribute('aria-labelledby', b.id);
+  paint();
+}));
+const q = document.getElementById('q');
+q.addEventListener('input', paint);
+q.addEventListener('keydown', e => {
+  if (e.key === 'Enter' && firstHit) window.open(firstHit, '_blank', 'noopener');
+  if (e.key === 'Escape') { q.value = ''; paint(); }
+});
+document.addEventListener('click', e => {
+  const b = e.target.closest('.ct');
+  if (!b) return;
+  e.preventDefault();
+  const mail = b.dataset.email, label = b.textContent;
+  const done = () => { b.classList.add('done'); setTimeout(() => b.classList.remove('done'), 1600); };
+  if (navigator.clipboard && navigator.clipboard.writeText) {
+    navigator.clipboard.writeText(mail).then(done, () => fallback(mail, done));
+  } else { fallback(mail, done); }
+});
+function fallback(text, done){
+  const t = document.createElement('textarea');
+  t.value = text; t.setAttribute('readonly',''); t.style.cssText = 'position:fixed;top:-100px;opacity:0';
+  document.body.appendChild(t); t.select();
+  try { document.execCommand('copy'); done(); } catch(err) {}
+  t.remove();
+}
+document.addEventListener('keydown', e => {
+  if (e.key === '/' && document.activeElement !== q) { e.preventDefault(); q.focus(); }
+});
+paint();
+</script>
+</body>
+</html>

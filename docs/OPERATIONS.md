@@ -34,6 +34,7 @@
 | Correspondence Studio (holidays) | Confirm gate rejects an empty / wrong passcode, studio loads after a valid one, Sign out clears the cookie; replacing `studio.html` with a new bundle still renders behind the gate. Nothing composed should leave the browser. |
 | MauBank TT Instruction | Same gate rules as Correspondence Studio; confirm nothing composed leaves the browser and the CDN script tags in `studio.html` still load. |
 | Statement Generator | Same gate rules as Correspondence Studio; confirm nothing composed leaves the browser and the CDN script tags in `studio.html` still load. |
+| Systems directory | Same gate rules; confirm every link in the `DATA` and `INTERNAL_TOOLS` constants still resolves. Internal tool links (`/internal/*`, `/salestracker/`, `/managementreport/`, `/insights/admin/`, `/onboarding-requirements/`) resolve on the same host. |
 | Onboarding | Check download/link correctness and compliance-approved requirements |
 | Analytics | Consent behaviour, expected events, no real-data leakage, reporting template consistency |
 | Routing | HTTP redirects, cache headers, noindex directives, and no change to online-banking portal |
@@ -52,7 +53,7 @@
 Do not publish live values. Env **names** and deployment scope should be confirmed in Vercel:
 - Forms: `SMTP_HOST`, `SMTP_PORT`, `SMTP_SECURE`, `SMTP_USER`, `SMTP_PASS`, `FORM_FROM_EMAIL`, `FORM_TO_EMAIL`, `ALLOWED_ORIGIN`.
 - Insights: `INSIGHTS_ADMIN_PASSWORD`, `INSIGHTS_SESSION_SECRET`, `INSIGHTS_GITHUB_TOKEN`, `INSIGHTS_GITHUB_BRANCH`.
-- Internal tools (staff passcodes): `INTERNAL_PRICING_PASSCODE`, `INTERNAL_WIRE_TRANSFER_PASSCODE`, `INTERNAL_HOLIDAYS_PASSCODE`, `INTERNAL_TT_PASSCODE`, `INTERNAL_STATEMENTS_PASSCODE`. The last three each fall back to `INTERNAL_WIRE_TRANSFER_PASSCODE` if unset; set the dedicated variable when they should diverge. Each tool derives its own HMAC session-signing key from its passcode, so rotating a passcode invalidates every live cookie for that tool only.
+- Internal tools (staff passcodes): `INTERNAL_PRICING_PASSCODE`, `INTERNAL_WIRE_TRANSFER_PASSCODE`, `INTERNAL_HOLIDAYS_PASSCODE`, `INTERNAL_TT_PASSCODE`, `INTERNAL_STATEMENTS_PASSCODE`, `INTERNAL_SYSTEMS_PASSCODE`. The last four each fall back to `INTERNAL_WIRE_TRANSFER_PASSCODE` if unset; set the dedicated variable when they should diverge. Each tool derives its own HMAC session-signing key from its passcode, so rotating a passcode invalidates every live cookie for that tool only.
 - Additional API secrets and storage configuration: **inventory against serverless code and Vercel settings before documenting**.
 - Production and Preview should use separate appropriately scoped credentials/branches.
 

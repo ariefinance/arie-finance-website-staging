@@ -1747,6 +1747,20 @@ html body #home-title .hero-accent{ font-family:var(--display)!important; font-s
 /* Mauritius section: world-map image (soft edges into the white section; no reflection / A-mark shadow) */
 .mau-figure::before,.mau-figure::after,.mau-beacon{ display:none!important; }
 .mau-figure .mau-base{ filter:none!important; border-radius:18px; border:1px solid rgba(6,17,58,.08); box-shadow:0 30px 60px -36px rgba(6,17,58,.35); }
+
+/* Footer: outlined ARIE mark, bottom-right, behind content */
+.footer{ position:relative; isolation:isolate; }
+.footer::after{ content:''; display:block!important; position:absolute; z-index:-1; pointer-events:none; right:-5%; bottom:-12%; width:min(640px,46vw); aspect-ratio:165/90; opacity:.3;
+  background:no-repeat center/contain url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='4 4 165 90'%3E%3Cg fill='none' stroke='%23C99B3F' stroke-width='1.2' stroke-linejoin='round'%3E%3Cpath d='M11.0614 80.4441L127.778 11.2673C131.539 9.03808 136.402 10.7354 137.959 14.8209L161.821 77.4418C163.579 82.0553 160.171 87.0001 155.234 87.0001L127.149 87.0001C125.138 87.0001 123.222 86.1406 121.885 84.6382L105.648 66.3987C103.515 64.0026 100.033 63.349 97.1764 64.8087L55.2553 86.2282C54.2623 86.7356 53.1632 87.0001 52.0482 87.0001L12.8583 87.0001C9.27392 87.0001 7.97795 82.2717 11.0614 80.4441Z'/%3E%3Cpath d='M88.1037 86.508C86.5213 86.508 85.2012 85.2031 85.6183 83.6766C86.1064 81.8899 87.0528 80.2432 88.3855 78.9106C90.4004 76.8957 93.1333 75.7637 95.9829 75.7637C98.8324 75.7637 101.565 76.8957 103.58 78.9106C104.913 80.2432 105.859 81.8899 106.347 83.6766C106.764 85.2031 105.444 86.508 103.862 86.508L88.1037 86.508Z'/%3E%3C/g%3E%3C/svg%3E"); }
+.footer > *{ position:relative; z-index:1; }
+@media (max-width:760px){ .footer::after{ width:88vw; right:-14vw; bottom:-2%; opacity:.22; } }
+
+/* Mauritius map: larger on desktop (map column widened and allowed to bleed toward the edge) */
+@media (min-width:1061px){
+  .mauritius-layout{ grid-template-columns:.86fr 1.14fr!important; gap:48px!important; }
+  .mau-figure{ margin-right:-6vw; }
+  .mau-figure .mau-base{ width:100%!important; }
+}
 </style></head>
 <body>
 <!-- Google Tag Manager (noscript) -->

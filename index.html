@@ -1727,6 +1727,22 @@ html body #home-title .hero-accent{ font-family:var(--display)!important; font-s
 @media (min-width:1061px){ .service-row{ grid-template-columns:.5fr 1fr!important; } }
 /* About header image */
 [data-page="about"] .page-hero img[src$="about-arie-mauritius.webp"]{ border-radius:0; filter:drop-shadow(0 30px 40px rgba(0,0,0,.45)); }
+
+/* Review fixes (visual only) */
+/* Testimonials: show every quote in full at desktop widths; no second (decorative) opening quote */
+@media (min-width:1061px){ .quote-card blockquote,.quote-card.featured blockquote{ -webkit-line-clamp:unset!important; display:block!important; overflow:visible!important; min-height:0!important; } }
+.quote-card .q-mark{ display:none!important; }
+.quote-card{ display:flex!important; flex-direction:column; } .quote-card figcaption{ margin-top:auto; }
+/* Featured client card icon (Introducers & partners): navy strokes on the light tile */
+.client-card .ic-tile.on-navy{ background:linear-gradient(180deg,#FFFFFF,#F2F4FA)!important; border-color:rgba(6,17,58,.10)!important; }
+.client-card .ic-tile.on-navy .ic-stroke{ stroke:#06113A!important; }
+/* Regulatory facts grid: square inner cells, radius only on the outer frame */
+.reg-fact{ border-radius:0!important; }
+/* Primary buttons: one flat navy style everywhere outside the closing bands */
+.btn-primary:not(.closing-cta .btn-primary){ background:#06113A!important; border:1px solid #06113A!important; box-shadow:0 8px 20px -12px rgba(6,17,58,.55)!important; color:#fff!important; }
+.btn-primary:not(.closing-cta .btn-primary):hover{ background:#0B1A52!important; }
+/* Footer distinct from the navy closing band */
+.footer{ background:#040B26!important; border-top:1px solid rgba(201,155,63,.28); }
 </style></head>
 <body>
 <!-- Google Tag Manager (noscript) -->

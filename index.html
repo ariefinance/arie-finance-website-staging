@@ -1620,6 +1620,103 @@ body{ padding-bottom:var(--cookie-space, 0px); }
   [data-page="services"] .table-wrap > table td:first-child{ font-weight:700; color:var(--text); font-size:15px!important; padding-top:12px!important; }
   [data-page="services"] .table-wrap td[data-label]:not(:first-child)::before{ content:attr(data-label); display:block; font-size:10.5px; letter-spacing:.14em; text-transform:uppercase; color:var(--muted); font-weight:600; margin-bottom:3px; }
 }
+
+/* ================= ARIE visual system v2 — visual layer only (no content changes) ================= */
+:root{ --v2-ink:#0A1230; --v2-body:#4A5470; --v2-line:rgba(6,17,58,.09); --v2-gold:#C99B3F; --v2-gold-soft:#E7C987; --v2-tint:#F5F7FB; --v2-r:14px; }
+
+/* ---- Typography: one modern display voice, lighter and tighter ---- */
+h1,h2,.section-title,.display,.cta-row h2{ font-family:var(--display)!important; letter-spacing:-.035em!important; font-weight:600!important; }
+.section-title{ font-size:clamp(32px,3.4vw,48px)!important; line-height:1.06!important; }
+.page-hero h1,.section-title,.cta-row h2{ text-wrap:balance; }
+.client-layout .section-title,.mauritius-layout .section-title{ font-size:clamp(30px,2.7vw,40px)!important; }
+#mauritius-title{ max-width:640px!important; }
+.lead{ color:var(--v2-body); }
+.eyebrow{ letter-spacing:.16em!important; font-weight:600!important; }
+
+/* ---- Homepage hero: sans display, gold gradient accent, on the page grid ---- */
+.hero .container-wide{ width:min(1180px, calc(100% - 48px))!important; max-width:none!important; padding-left:0!important; padding-right:0!important; }
+html body #home-title{ font-family:var(--display)!important; font-weight:600!important; letter-spacing:-.04em!important; font-size:clamp(40px,4.6vw,66px)!important; line-height:1.0!important; text-wrap:balance; }
+html body #home-title .hero-accent{ font-family:var(--display)!important; font-style:normal!important; font-weight:600!important; background:linear-gradient(92deg,#B8862E 0%,#E3C27A 55%,#C99B3F 100%); -webkit-background-clip:text; background-clip:text; color:transparent!important; }
+.hero .lead{ font-size:19px!important; color:var(--v2-body)!important; border:0!important; }
+.hero .lead::before,.hero .lead::after{ display:none!important; }
+/* Dashboard mock: flat and crisp — no tilt or blur */
+.pv-floater,.pv-bob,.pv-frame{ transform:none!important; filter:none!important; }
+.pv-frame{ border-radius:18px!important; box-shadow:0 1px 0 rgba(255,255,255,.6) inset, 0 40px 80px -40px rgba(6,17,58,.35), 0 0 0 1px rgba(6,17,58,.08)!important; }
+.pv-acc{ border-radius:12px!important; box-shadow:0 0 0 1px rgba(6,17,58,.07), 0 6px 18px -12px rgba(6,17,58,.25)!important; }
+.pv-acc-val{ font-variant-numeric:tabular-nums; letter-spacing:-.02em; }
+.pv-flag{ border-radius:2px; box-shadow:0 0 0 1px rgba(6,17,58,.12); }
+
+/* ---- Proof statement: confident display line, figures in gold ---- */
+.proof-line{ font-size:clamp(19px,1.9vw,26px)!important; font-weight:500!important; letter-spacing:-.02em!important; line-height:1.4!important; color:var(--v2-ink)!important; max-width:960px!important; text-wrap:balance; }
+.proof-num{ color:var(--v2-gold); font-weight:600; }
+
+/* ---- Inner page heroes: navy band with a subtle grid ---- */
+.page-hero{ position:relative; overflow:hidden; color:#fff; padding:112px 0 96px!important; border-bottom:1px solid rgba(201,155,63,.35)!important;
+  background:radial-gradient(60% 120% at 85% 10%, rgba(73,64,214,.35) 0%, transparent 60%), linear-gradient(180deg,#0A1645 0%,#06113A 100%)!important; }
+.page-hero::before{ content:''; position:absolute; inset:0; pointer-events:none; opacity:.5;
+  background-image:linear-gradient(rgba(255,255,255,.045) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,.045) 1px, transparent 1px); background-size:56px 56px;
+  -webkit-mask-image:radial-gradient(70% 90% at 80% 30%, #000 0%, transparent 75%); mask-image:radial-gradient(70% 90% at 80% 30%, #000 0%, transparent 75%); }
+.page-hero .container{ position:relative; z-index:1; }
+.page-hero h1{ color:#fff!important; font-size:clamp(38px,4.6vw,66px)!important; line-height:1.02!important; max-width:820px; }
+.page-hero .lead,.page-hero p:not(.eyebrow){ color:rgba(226,232,245,.8)!important; }
+.page-hero .lead{ font-size:19px!important; }
+.page-hero .eyebrow{ color:var(--v2-gold-soft)!important; }
+.page-hero .eyebrow::before{ background:var(--v2-gold-soft)!important; }
+.page-hero a:not(.btn){ color:#fff; }
+.page-hero img{ border-radius:18px; }
+@media (max-width:760px){ .page-hero{ padding:72px 0 56px!important; } .page-hero .lead{ font-size:17px!important; } }
+
+/* ---- Cards: crisp hairlines, subtle lift ---- */
+.client-card,.feature,.quote-card,.team-card,.form-card,.info-card,.service-row,.is-card,.reg-fact{ border-radius:var(--v2-r)!important; }
+.client-card,.feature,.quote-card,.team-card,.form-card,.info-card{ background:#fff!important; border:1px solid var(--v2-line)!important; box-shadow:0 1px 2px rgba(6,17,58,.04)!important; }
+.client-card:hover,.feature:hover,.quote-card:hover,.team-card:hover{ transform:translateY(-2px)!important; border-color:rgba(201,155,63,.45)!important; box-shadow:0 18px 40px -26px rgba(6,17,58,.35)!important; background:#fff!important; }
+.client-card:hover h3,.feature:hover h3{ color:var(--v2-ink)!important; }
+.client-card:hover p,.feature:hover p{ color:var(--v2-body)!important; }
+.client-card:hover .tag{ color:#8F6B25!important; }
+.client-card h3{ font-size:19px!important; letter-spacing:-.015em; font-weight:600!important; }
+.feature{ padding:28px!important; min-height:0!important; }
+.feature > span{ font-family:var(--display); font-size:13px!important; color:var(--v2-gold)!important; letter-spacing:.08em; }
+.feature h3{ font-size:20px!important; font-weight:600!important; letter-spacing:-.02em; margin-top:18px!important; }
+/* Icon tiles: light and outlined, with gold accents */
+.ic-tile{ background:linear-gradient(180deg,#FFFFFF,#F2F4FA)!important; border:1px solid rgba(6,17,58,.10)!important; box-shadow:none!important; border-radius:12px!important; }
+.ic-tile::before,.ic-tile::after{ display:none!important; }
+.ic-tile .ic-stroke{ stroke:#06113A!important; }
+.ic-tile .ic-gold{ stroke:var(--v2-gold)!important; }
+.benefit-card .ic-tile,.ic-tile.on-navy{ background:rgba(255,255,255,.06)!important; border-color:rgba(231,201,135,.28)!important; }
+.benefit-card .ic-tile .ic-stroke,.ic-tile.on-navy .ic-stroke{ stroke:#fff!important; }
+.benefit-card{ border-radius:var(--v2-r)!important; background:rgba(255,255,255,.035)!important; border:1px solid rgba(255,255,255,.09)!important; box-shadow:none!important; }
+.benefit-card h3{ font-weight:600!important; letter-spacing:-.015em; }
+
+/* ---- Buttons: clear hierarchy ---- */
+.btn{ border-radius:10px!important; font-weight:600!important; letter-spacing:-.005em; }
+.nav-actions .btn-primary{ padding:11px 18px!important; font-size:14.5px!important; }
+.closing-cta .btn-primary{ background:linear-gradient(180deg,#E2BF73,#C99B3F)!important; color:#06113A!important; border-color:transparent!important; box-shadow:0 10px 24px -12px rgba(201,155,63,.7)!important; }
+.closing-cta .btn-ghost{ color:#fff!important; border-color:rgba(255,255,255,.28)!important; background:transparent!important; }
+.closing-cta{ padding:96px 0!important; }
+.cta-row h2{ font-size:clamp(28px,3.2vw,44px)!important; }
+
+/* ---- Testimonials: featured first quote on desktop ---- */
+@media (min-width:1061px){
+  .quotes{ grid-template-columns:repeat(3,1fr)!important; column-gap:20px!important; row-gap:20px!important; }
+  .quotes .quote-card{ margin-left:0!important; margin-right:0!important; }
+  .quotes .quote-card:first-child{ grid-column:1 / -1; padding:44px 48px!important; }
+  .quotes .quote-card:first-child blockquote{ font-size:24px!important; line-height:1.45!important; letter-spacing:-.015em; font-weight:500; max-width:980px; }
+}
+.quote-card blockquote{ color:var(--v2-ink)!important; }
+.quote-card .q-mark{ display:block!important; font-family:Georgia,serif; font-size:56px; line-height:.6; color:var(--v2-gold); opacity:.8; margin-bottom:10px; }
+
+/* ---- Services: editorial rows with hairline separators ---- */
+.service-row{ border:0!important; border-top:1px solid var(--v2-line)!important; border-radius:0!important; padding-top:48px!important; padding-bottom:48px!important; }
+.service-row h2{ font-size:30px!important; }
+.service-number{ font-family:var(--display); color:var(--v2-gold)!important; }
+
+/* ---- Team ---- */
+.team-name{ font-weight:600!important; letter-spacing:-.015em; }
+.team-bio{ font-size:14px!important; line-height:1.65!important; color:var(--v2-body)!important; }
+
+/* ---- Section canvas ---- */
+.section--canvas{ background:var(--v2-tint)!important; }
+.atmos::before,.atmos::after{ opacity:.35!important; }
 </style></head>
 <body>
 <!-- Google Tag Manager (noscript) -->
@@ -1730,12 +1827,12 @@ body{ padding-bottom:var(--cookie-space, 0px); }
                           <h3 class="pv-co-title">Illustrative Company A</h3>
                           <div class="pv-grid">
                             <div class="pv-acc">
-                              <div class="pv-acc-h"><span class="pv-acc-lbl">EUR WALLET</span><svg class="pv-flag" viewBox="0 0 18 13" aria-hidden="true"><rect width="18" height="13" fill="#003399"></rect></svg></div>
+                              <div class="pv-acc-h"><span class="pv-acc-lbl">EUR WALLET</span><svg class="pv-flag" viewBox="0 0 18 13" aria-hidden="true"><rect width="18" height="13" fill="#003399"></rect><g fill="#FFCC00"><circle cx="9.00" cy="2.60" r=".55"></circle><circle cx="10.95" cy="3.12" r=".55"></circle><circle cx="12.38" cy="4.55" r=".55"></circle><circle cx="12.90" cy="6.50" r=".55"></circle><circle cx="12.38" cy="8.45" r=".55"></circle><circle cx="10.95" cy="9.88" r=".55"></circle><circle cx="9.00" cy="10.40" r=".55"></circle><circle cx="7.05" cy="9.88" r=".55"></circle><circle cx="5.62" cy="8.45" r=".55"></circle><circle cx="5.10" cy="6.50" r=".55"></circle><circle cx="5.62" cy="4.55" r=".55"></circle><circle cx="7.05" cy="3.12" r=".55"></circle></g></svg></div>
                               <div class="pv-acc-val" data-cur="€" data-amt="248910">€248,910.00</div>
                               <div class="pv-acc-sub">Available · IBAN ***4421</div>
                             </div>
                             <div class="pv-acc">
-                              <div class="pv-acc-h"><span class="pv-acc-lbl">USD WALLET</span><svg class="pv-flag" viewBox="0 0 18 13" aria-hidden="true"><rect width="18" height="13" fill="#fff" stroke="#101b35" stroke-width=".5"></rect><rect width="8" height="6" fill="#3c3b6e"></rect></svg></div>
+                              <div class="pv-acc-h"><span class="pv-acc-lbl">USD WALLET</span><svg class="pv-flag" viewBox="0 0 18 13" aria-hidden="true"><rect width="18" height="13" fill="#fff"></rect><rect y="0" width="18" height="1" fill="#B22234"></rect><rect y="2" width="18" height="1" fill="#B22234"></rect><rect y="4" width="18" height="1" fill="#B22234"></rect><rect y="6" width="18" height="1" fill="#B22234"></rect><rect y="8" width="18" height="1" fill="#B22234"></rect><rect y="10" width="18" height="1" fill="#B22234"></rect><rect y="12" width="18" height="1" fill="#B22234"></rect><rect width="8" height="7" fill="#3C3B6E"></rect></svg></div>
                               <div class="pv-acc-val" data-cur="$" data-amt="684500">$684,500.00</div>
                               <div class="pv-acc-sub">Available · IBAN ***7712</div>
                             </div>
@@ -1745,12 +1842,12 @@ body{ padding-bottom:var(--cookie-space, 0px); }
                           <h3 class="pv-co-title">Illustrative Company B</h3>
                           <div class="pv-grid">
                             <div class="pv-acc">
-                              <div class="pv-acc-h"><span class="pv-acc-lbl">GBP WALLET</span><svg class="pv-flag" viewBox="0 0 18 13" aria-hidden="true"><rect width="18" height="13" fill="#012169"></rect><path d="M0 0 L18 13 M18 0 L0 13" stroke="#fff" stroke-width="1.5"></path></svg></div>
+                              <div class="pv-acc-h"><span class="pv-acc-lbl">GBP WALLET</span><svg class="pv-flag" viewBox="0 0 18 13" aria-hidden="true"><rect width="18" height="13" fill="#012169"></rect><path d="M0 0L18 13M18 0L0 13" stroke="#fff" stroke-width="2.6"></path><path d="M0 0L18 13M18 0L0 13" stroke="#C8102E" stroke-width="1"></path><path d="M9 0V13M0 6.5H18" stroke="#fff" stroke-width="4"></path><path d="M9 0V13M0 6.5H18" stroke="#C8102E" stroke-width="2.2"></path></svg></div>
                               <div class="pv-acc-val" data-cur="£" data-amt="140312">£140,312.00</div>
                               <div class="pv-acc-sub">Available · IBAN ***0034</div>
                             </div>
                             <div class="pv-acc">
-                              <div class="pv-acc-h"><span class="pv-acc-lbl">USD OPERATING</span><svg class="pv-flag" viewBox="0 0 18 13" aria-hidden="true"><rect width="18" height="13" fill="#fff" stroke="#101b35" stroke-width=".5"></rect><rect width="8" height="6" fill="#3c3b6e"></rect></svg></div>
+                              <div class="pv-acc-h"><span class="pv-acc-lbl">USD OPERATING</span><svg class="pv-flag" viewBox="0 0 18 13" aria-hidden="true"><rect width="18" height="13" fill="#fff"></rect><rect y="0" width="18" height="1" fill="#B22234"></rect><rect y="2" width="18" height="1" fill="#B22234"></rect><rect y="4" width="18" height="1" fill="#B22234"></rect><rect y="6" width="18" height="1" fill="#B22234"></rect><rect y="8" width="18" height="1" fill="#B22234"></rect><rect y="10" width="18" height="1" fill="#B22234"></rect><rect y="12" width="18" height="1" fill="#B22234"></rect><rect width="8" height="7" fill="#3C3B6E"></rect></svg></div>
                               <div class="pv-acc-val" data-cur="$" data-amt="425000">$425,000.00</div>
                               <div class="pv-acc-sub">Available · IBAN ***1289</div>
                             </div>
@@ -1819,7 +1916,7 @@ body{ padding-bottom:var(--cookie-space, 0px); }
       <section class="proof-strip" aria-label="Institutional proof points">
         <div class="container-wide">
           <div class="proof-wrap">
-            <p class="proof-line" style="margin:0;text-align:center;max-width:980px;margin-inline:auto;font-size:clamp(15px,1.32vw,18px);line-height:1.65;color:var(--text);font-weight:600;letter-spacing:-.01em;">The ARIE group has been active in the payment industry since 2020 and has processed close to $1bn for its clients through its banking network across multiple jurisdictions.</p>
+            <p class="proof-line" style="margin:0;text-align:center;max-width:980px;margin-inline:auto;font-size:clamp(15px,1.32vw,18px);line-height:1.65;color:var(--text);font-weight:600;letter-spacing:-.01em;">The ARIE group has been active in the payment industry since <span class="proof-num">2020</span> and has processed close to <span class="proof-num">$1bn</span> for its clients through its banking network across multiple jurisdictions.</p>
           </div>
         </div>
       </section>

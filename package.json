@@ -12,5 +12,8 @@
     "sanitize-html": "2.17.0",
     "saxes": "^6.0.0",
     "yauzl": "^3.4.0"
+  },
+  "scripts": {
+    "test": "node --test tests/feedback.test.js"
   }
 }

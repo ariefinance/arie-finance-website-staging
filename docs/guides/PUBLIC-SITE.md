@@ -12,3 +12,5 @@ The marketing site is a bundled single-file HTML/template. Changes require caref
 Obtain copy/regulatory approval, inspect desktop/mobile layouts and links, verify form handling using approved synthetic tests and check redirect/indexing rules. Do not commit customer or applicant documents.
 
 **Unverified:** current form deliverability, live configuration and content approver.
+
+**Feedback:** the Leave Your Feedback page and `/api/feedback` are documented in [FEEDBACK.md](FEEDBACK.md). They are inactive until the activation checklist there is complete.

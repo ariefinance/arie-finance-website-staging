@@ -35,6 +35,7 @@
 | Feature | Location | Documentation |
 |---|---|---|
 | Contact and Careers API | [api/website-form.js](api/website-form.js) | [Public website](docs/guides/PUBLIC-SITE.md) |
+| Leave Your Feedback API (inactive until configured) | [api/feedback.js](api/feedback.js) | [Feedback](docs/guides/FEEDBACK.md) |
 | Sales persistence/API | [api/salestracker.js](api/salestracker.js) | [Sales](docs/guides/SALES-TRACKER.md) |
 | Management report sessions/API | [api/managementreport.js](api/managementreport.js) | [Management reporting](docs/guides/MANAGEMENT-REPORT.md) |
 | Pricing references/API | [api/internal/pricing.js](api/internal/pricing.js) | [Pricing](docs/guides/PRICING.md) |

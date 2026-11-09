@@ -13,4 +13,4 @@ Obtain copy/regulatory approval, inspect desktop/mobile layouts and links, verif
 
 **Unverified:** current form deliverability, live configuration and content approver.
 
-**Feedback:** the Leave Your Feedback page and `/api/feedback` are documented in [FEEDBACK.md](FEEDBACK.md). They are inactive until the activation checklist there is complete.
+**Feedback:** the Leave Your Feedback page emails the customer-care inbox through `api/website-form.js`; see [FEEDBACK.md](FEEDBACK.md).

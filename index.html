@@ -1939,17 +1939,15 @@ html body .cookie-banner .btn:focus-visible{ outline:2px solid #C99B3F!important
 [data-page="careers"] .careers-art{ margin:0; }
 [data-page="careers"] .careers-art img{ display:block; width:100%; height:auto; border-radius:0!important; filter:drop-shadow(0 24px 30px rgba(0,0,0,.35)); }
 @media (max-width:900px){ [data-page="careers"] .hero-split{ grid-template-columns:1fr; gap:24px; } [data-page="careers"] .careers-art{ max-width:420px; } }
-@media (max-width:640px){ [data-page="careers"] .hero-split{ gap:14px; } [data-page="careers"] .careers-art{ max-width:280px; } }
+@media (max-width:640px){ [data-page="careers"] .careers-art{ display:none; } }
 [data-page="feedback"] .form-card form{ display:grid; gap:18px; }
 [data-page="feedback"] .fb-grid{ display:flex!important; flex-wrap:wrap; gap:10px; }
 [data-page="feedback"] .fb-note{ margin:-6px 0 0; font-size:14px; color:#4A5470; }
 [data-page="feedback"] .fb-hint{ margin:6px 0 0; font-size:12.5px; color:#6B778F; }
 [data-page="feedback"] .opt{ letter-spacing:0; text-transform:none; font-weight:400; }
-[data-page="feedback"] .fb-complaint-box{ border:1px solid #E7D3A6; background:#FFFBF2; border-radius:12px; padding:12px 14px; }
-[data-page="feedback"] .fb-complaint-box a,[data-page="feedback"] .fb-privacy a{ color:#06113A; text-decoration:underline; text-underline-offset:2px; }
-[data-page="feedback"] .fb-unavailable{ padding:6px 2px; } [data-page="feedback"] .fb-unavailable p{ margin:8px 0 0; color:#4A5470; } [data-page="feedback"] .fb-unavailable a{ color:#06113A; text-decoration:underline; }
-[data-page="feedback"] .success span{ display:block; } [data-page="feedback"] .success b{ font-weight:700; letter-spacing:.02em; }
-[data-page="feedback"] aside.contact-stack.info-card[hidden]{ display:none!important; }
+[data-page="feedback"] .fb-complaint-line a,[data-page="feedback"] .fb-privacy a{ color:#06113A; text-decoration:underline; text-underline-offset:2px; }
+[data-page="feedback"] .success span{ display:block; }
+[data-page="feedback"] .fb-complaint-line{ margin:-4px 0 0; font-size:14px; color:#4A5470; }
 [data-page="feedback"] aside.contact-stack.info-card{ padding:0; overflow:hidden; border:1px solid var(--border-soft,#E3E8F0); border-radius:20px; box-shadow:0 1px 2px rgba(6,17,58,.05), 0 22px 52px -32px rgba(6,17,58,.28); align-self:start; background:#fff; }
 [data-page="feedback"] .contact-head{ background:linear-gradient(180deg,#0B1748,#06113A); border-bottom:2px solid #C99B3F; padding:18px 24px; }
 [data-page="feedback"] .contact-head span{ color:#fff; font-weight:600; font-size:15.5px; }
@@ -2256,7 +2254,7 @@ html body .cookie-banner .btn:focus-visible{ outline:2px solid #C99B3F!important
             <figure class="quote-card"><span class="q-mark" aria-hidden="true">“</span><blockquote>"The experience with ARIE Finance has been fantastic. The support from the staff has been excellent and every query is addressed with clarity and speed. Excellent support was provided from the time of account opening and day to day support."</blockquote><figcaption><cite><span class="qa-av" aria-hidden="true">NB</span><span class="qa-info"><strong>Nicole Buliga</strong><span>Director, Fierun PTE Ltd</span></span></cite></figcaption></figure>
             <figure class="quote-card"><span class="q-mark" aria-hidden="true">“</span><blockquote>"The ARIE Finance platform enhances our business strategy perfectly! They offer a comprehensive self-administered payment system and payment notification features that make the platform safe and easy to use. We love the fact that the ARIE Finance software includes multiple approval stages keeping users informed, and in control, throughout."</blockquote><figcaption><cite><span class="qa-av" aria-hidden="true">RO</span><span class="qa-info"><strong>Raymond O'Leary</strong><span>Phillimores</span></span></cite></figcaption></figure>
           </div>
-          <p class="quotes-cta" data-feedback-entry hidden>Are you an ARIE client? <a href="#feedback" data-route="feedback">Leave Your Feedback <span aria-hidden="true">&rarr;</span></a></p>
+          <p class="quotes-cta">Are you an ARIE client? <a href="#feedback" data-route="feedback">Leave Your Feedback <span aria-hidden="true">&rarr;</span></a></p>
         </div>
       </section>
 
@@ -2331,7 +2329,7 @@ html body .cookie-banner .btn:focus-visible{ outline:2px solid #C99B3F!important
     <section class="page" data-page="contact" hidden="">
       <div class="page-hero"><div class="container"><p class="eyebrow">Get in touch</p><h1>How can we help?</h1><p class="lead" style="margin-top:16px;max-width:720px;">Whether you're exploring ARIE Finance, looking to discuss international payments, interested in working with us, or need support with an existing relationship, tell us what you need and we'll direct your enquiry to the right person.</p></div></div>
       
-      <section class="section section--canvas contact-section"><div class="container form-layout"><div><div class="form-card"><form data-form="contact" novalidate=""><div aria-hidden="true" style="position:absolute;width:1px;height:1px;overflow:hidden;left:-9999px;top:-9999px;"><label>Leave this field blank<input type="text" name="hp_url" tabindex="-1" autocomplete="off"></label></div><fieldset class="intent-fieldset"><legend>What are you contacting us about?</legend><div class="intent-grid"><label class="intent-chip"><input type="radio" name="topic" value="Open an account" data-topic="account" required=""><span>Open an account</span></label><label class="intent-chip"><input type="radio" name="topic" value="International payments" data-topic="payments"><span>International payments</span></label><label class="intent-chip"><input type="radio" name="topic" value="Introducer / partnership" data-topic="introducer"><span>Introducer / partnership</span></label><label class="intent-chip"><input type="radio" name="topic" value="Client referral" data-topic="referral"><span>Client referral</span></label><label class="intent-chip"><input type="radio" name="topic" value="Existing client / onboarding support" data-topic="support"><span>Existing client / onboarding support</span></label><label class="intent-chip"><input type="radio" name="topic" value="Complaint / other enquiry" data-topic="other"><span>Complaint / other enquiry</span></label></div></fieldset><div class="account-note" data-account-note hidden><strong>Planning to open an account?</strong><p>ARIE Finance services are subject to compliance review, documentation checks, internal risk assessment, jurisdictional considerations and banking partner requirements. Submission of an enquiry or application does not guarantee onboarding or service approval.</p></div><div class="form-section-head"><span>Your details</span></div><div><label for="contact-name">Full name</label><input id="contact-name" name="fullname" required="" placeholder="Your full name"></div><div><label for="contact-company">Company</label><input id="contact-company" name="company" placeholder="Your company"></div><div class="form-grid"><div><label for="contact-email">Business email</label><input id="contact-email" name="email" type="email" required="" placeholder="you@company.com"></div><div><label for="contact-phone">Phone <span style="letter-spacing:0;text-transform:none;font-weight:400;">(optional)</span></label><input id="contact-phone" name="phone" type="tel" placeholder="+230 5XXX XXXX"></div></div><div><label for="contact-requirement">Tell us briefly what you would like to discuss</label><textarea id="contact-requirement" name="requirement" required="" placeholder="A sentence or two about what you need"></textarea></div><div class="checkbox-row"><input id="contact-tcs" name="tcs" type="checkbox" required=""><label for="contact-tcs">I have read and accepted the <a href="#" data-policy-open="terms-and-conditions" style="color:inherit;text-decoration:underline;">Terms &amp; Conditions</a> and <a href="#" data-policy-open="privacy-policy" style="color:inherit;text-decoration:underline;">Privacy Policy</a>.</label></div><button class="btn btn-primary" type="submit">Send enquiry <span aria-hidden="true">&#8594;</span></button><p class="note" style="margin-top:4px;">A member of our team will review your enquiry and contact you to discuss your requirements and the next steps.</p></form><div class="success" data-success="contact"><strong>Thank you &#8212; your enquiry has been received.</strong><span>A member of our team will review it and contact you shortly.</span></div></div></div><aside class="contact-stack info-card"><div class="contact-head"><span>Prefer to contact us directly?</span></div><div class="contact-body"><div class="contact-block"><span>Email</span><a href="mailto:customercare@ariefinance.com">customercare@ariefinance.com</a></div><div class="contact-block"><span>Phone</span><a href="tel:+2304686497">+230 468 6497</a></div><div class="contact-block"><span>LinkedIn</span><a class="linkedin-link" href="https://www.linkedin.com/company/arie-finance/" target="_blank" rel="noopener noreferrer"><svg viewBox="0 0 24 24" aria-hidden="true" xmlns="http://www.w3.org/2000/svg"><path d="M20.45 20.45h-3.56v-5.57c0-1.33-.02-3.04-1.85-3.04-1.85 0-2.14 1.45-2.14 2.94v5.67H9.35V9h3.42v1.56h.05c.48-.9 1.64-1.85 3.37-1.85 3.6 0 4.27 2.37 4.27 5.46v6.28zM5.34 7.43a2.06 2.06 0 1 1 0-4.13 2.06 2.06 0 0 1 0 4.13zM7.12 20.45H3.56V9h3.56v11.45zM22.22 0H1.77C.8 0 0 .78 0 1.74v20.51C0 23.22.8 24 1.77 24h20.45c.98 0 1.78-.78 1.78-1.75V1.74C24 .78 23.2 0 22.22 0z"/></svg>LinkedIn</a></div><div class="contact-block"><span>Head Office</span><p>3rd Floor, KPMG Centre<br>Ebene, Mauritius</p></div><div class="contact-block" data-feedback-entry hidden><span>Feedback</span><p><a href="#feedback" data-route="feedback">Leave Your Feedback <span aria-hidden="true">&rarr;</span></a></p></div></div></aside></div></section>
+      <section class="section section--canvas contact-section"><div class="container form-layout"><div><div class="form-card"><form data-form="contact" novalidate=""><div aria-hidden="true" style="position:absolute;width:1px;height:1px;overflow:hidden;left:-9999px;top:-9999px;"><label>Leave this field blank<input type="text" name="hp_url" tabindex="-1" autocomplete="off"></label></div><fieldset class="intent-fieldset"><legend>What are you contacting us about?</legend><div class="intent-grid"><label class="intent-chip"><input type="radio" name="topic" value="Open an account" data-topic="account" required=""><span>Open an account</span></label><label class="intent-chip"><input type="radio" name="topic" value="International payments" data-topic="payments"><span>International payments</span></label><label class="intent-chip"><input type="radio" name="topic" value="Introducer / partnership" data-topic="introducer"><span>Introducer / partnership</span></label><label class="intent-chip"><input type="radio" name="topic" value="Client referral" data-topic="referral"><span>Client referral</span></label><label class="intent-chip"><input type="radio" name="topic" value="Existing client / onboarding support" data-topic="support"><span>Existing client / onboarding support</span></label><label class="intent-chip"><input type="radio" name="topic" value="Complaint / other enquiry" data-topic="other"><span>Complaint / other enquiry</span></label></div></fieldset><div class="account-note" data-account-note hidden><strong>Planning to open an account?</strong><p>ARIE Finance services are subject to compliance review, documentation checks, internal risk assessment, jurisdictional considerations and banking partner requirements. Submission of an enquiry or application does not guarantee onboarding or service approval.</p></div><div class="form-section-head"><span>Your details</span></div><div><label for="contact-name">Full name</label><input id="contact-name" name="fullname" required="" placeholder="Your full name"></div><div><label for="contact-company">Company</label><input id="contact-company" name="company" placeholder="Your company"></div><div class="form-grid"><div><label for="contact-email">Business email</label><input id="contact-email" name="email" type="email" required="" placeholder="you@company.com"></div><div><label for="contact-phone">Phone <span style="letter-spacing:0;text-transform:none;font-weight:400;">(optional)</span></label><input id="contact-phone" name="phone" type="tel" placeholder="+230 5XXX XXXX"></div></div><div><label for="contact-requirement">Tell us briefly what you would like to discuss</label><textarea id="contact-requirement" name="requirement" required="" placeholder="A sentence or two about what you need"></textarea></div><div class="checkbox-row"><input id="contact-tcs" name="tcs" type="checkbox" required=""><label for="contact-tcs">I have read and accepted the <a href="#" data-policy-open="terms-and-conditions" style="color:inherit;text-decoration:underline;">Terms &amp; Conditions</a> and <a href="#" data-policy-open="privacy-policy" style="color:inherit;text-decoration:underline;">Privacy Policy</a>.</label></div><button class="btn btn-primary" type="submit">Send enquiry <span aria-hidden="true">&#8594;</span></button><p class="note" style="margin-top:4px;">A member of our team will review your enquiry and contact you to discuss your requirements and the next steps.</p></form><div class="success" data-success="contact"><strong>Thank you &#8212; your enquiry has been received.</strong><span>A member of our team will review it and contact you shortly.</span></div></div></div><aside class="contact-stack info-card"><div class="contact-head"><span>Prefer to contact us directly?</span></div><div class="contact-body"><div class="contact-block"><span>Email</span><a href="mailto:customercare@ariefinance.com">customercare@ariefinance.com</a></div><div class="contact-block"><span>Phone</span><a href="tel:+2304686497">+230 468 6497</a></div><div class="contact-block"><span>LinkedIn</span><a class="linkedin-link" href="https://www.linkedin.com/company/arie-finance/" target="_blank" rel="noopener noreferrer"><svg viewBox="0 0 24 24" aria-hidden="true" xmlns="http://www.w3.org/2000/svg"><path d="M20.45 20.45h-3.56v-5.57c0-1.33-.02-3.04-1.85-3.04-1.85 0-2.14 1.45-2.14 2.94v5.67H9.35V9h3.42v1.56h.05c.48-.9 1.64-1.85 3.37-1.85 3.6 0 4.27 2.37 4.27 5.46v6.28zM5.34 7.43a2.06 2.06 0 1 1 0-4.13 2.06 2.06 0 0 1 0 4.13zM7.12 20.45H3.56V9h3.56v11.45zM22.22 0H1.77C.8 0 0 .78 0 1.74v20.51C0 23.22.8 24 1.77 24h20.45c.98 0 1.78-.78 1.78-1.75V1.74C24 .78 23.2 0 22.22 0z"/></svg>LinkedIn</a></div><div class="contact-block"><span>Head Office</span><p>3rd Floor, KPMG Centre<br>Ebene, Mauritius</p></div><div class="contact-block"><span>Feedback</span><p><a href="#feedback" data-route="feedback">Leave Your Feedback <span aria-hidden="true">&rarr;</span></a></p></div></div></aside></div></section>
     </section>
 
 
@@ -2339,30 +2337,26 @@ html body .cookie-banner .btn:focus-visible{ outline:2px solid #C99B3F!important
     <section class="page" data-page="feedback" hidden="">
       <div class="page-hero"><div class="container"><p class="eyebrow">Feedback</p><h1>Your feedback matters</h1><p class="lead" style="margin-top:16px;max-width:680px;">Tell us about your experience, share a suggestion, or recognise someone who helped you.</p></div></div>
       <section class="section section--canvas contact-section"><div class="container form-layout"><div><div class="form-card">
-        <div class="fb-unavailable" data-feedback-unavailable hidden><strong>Online feedback is not available yet.</strong><p>Please use our <a href="#contact" data-route="contact">contact form</a>, email <a href="mailto:customercare@ariefinance.com">customercare@ariefinance.com</a> or call <a href="tel:+2304686497">+230&nbsp;468&nbsp;6497</a>.</p></div>
-        <form data-form="feedback" novalidate="" hidden><div aria-hidden="true" style="position:absolute;width:1px;height:1px;overflow:hidden;left:-9999px;top:-9999px;"><label>Leave this field blank<input type="text" name="hp_url" tabindex="-1" autocomplete="off"></label></div>
-          <fieldset class="intent-fieldset"><legend>What kind of feedback is it?</legend><div class="intent-grid fb-grid">
+        <form data-form="feedback" novalidate=""><div aria-hidden="true" style="position:absolute;width:1px;height:1px;overflow:hidden;left:-9999px;top:-9999px;"><label>Leave this field blank<input type="text" name="hp_url" tabindex="-1" autocomplete="off"></label></div>
+          <div class="form-grid"><div><label for="fb-name">Name</label><input id="fb-name" name="name" required="" minlength="2" maxlength="150" autocomplete="name" placeholder="Your name"></div><div><label for="fb-email">Email</label><input id="fb-email" name="email" type="email" required="" maxlength="254" autocomplete="email" placeholder="you@company.com"></div></div>
+          <fieldset class="intent-fieldset"><legend>Feedback type</legend><div class="intent-grid fb-grid">
             <label class="intent-chip"><input type="radio" name="type" value="Suggestion" required=""><span>Suggestion</span></label>
             <label class="intent-chip"><input type="radio" name="type" value="Service experience"><span>Service experience</span></label>
             <label class="intent-chip"><input type="radio" name="type" value="Compliment"><span>Compliment</span></label>
           </div></fieldset>
           <p class="fb-note">Positive or negative, we want to hear it.</p>
-          <div><label for="fb-message">Your feedback</label><textarea id="fb-message" name="message" required="" minlength="10" maxlength="4000" placeholder="What went well, what could be better, or who helped you"></textarea><p class="fb-hint">Please do not include account numbers, payment details or identity documents.</p></div>
-          <div><label for="fb-colleague">Someone who helped you <span class="opt">(optional)</span></label><input id="fb-colleague" name="colleague" maxlength="120" placeholder="Name of the team member"></div>
-          <div class="form-section-head"><span>Your details <span class="opt">(optional)</span></span></div>
-          <div class="form-grid"><div><label for="fb-name">Name</label><input id="fb-name" name="name" maxlength="120" autocomplete="name" placeholder="Your name"></div><div><label for="fb-email">Email</label><input id="fb-email" name="email" type="email" maxlength="254" autocomplete="email" placeholder="you@company.com"></div></div>
-          <div class="checkbox-row"><input id="fb-contact" name="contact_ok" type="checkbox"><label for="fb-contact">I am happy for ARIE to contact me about this feedback.</label></div>
-          <div class="fb-complaint-box"><div class="checkbox-row"><input id="fb-complaint" name="complaint" type="checkbox"><label for="fb-complaint"><strong>Handle this as a formal complaint.</strong> We will follow our <a href="#" data-policy-open="complaints-procedure">Complaints Procedure</a> and contact you. Your name and email are required for complaints. If we need account or transaction details, we will ask you for them securely.</label></div></div>
+          <div><label for="fb-message">Message</label><textarea id="fb-message" name="message" required="" minlength="10" maxlength="5000" placeholder="What went well, what could be better, or who helped you"></textarea><p class="fb-hint">Please do not include account numbers, payment details or identity documents.</p></div>
+          <p class="fb-complaint-line">To make a formal complaint, please follow our <a href="#" data-policy-open="complaints-procedure">Complaints Procedure</a>.</p>
           <button class="btn btn-primary" type="submit">Send feedback <span aria-hidden="true">&#8594;</span></button>
           <p class="note fb-privacy">We use the details you provide to review and respond to your feedback, as described in our <a href="#" data-policy-open="privacy-policy">Privacy Policy</a>.</p>
         </form>
-        <div class="success" data-success="feedback"><strong>Thank you — your feedback has been received.</strong><span>Your reference is <b data-feedback-ref></b>. It will be reviewed by our team in Mauritius.</span><span class="fb-complaint-ack" hidden>We will handle it under our Complaints Procedure and contact you.</span></div>
+        <div class="success" data-success="feedback"><strong>Thank you — your feedback has been received.</strong><span>It will be reviewed by our team in Mauritius.</span></div>
       </div></div>
-      <aside class="contact-stack info-card fb-aside" hidden><div class="contact-head"><span>What happens to your feedback</span></div><div class="contact-body">
+      <aside class="contact-stack info-card fb-aside"><div class="contact-head"><span>What happens to your feedback</span></div><div class="contact-body">
         <div class="contact-block"><span>Reviewed by people</span><p>Messages are reviewed by our team in Mauritius.</p></div>
         <div class="contact-block"><span>Compliments may be passed on</span><p>Compliments about a named colleague may be shared with them.</p></div>
-        <div class="contact-block"><span>Concerns are taken seriously</span><p>If you are unhappy with our service, we review it against our Complaints Procedure, even if you do not tick the complaint box.</p></div>
-        <div class="contact-block"><span>A reference for every message</span><p>You receive a reference number for your message.</p></div>
+        <div class="contact-block"><span>Concerns are taken seriously</span><p>If you are unhappy with our service, we review your message against our Complaints Procedure.</p></div>
+        
       </div></aside></div></section>
     </section>
     <!-- ============================= COMPLIANCE ============================= -->
@@ -2405,7 +2399,7 @@ html body .cookie-banner .btn:focus-visible{ outline:2px solid #C99B3F!important
           <span class="fc-text"><strong>Regulated by the Financial Services Commission (Mauritius)</strong><span>Payment Intermediary Services Licence&nbsp;·&nbsp;GB25205028</span></span>
         </div>
       </div>
-      <div><span class="footer-title">Company</span><div class="footer-list"><a href="#about" data-route="about">About ARIE Finance</a><a href="#team" data-route="team">Meet the Team</a><a href="#careers" data-route="careers">Careers</a><a href="#contact" data-route="contact">Contact</a><a href="#feedback" data-route="feedback" data-feedback-entry hidden>Leave Your Feedback</a></div></div>
+      <div><span class="footer-title">Company</span><div class="footer-list"><a href="#about" data-route="about">About ARIE Finance</a><a href="#team" data-route="team">Meet the Team</a><a href="#careers" data-route="careers">Careers</a><a href="#contact" data-route="contact">Contact</a><a href="#feedback" data-route="feedback">Leave Your Feedback</a></div></div>
       <div><span class="footer-title">Services</span><div class="footer-list"><a href="#services" data-route="services">Payment Accounts</a><a href="#services" data-route="services">International Payments</a><a href="#services" data-route="services">Client Onboarding</a><a href="#services" data-route="services">Corporate Payment Desk</a><a href="#services" data-route="services">Embedded Payments</a></div></div>
       <div><span class="footer-title">Clients</span><div class="footer-list"><a href="#direct-clients" data-route="direct-clients">Direct Clients</a><a href="#introducers" data-route="introducers">Introducers</a><a href="/onboarding-requirements">Onboarding Requirements</a></div></div>
       <div><span class="footer-title">Compliance &amp; Legal</span><div class="footer-list"><a href="#compliance" data-route="compliance">Compliance &amp; Legal Information</a><a href="#compliance" data-route="compliance">Regulation &amp; Safeguarding</a><a href="#compliance" data-route="compliance" data-policy-open="terms-and-conditions">Terms &amp; Conditions</a><a href="#compliance" data-route="compliance" data-policy-open="privacy-policy">Privacy Policy</a><a href="#compliance" data-route="compliance" data-policy-open="cookies-policy">Cookies Policy</a><a href="#compliance" data-route="compliance" data-policy-open="complaints-procedure">Complaints Procedure</a><a href="#compliance" data-route="compliance" data-policy-open="customer-security">Customer Security</a><a href="#compliance" data-route="compliance" data-policy-open="faqs">FAQs</a></div></div>
@@ -2616,7 +2610,6 @@ html body .cookie-banner .btn:focus-visible{ outline:2px solid #C99B3F!important
   var MAX_CV = 3 * 1024 * 1024;
   doc.querySelectorAll('form[data-form]').forEach(function(form){
     var name = form.dataset.form;
-    if(name === 'feedback') return; /* handled by the feedback module (POST /api/feedback) */
     var success = doc.querySelector('[data-success="'+name+'"]');
     var submitBtn = form.querySelector('button[type="submit"], input[type="submit"], button:not([type])');
     var cv = form.querySelector('input[type="file"]');
@@ -3067,49 +3060,6 @@ html body .cookie-banner .btn:focus-visible{ outline:2px solid #C99B3F!important
 })();
 </script>
 <script>
-/* Leave Your Feedback: entry links and form appear only when /api/feedback reports enabled */
-(function(){
-  var form=document.querySelector('form[data-form="feedback"]'); if(!form) return;
-  var unavailable=document.querySelector('[data-feedback-unavailable]');
-  var success=document.querySelector('[data-success="feedback"]');
-  var complaint=form.querySelector('#fb-complaint'), nameF=form.querySelector('#fb-name'), emailF=form.querySelector('#fb-email');
-  var btn=form.querySelector('button[type="submit"]'), busy=false;
-  var status=document.createElement('p'); status.setAttribute('role','status'); status.setAttribute('aria-live','assertive'); status.setAttribute('tabindex','-1');
-  status.style.cssText='display:none;margin:0;font-size:14px;line-height:1.5;color:#b4231f;outline:none;'; form.appendChild(status);
-  function say(m){ status.textContent=m; status.style.display='block'; try{ status.focus(); }catch(_){} }
-  function setEnabled(on){
-    document.querySelectorAll('[data-feedback-entry]').forEach(function(el){ el.hidden=!on; });
-    form.hidden=!on; if(unavailable) unavailable.hidden=on;
-    var aside=document.querySelector('.fb-aside'); if(aside) aside.hidden=!on;
-  }
-  setEnabled(false);
-  fetch('/api/feedback',{headers:{'Accept':'application/json'}}).then(function(r){ return r.ok?r.json():{enabled:false}; })
-    .then(function(j){ setEnabled(!!(j&&j.enabled)); }).catch(function(){ setEnabled(false); });
-  function syncComplaint(){ var on=complaint.checked; nameF.required=on; emailF.required=on; }
-  complaint.addEventListener('change',syncComplaint); syncComplaint();
-  form.addEventListener('submit',function(e){
-    e.preventDefault(); if(busy) return; status.style.display='none';
-    var hp=form.querySelector('input[name="hp_url"]'); if(hp&&hp.value){ form.hidden=true; return; }
-    syncComplaint(); if(!form.checkValidity()){ form.reportValidity(); return; }
-    busy=true; btn.disabled=true; btn.setAttribute('aria-busy','true');
-    var fd=new FormData(form), fields={}; fd.forEach(function(v,k){ if(k!=='hp_url') fields[k]=v; });
-    fetch('/api/feedback',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({fields:fields})})
-      .then(function(r){ return r.json().then(function(j){ return {code:r.status,j:j}; },function(){ return {code:r.status,j:{}}; }); })
-      .then(function(x){
-        if(x.code===200&&x.j&&x.j.ok&&x.j.reference){
-          success.querySelector('[data-feedback-ref]').textContent=x.j.reference;
-          var ack=success.querySelector('.fb-complaint-ack'); if(ack) ack.hidden=!complaint.checked;
-          form.hidden=true; success.classList.add('is-visible'); success.setAttribute('tabindex','-1'); try{ success.focus(); }catch(_){}
-          return;
-        }
-        busy=false; btn.disabled=false; btn.removeAttribute('aria-busy');
-        if(x.code===429) say('Too many attempts from your connection. Please wait a few minutes and try again.');
-        else if(x.j&&x.j.error==='complaint_contact_required') say('Please add your name and email so we can handle your complaint.');
-        else say('We could not record your feedback right now. Please try again, or email customercare@ariefinance.com.');
-      })
-      .catch(function(){ busy=false; btn.disabled=false; btn.removeAttribute('aria-busy'); say('We could not record your feedback right now. Please try again, or email customercare@ariefinance.com.'); });
-  });
-})();
 /* Navigation dropdowns: arrow-key support (Clients and Contact) */
 (function(){
   document.querySelectorAll('[data-dropdown]').forEach(function(dd){

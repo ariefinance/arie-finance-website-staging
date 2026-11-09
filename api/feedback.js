@@ -36,7 +36,7 @@
 //       "notification_failed"). A failed email never loses the record: the
 //       record stays in the database and is listed by scripts/feedback-records.js
 //  Keys are namespaced by VERCEL_ENV so preview never touches production data.
-//  Every key carries a TTL equal to the approved retention period.
+//  Every key carries a TTL (records and index: approved retention period).
 //
 //  COMPLAINTS: the category chosen by the visitor never decides whether a
 //  message is a complaint. Every notification asks the owner to assess any
@@ -61,8 +61,10 @@ const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/;
 const REQUIRED_ENV = [
   'FEEDBACK_ENABLED', 'FEEDBACK_REDIS_REST_URL', 'FEEDBACK_REDIS_REST_TOKEN', 'FEEDBACK_ENCRYPTION_KEY',
   'FEEDBACK_RETENTION_DAYS', 'FEEDBACK_TO_EMAIL', 'COMPLAINTS_TO_EMAIL',
-  'SMTP_HOST', 'SMTP_PORT', 'SMTP_USER', 'SMTP_PASS', 'FORM_FROM_EMAIL',
+  'SMTP_HOST', 'SMTP_PORT', 'SMTP_USER', 'SMTP_PASS', 'FORM_FROM_EMAIL', 'ALLOWED_ORIGIN',
 ];
+// Shared internal-tools database variables: feedback must never use the same database.
+const SHARED_DB_ENV = ['UPSTASH_REDIS_REST_URL', 'KV_REST_API_URL'];
 function config(env) {
   env = env || process.env;
   if (String(env.FEEDBACK_ENABLED).toLowerCase() !== 'true') return { enabled: false, reason: 'switched_off' };
@@ -74,13 +76,14 @@ function config(env) {
   if (!Number.isInteger(days) || days < 1 || days > 3650) return { enabled: false, reason: 'bad_retention' };
   for (const k of ['FEEDBACK_TO_EMAIL', 'COMPLAINTS_TO_EMAIL']) if (!EMAIL_RE.test(String(env[k]))) return { enabled: false, reason: 'bad_recipient' };
   if (env.FEEDBACK_CC_EMAIL && !EMAIL_RE.test(String(env.FEEDBACK_CC_EMAIL))) return { enabled: false, reason: 'bad_recipient' };
+  if (SHARED_DB_ENV.some((k) => env[k] && String(env[k]).replace(/\/+$/, '') === String(env.FEEDBACK_REDIS_REST_URL).replace(/\/+$/, ''))) return { enabled: false, reason: 'shared_database' };
   return {
     enabled: true, key, ttl: days * 86400,
     ns: 'feedback:' + (env.VERCEL_ENV || 'development') + ':',
     to: env.FEEDBACK_TO_EMAIL, complaintsTo: env.COMPLAINTS_TO_EMAIL, cc: env.FEEDBACK_CC_EMAIL || '',
     from: env.FORM_FROM_EMAIL,
     redisUrl: env.FEEDBACK_REDIS_REST_URL, redisToken: env.FEEDBACK_REDIS_REST_TOKEN,
-    smtp: { host: env.SMTP_HOST, port: Number(env.SMTP_PORT), secure: String(env.SMTP_SECURE).toLowerCase() === 'true', auth: { user: env.SMTP_USER, pass: env.SMTP_PASS } },
+    smtp: { host: env.SMTP_HOST, port: Number(env.SMTP_PORT), secure: String(env.SMTP_SECURE).toLowerCase() === 'true', auth: { user: env.SMTP_USER, pass: env.SMTP_PASS }, connectionTimeout: 8000, greetingTimeout: 8000, socketTimeout: 8000 },
   };
 }
 
@@ -202,10 +205,9 @@ function buildEmail(cfg, ref, rec, personal) {
 
 // ============================================================================
 async function handler(req, res) {
-  res.setHeader('Cache-Control', 'no-store');
   const cfg = config();
-
-  if (req.method === 'GET') return res.status(200).json({ ok: true, enabled: cfg.enabled });
+  if (req.method === 'GET') { res.setHeader('Cache-Control', 'public, max-age=60'); return res.status(200).json({ ok: true, enabled: cfg.enabled }); }
+  res.setHeader('Cache-Control', 'no-store');
   if (req.method !== 'POST') { res.setHeader('Allow', 'GET, POST'); return res.status(405).json({ ok: false, error: 'method_not_allowed' }); }
   if (!cfg.enabled) return res.status(503).json({ ok: false, error: 'feedback_not_enabled' });
   if (!originAllowed(req)) return res.status(403).json({ ok: false, error: 'forbidden_origin' });
@@ -238,17 +240,18 @@ async function handler(req, res) {
   try { redis = deps.redis(cfg); } catch (_) { return res.status(503).json({ ok: false, error: 'storage_unavailable' }); }
   const ns = cfg.ns;
   const ip = getIp(req);
-  const ipKey = ns + 'rl:' + sha(ip + '|' + cfg.ns).slice(0, 32); // no raw IP stored
+  const hmac = (v) => crypto.createHmac('sha256', cfg.key).update(v).digest('hex');
+  const ipKey = ns + 'rl:' + hmac('ip|' + ip).slice(0, 32); // keyed hash; no raw IP stored
 
   // rate limit (shared across instances)
   try {
     const n = await redis.incr(ipKey);
-    if (n === 1) await redis.expire(ipKey, RL_WINDOW_S);
+    if (n === 1 || n > RL_MAX) await redis.expire(ipKey, RL_WINDOW_S); // re-arm so a failed expire can never block an IP permanently
     if (n > RL_MAX) return res.status(429).json({ ok: false, error: 'rate_limited' });
   } catch (_) { return res.status(503).json({ ok: false, error: 'storage_unavailable' }); }
 
   // idempotency: an identical message from the same connection within 10 min returns the same reference
-  const dedupeKey = ns + 'dedupe:' + sha(ip + '|' + type + '|' + message + '|' + emailRaw).slice(0, 40);
+  const dedupeKey = ns + 'dedupe:' + hmac(['dedupe', ip, type, message, emailRaw, name, colleague, formalComplaint ? '1' : '0'].join('|')).slice(0, 40);
   try {
     const prior = await redis.get(dedupeKey);
     if (prior) return res.status(200).json({ ok: true, reference: String(prior), duplicate: true });
@@ -274,12 +277,19 @@ async function handler(req, res) {
       if (okSet === 'OK' || okSet === true) ref = candidate;
     }
     if (!ref) throw new Error('reference_exhausted');
+  } catch (err) {
+    console.error('[feedback] storage failed code=' + (err && err.code ? err.code : 'unknown'));
+    return res.status(503).json({ ok: false, error: 'storage_failed' });
+  }
+  // The record is now durable: from here on nothing may turn this into a failure for the visitor.
+  // Index/dedupe are conveniences; if they fail the record is still found by the recovery tool's SCAN fallback.
+  try {
     await redis.zadd(ns + 'index', { score: now.getTime(), member: ref });
-    await redis.zremrangebyscore(ns + 'index', 0, now.getTime() - cfg.ttl * 1000); // prune expired refs from the index
+    await redis.zremrangebyscore(ns + 'index', 0, now.getTime() - cfg.ttl * 1000); // prune expired refs
+    await redis.expire(ns + 'index', cfg.ttl);
     await redis.set(dedupeKey, ref, { ex: DEDUPE_S });
   } catch (err) {
-    console.error('[feedback] storage failed code=' + (err && err.code ? err.code : (err && err.message) || 'unknown'));
-    return res.status(503).json({ ok: false, error: 'storage_failed' });
+    console.error('[feedback] index/dedupe write failed ref=' + ref);
   }
 
   // notify (record already safe). Outcome appended to the record's events.

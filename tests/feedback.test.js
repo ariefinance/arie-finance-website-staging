@@ -35,7 +35,7 @@ function fakeRedis(opts = {}) {
       if (o.ex) ttl.set(k, o.ex);
       return 'OK';
     },
-    async zadd(k, { score, member }) { if (!z.has(k)) z.set(k, new Map()); z.get(k).set(member, score); return 1; },
+    async zadd(k, { score, member }) { if (opts.failZadd) throw new Error('index down'); if (!z.has(k)) z.set(k, new Map()); z.get(k).set(member, score); return 1; },
     async zremrangebyscore(k, min, max) { const m = z.get(k); if (!m) return 0; let n = 0; for (const [mem, s] of m) if (s >= min && s <= max) { m.delete(mem); n++; } return n; },
   };
 }
@@ -171,4 +171,52 @@ test('possible card/IBAN numbers are flagged, not rejected', async () => {
 test('preview and production namespaces never collide', () => {
   assert.equal(config({ ...ENV, VERCEL_ENV: 'production' }).ns, 'feedback:production:');
   assert.equal(config(ENV).ns, 'feedback:preview:');
+});
+
+test('review fix: adding the complaint flag on resubmission is NOT treated as a duplicate', async () => {
+  const r = fakeRedis(); const m = okMail();
+  const a = await run({ fields: valid, redis: r, mail: m });
+  const b = await run({ fields: { ...valid, complaint: 'on' }, redis: r, mail: m });
+  assert.notEqual(a.body.reference, b.body.reference); assert.equal(b.body.duplicate, undefined);
+  assert.equal(recOf(r, b.body.reference).formalComplaint, true);
+  assert.match(m.sent[1].subject, /^\[COMPLAINT\]/); assert.equal(m.sent[1].cc, 'complaints@example.test');
+});
+
+test('review fix: index/dedupe failure after the record is stored still confirms with the reference', async () => {
+  const r = fakeRedis({ failZadd: true }); const m = okMail();
+  const out = await run({ fields: valid, redis: r, mail: m });
+  assert.equal(out.code, 200); assert.ok(out.body.reference);
+  assert.ok(r.kv.get('feedback:preview:rec:' + out.body.reference), 'record exists for SCAN recovery');
+  assert.equal(m.sent.length, 1, 'notification still sent');
+});
+
+test('review fix: ALLOWED_ORIGIN required; shared internal database refused', () => {
+  const { ALLOWED_ORIGIN, ...noOrigin } = ENV;
+  assert.equal(config(noOrigin).enabled, false);
+  assert.equal(config({ ...ENV, UPSTASH_REDIS_REST_URL: 'https://fake.upstash.io/' }).reason, 'shared_database');
+  assert.equal(config({ ...ENV, KV_REST_API_URL: 'https://fake.upstash.io' }).enabled, false);
+  assert.equal(config({ ...ENV, UPSTASH_REDIS_REST_URL: 'https://other-db.upstash.io' }).enabled, true);
+});
+
+test('review fix: rate-limit key and index always carry a TTL; IP hash is keyed', async () => {
+  const r = fakeRedis();
+  const out = await run({ fields: valid, redis: r, mail: okMail() });
+  const rl = [...r.kv.keys()].find((k) => k.includes(':rl:'));
+  assert.equal(r.ttl.get(rl), 600); assert.equal(r.ttl.get('feedback:preview:index'), 30 * 86400);
+  const plainSha = crypto.createHash('sha256').update('203.0.113.7|feedback:preview:').digest('hex').slice(0, 32);
+  assert.ok(!rl.endsWith(plainSha), 'not an unkeyed hash');
+  assert.ok(out.body.reference);
+});
+
+test('review fix: GET status is briefly cacheable, POST is no-store', async () => {
+  const g = await run({ method: 'GET', redis: fakeRedis(), mail: okMail() });
+  assert.equal(g.body.enabled, true);
+  const saved = { ...process.env }; Object.assign(process.env, ENV);
+  const res = { h: {}, code: 0, setHeader(k, v) { this.h[k] = v; }, status(c) { this.code = c; return this; }, json() {} };
+  await handler({ method: 'GET', headers: {} }, res); process.env = saved;
+  assert.equal(res.h['Cache-Control'], 'public, max-age=60');
+  const r = fakeRedis(); const res2 = { h: {}, setHeader(k, v) { this.h[k] = v; }, status() { return this; }, json() {} };
+  Object.assign(process.env, ENV); deps.redis = () => r; deps.transport = () => okMail();
+  await handler({ method: 'POST', headers: { origin: 'https://www.example.test', 'x-forwarded-for': '192.0.2.1' }, body: { fields: valid } }, res2); process.env = saved;
+  assert.equal(res2.h['Cache-Control'], 'no-store');
 });

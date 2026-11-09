@@ -12,13 +12,13 @@ The signed-out portal page links "Tell us more" to `/#feedback`, so it falls bac
 
 ## How it works
 1. **Validation.** Checks the category (Suggestion, Service experience or Compliment) and the message length (10–4000 characters). Name and email are optional, but both are required when "Handle this as a formal complaint" is ticked.
-2. **Abuse controls.** A honeypot field, the origin allow-list (`ALLOWED_ORIGIN`), and a shared rate limit of 5 per 10 minutes per connection (only a hashed IP is stored, with a short TTL). An identical resubmission within 10 minutes returns the same reference.
+2. **Abuse controls.** A honeypot field, the origin allow-list (`ALLOWED_ORIGIN`, required), and a shared rate limit of 5 per 10 minutes per connection (only a keyed hash of the IP is stored, with a short TTL). An identical resubmission within 10 minutes returns the same reference. A resubmission that adds the complaint flag, a name or a colleague is treated as new.
 3. **Durable record first.** A unique reference `FB-YYMMDD-XXXXXX` is reserved with `SET NX` in a dedicated Upstash database.
    - **Stored in plain text:** the category, the complaint flag, `createdAt` (never changed) and an append-only `events[]`.
    - **Encrypted (AES-256-GCM):** the message, the colleague named, the name and the email.
-   - **Expiry:** every key expires after `FEEDBACK_RETENTION_DAYS`.
+   - **Expiry:** records and the index expire after `FEEDBACK_RETENTION_DAYS`; the rate-limit and duplicate keys expire after 10 minutes.
    - **Separation:** keys are namespaced by `VERCEL_ENV`, so preview and production never collide.
-   - The visitor sees a confirmation and reference **only after** this succeeds.
+   - The visitor sees a confirmation and reference **only after** this succeeds. Once the record exists, a failed index or duplicate-check write never turns the submission into a failure; the recovery tool also scans for records missing from the index.
 4. **Notification.** An email goes to `FEEDBACK_TO_EMAIL`, with the subject `[Feedback] <category> — <ref> — <name|Anonymous>`.
    - **Complaint flag ticked:** the subject begins `[COMPLAINT]` and `COMPLAINTS_TO_EMAIL` is copied.
    - **Backup owner:** `FEEDBACK_CC_EMAIL` (optional) is copied on every message.
@@ -34,8 +34,10 @@ The signed-out portal page links "Tell us more" to `/#feedback`, so it falls bac
 | Complaints handler / escalation address | `COMPLAINTS_TO_EMAIL` | Compliance |
 | Backup owner or cover (optional but recommended) | `FEEDBACK_CC_EMAIL` | Management |
 | Approved retention period (days) | `FEEDBACK_RETENTION_DAYS` | Compliance |
-| Dedicated Upstash database (not the shared internal-tools DB) | `FEEDBACK_REDIS_REST_URL`, `FEEDBACK_REDIS_REST_TOKEN` | IT |
-| Encryption key (`openssl rand -base64 32`), stored only in Vercel | `FEEDBACK_ENCRYPTION_KEY` | IT |
+| Dedicated Upstash database (not the shared internal-tools DB; the API refuses to enable if the URL matches it) | `FEEDBACK_REDIS_REST_URL`, `FEEDBACK_REDIS_REST_TOKEN` | IT |
+| Origin allow-list (shared with Contact/Careers) | `ALLOWED_ORIGIN` | IT |
+| Encryption key (`openssl rand -base64 32`), held in Vercel and in a password vault by named recovery holders only | `FEEDBACK_ENCRYPTION_KEY` | IT |
+| Named staff authorised to run the recovery tool (with a read-only Upstash token for `list`/`show`) | — | Management |
 | Privacy Policy covers feedback data and retention | — | Compliance |
 | Database backup and point-in-time restore confirmed on the Upstash plan | — | IT |
 | Switch on | `FEEDBACK_ENABLED=true` | Management |
@@ -48,6 +50,8 @@ After activation:
 Never send test messages to clients.
 
 ## Operating notes
+- **Complaints retention.** Records expire after the retention period, counted from submission. At triage, any message that qualifies as a complaint must be entered in the complaints register, which has its own retention. Don't rely on the feedback record as the complaints file.
+- **History integrity.** `createdAt` and earlier events are never changed by the API or the recovery tool, and `mark` stamps the acting staff member (`FEEDBACK_ACTOR`). Anyone holding a read-write token could still alter records, so limit read-write tokens to the API and the named holders.
 - **Triage events.** Record triage with `node scripts/feedback-records.js mark <ref> triaged|complaint_logged|replied "<note>"`. Events are append-only.
 - **Key rotation.** Rotating `FEEDBACK_ENCRYPTION_KEY` makes older records unreadable. Export the records before rotating.
 - **Deletion requests.** Delete the record key `feedback:<env>:rec:<ref>` in the Upstash console, then note it in the complaints or privacy log as required.

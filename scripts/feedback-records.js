@@ -12,8 +12,10 @@
 //    node scripts/feedback-records.js list [--failed]   # metadata only, no personal data
 //    node scripts/feedback-records.js show <reference>  # decrypts one record
 //    node scripts/feedback-records.js mark <reference> <event> [note]
-//        appends an event, e.g. "triaged", "complaint_logged", "replied"
-//        (events are append-only; createdAt is never changed)
+//        appends an event, e.g. "triaged", "complaint_logged", "replied",
+//        stamped with the acting staff member (FEEDBACK_ACTOR, required).
+//        createdAt and earlier events are never modified by this tool.
+//  Use a READ-ONLY Upstash token for list/show; mark needs a read-write token.
 // ============================================================================
 const { Redis } = require('@upstash/redis');
 const { decrypt } = require('../api/feedback.js').__test;
@@ -30,7 +32,10 @@ const [cmd, a, b, c] = process.argv.slice(2);
 
 (async () => {
   if (cmd === 'list') {
-    const refs = await redis.zrange(ns + 'index', 0, -1);
+    // index first; SCAN fallback catches any record whose index write failed
+    const refs = new Set(await redis.zrange(ns + 'index', 0, -1));
+    let cursor = 0;
+    do { const [next, keys] = await redis.scan(cursor, { match: ns + 'rec:*', count: 200 }); cursor = Number(next); keys.forEach((k) => refs.add(k.slice((ns + 'rec:').length))); } while (cursor !== 0);
     for (const ref of refs) {
       const r = parse(await redis.get(ns + 'rec:' + ref));
       if (!r) continue; // expired under the retention period
@@ -43,9 +48,10 @@ const [cmd, a, b, c] = process.argv.slice(2);
     if (!r) { console.error('Not found (or expired): ' + a); process.exit(1); }
     console.log(JSON.stringify({ reference: a, ...r, personal: decrypt(key, r.personal) }, null, 2));
   } else if (cmd === 'mark' && a && b) {
+    if (!env.FEEDBACK_ACTOR) { console.error('Set FEEDBACK_ACTOR to your name or staff ID'); process.exit(2); }
     const r = parse(await redis.get(ns + 'rec:' + a));
     if (!r) { console.error('Not found (or expired): ' + a); process.exit(1); }
-    r.events.push({ at: new Date().toISOString(), event: String(b), note: c ? String(c).slice(0, 300) : undefined });
+    r.events.push({ at: new Date().toISOString(), event: String(b), by: String(env.FEEDBACK_ACTOR).slice(0, 80), note: c ? String(c).slice(0, 300) : undefined });
     await redis.set(ns + 'rec:' + a, JSON.stringify(r), { xx: true, keepTtl: true });
     console.log('Appended ' + b + ' to ' + a);
   } else {

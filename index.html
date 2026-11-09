@@ -1830,6 +1830,30 @@ input::placeholder,textarea::placeholder{ color:#6B778F!important; opacity:1; }
 @media (min-width:1061px){ [data-page="contact"] .contact-stack{ position:sticky; top:96px; align-self:start; } }
 /* Compliance is / is-not: system cards */
 .is-card--yes,.is-card--no{ background:#fff!important; border:1px solid rgba(6,17,58,.10)!important; }
+
+/* ================= Post-release review fixes (visual only) ================= */
+/* Licence line: readable trust cue (same words, same position) */
+.hero .licence-text .l-reg{ font-size:12px!important; letter-spacing:.1em!important; }
+.hero .licence-text .l-lic{ font-size:12.5px!important; letter-spacing:.06em!important; color:#06113A!important; font-weight:600!important; }
+.hero .licence-text .l-lic .l-code{ color:#8F6B25!important; }
+@media (max-width:640px){
+  .hero .licence-text .l-reg{ font-size:11px!important; letter-spacing:.05em!important; line-height:1.45!important; }
+  .hero .licence-text .l-lic{ font-size:11.5px!important; letter-spacing:.03em!important; line-height:1.45!important; }
+}
+/* Mauritius map on phones: crop the existing artwork to Africa, the Indian Ocean and Asia-Pacific */
+@media (max-width:760px){
+  .mau-figure{ aspect-ratio:740/490; overflow:hidden!important; padding:0!important; transform:none!important; perspective:none!important; }
+  .mau-figure .mau-base{ display:block; width:189.2%!important; max-width:none!important; height:auto!important; margin:-31.1% 0 0 -81.1%!important; scale:1!important; transform:none!important; }
+}
+/* Team on phones: name and role beside a compact portrait, biography below */
+@media (max-width:640px){
+  .team-card{ display:grid!important; grid-template-columns:96px 1fr; column-gap:16px; row-gap:14px; align-items:center; padding:18px!important; }
+  .team-card .team-photo{ grid-column:1; grid-row:1; width:96px!important; height:120px!important; aspect-ratio:auto!important; border-radius:12px!important; overflow:hidden; margin:0!important; }
+  .team-card .team-photo{ box-shadow:0 0 0 1px rgba(6,17,58,.08); }
+  .team-card .team-photo img{ width:100%!important; height:100%!important; object-fit:cover; }
+  .team-card .team-info{ grid-column:2; grid-row:1; padding:0!important; margin:0!important; }
+  .team-card .team-bio{ grid-column:1 / -1; margin:0!important; padding:0!important; }
+}
 </style></head>
 <body>
 <!-- Google Tag Manager (noscript) -->
@@ -2159,7 +2183,7 @@ input::placeholder,textarea::placeholder{ color:#6B778F!important; opacity:1; }
     <!-- ============================= INTRODUCERS ============================= -->
     <section class="page" data-page="introducers" hidden="">
       <div class="page-hero"><div class="container"><p class="eyebrow">For introducers</p><h1>For Management Companies Acting as Intermediaries</h1><p class="lead" style="margin-top:16px;max-width:680px;">A structured, compliance-led partnership for advisors and intermediaries referring eligible clients to ARIE Finance.</p></div></div>
-      <section class="section section--canvas"><div class="container"><div class="prose" style="max-width:840px;margin-bottom:28px;"><p class="intro">Since 2020, more than 100 clients — including investment funds, family offices and management companies — have trusted the ARIE Group, working alongside our established banking partners, with close to $1 billion in transactions.</p><p>With the launch of our new technology platform under our Payment Intermediary Services ("PIS") licence, ARIE Finance is set to elevate this experience further. We have partnered with an established UK-based fintech to provide your clients with a secure, modern technology platform for conducting controlled, efficient transactions.</p></div><div class="feature-grid two"><article class="feature"><span>01</span><h4>Structured partner model</h4><p>A structured introducer partnership with monthly reporting on referred client activity and no minimum referral volumes. Commercial terms are agreed per partner.</p></article><article class="feature"><span>02</span><h4>Co-branded onboarding</h4><p>Refer eligible clients into a structured onboarding pathway with a co-branded onboarding option, while ARIE Finance coordinates compliance and operations end-to-end.</p></article><article class="feature"><span>03</span><h4>Partner portal access</h4><p>Consolidated visibility across your referred client groups, with hierarchical permissions and a single operational point of contact.</p></article><article class="feature"><span>04</span><h4>KYC support</h4><p>Full KYC and KYB on all referred clients, with documented escalation and complaints handled under FSC Mauritius supervision.</p></article></div><div style="margin-top:32px;text-align:center;"><a class="btn btn-primary" href="#contact" data-route="contact">Discuss an Introducer Relationship <span aria-hidden="true">→</span></a></div></div></section>
+      <section class="section section--canvas"><div class="container"><div class="prose" style="max-width:840px;margin-bottom:28px;"><p class="intro">Since 2020, more than 100 clients — including investment funds, family offices and management companies — have trusted the ARIE Group, working alongside our established banking partners, with close to $1 billion in transactions.</p><p>With the launch of our new technology platform under our Payment Intermediary Services ("PIS") licence, ARIE Finance is set to elevate this experience further. We have partnered with an established UK-based fintech to provide your clients with a secure, modern technology platform for conducting controlled, efficient transactions.</p></div><div class="feature-grid two"><article class="feature"><span>01</span><h4>Structured partner model</h4><p>A structured introducer partnership with monthly reporting on referred client activity and no minimum referral volumes. Commercial terms are agreed per partner.</p></article><article class="feature"><span>02</span><h4>Co-branded onboarding</h4><p>Refer eligible clients into a structured onboarding pathway with a co-branded onboarding option, while ARIE Finance coordinates compliance and operations end-to-end.</p></article><article class="feature"><span>03</span><h4>Partner portal access</h4><p>Consolidated visibility across your referred client groups, with hierarchical permissions and a single operational point of contact.</p></article><article class="feature"><span>04</span><h4>KYC support</h4><p>Full KYC and KYB on all referred clients, with documented escalation and complaints handled under FSC Mauritius supervision.</p></article></div><div style="margin-top:32px;text-align:center;"><a class="btn btn-primary" href="#contact" data-route="contact" data-topic-preset="introducer">Discuss an Introducer Relationship <span aria-hidden="true">→</span></a></div></div></section>
     </section>
 
     <!-- ============================= TEAM ============================= -->

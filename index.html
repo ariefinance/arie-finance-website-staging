@@ -1893,6 +1893,24 @@ html body .cookie-banner .btn:focus-visible{ outline:2px solid #C99B3F!important
   html body .cookie-banner #cookie-manage{ grid-column:1 / -1!important; justify-self:start; height:24px!important; margin:0!important; }
   html body .cookie-banner #cookie-essential, html body .cookie-banner #cookie-accept{ width:100%!important; }
 }
+
+/* ================= Mauritius map: larger and sharper on desktop ================= */
+@media (min-width:1061px){
+  .mauritius-layout{ grid-template-columns:minmax(380px,.74fr) 1.26fr!important; gap:40px!important; }
+  .mau-figure{ padding:0!important; }
+  .mau-figure .mau-base{ scale:1!important; will-change:auto!important; }
+}
+/* The artwork has its own baked-in depth; the CSS drop-shadow filter added a grey haze that read as blur */
+.mau-figure .mau-base{ filter:none!important; }
+@media (min-width:1400px){
+  .mau-figure{ margin-right:-64px!important; max-width:none!important; }
+}
+
+/* Services 03: "Relationship-led" reads as a descriptor of the service, not a stray chip */
+.service-row > div:first-child > .tag-list{ margin-top:14px!important; margin-bottom:0!important; }
+.service-row > div:first-child > .tag-list span{ background:none!important; border:0!important; border-radius:0!important; padding:0 0 0 30px!important; position:relative;
+  color:#8F6B25!important; font-size:13px!important; font-weight:600!important; letter-spacing:.04em; }
+.service-row > div:first-child > .tag-list span::before{ content:''; position:absolute; left:0; top:50%; width:20px; height:1px; background:#C99B3F; }
 </style></head>
 <body>
 <!-- GTM noscript fallback removed: without JavaScript a visitor cannot give consent. -->
@@ -2161,7 +2179,7 @@ html body .cookie-banner .btn:focus-visible{ outline:2px solid #C99B3F!important
             </div>
           </div>
           <div class="mau-figure" role="img" aria-label="ARIE Finance: Mauritius as the regulated operating base bridging Africa, the Gulf, India and Asia-Pacific.">
-            <img class="mau-base" loading="lazy" src="/assets/mauritius-world-map.webp" alt="ARIE Finance regulated operating base in Mauritius, bridging Africa, the Gulf, India and Asia-Pacific" width="1400" height="788" decoding="async">
+            <img class="mau-base" loading="lazy" src="/assets/mauritius-world-map.webp" alt="ARIE Finance regulated operating base in Mauritius, bridging Africa, the Gulf, India and Asia-Pacific" width="1672" height="941" decoding="async">
             
             <span class="mau-beacon" aria-hidden="true"></span>
           </div>

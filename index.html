@@ -20,7 +20,17 @@ try{
 }catch(e){}
 </script>
 <!-- Google Tag Manager -->
-<script>(function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src='https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);})(window,document,'script','dataLayer','GTM-T24ZGR86');</script>
+<script>
+/* GTM loads only after the visitor has granted analytics consent (Consent Mode basic). */
+window.__arieLoadGTM=function(){
+  if(window.__arieGTMLoaded) return; window.__arieGTMLoaded=true;
+  (function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src='https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);})(window,document,'script','dataLayer','GTM-T24ZGR86');
+};
+try{
+  var _g = localStorage.getItem('arie_analytics_consent');
+  if(_g==='granted' || (!_g && localStorage.getItem('arie_cookies_ok')==='1')){ window.__arieLoadGTM(); }
+}catch(e){}
+</script>
 <!-- End Google Tag Manager -->
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="google-site-verification" content="kDpxQmYvooc4_IouztYxIQ8WdMTB5ut7-tqIqf24e_4" />
@@ -1830,11 +1840,62 @@ input::placeholder,textarea::placeholder{ color:#6B778F!important; opacity:1; }
 @media (min-width:1061px){ [data-page="contact"] .contact-stack{ position:sticky; top:96px; align-self:start; } }
 /* Compliance is / is-not: system cards */
 .is-card--yes,.is-card--no{ background:#fff!important; border:1px solid rgba(6,17,58,.10)!important; }
+
+/* ================= Post-release review fixes (visual only) ================= */
+/* Licence line: readable trust cue (same words, same position) */
+.hero .licence-text .l-reg{ font-size:12px!important; letter-spacing:.1em!important; }
+.hero .licence-text .l-lic{ font-size:12.5px!important; letter-spacing:.06em!important; color:#06113A!important; font-weight:600!important; }
+.hero .licence-text .l-lic .l-code{ color:#8F6B25!important; }
+@media (max-width:640px){
+  .hero .licence-text .l-reg{ font-size:11px!important; letter-spacing:.05em!important; line-height:1.45!important; }
+  .hero .licence-text .l-lic{ font-size:11.5px!important; letter-spacing:.03em!important; line-height:1.45!important; }
+}
+/* Mauritius map on phones: crop the existing artwork to Africa, the Indian Ocean and Asia-Pacific */
+@media (max-width:760px){
+  .mau-figure{ aspect-ratio:740/490; overflow:hidden!important; padding:0!important; transform:none!important; perspective:none!important; }
+  .mau-figure .mau-base{ display:block; width:189.2%!important; max-width:none!important; height:auto!important; margin:-31.1% 0 0 -81.1%!important; scale:1!important; transform:none!important; }
+}
+/* Team on phones: name and role beside a compact portrait, biography below */
+@media (max-width:640px){
+  .team-card{ display:grid!important; grid-template-columns:96px 1fr; column-gap:16px; row-gap:14px; align-items:center; padding:18px!important; }
+  .team-card .team-photo{ grid-column:1; grid-row:1; width:96px!important; height:120px!important; aspect-ratio:auto!important; border-radius:12px!important; overflow:hidden; margin:0!important; }
+  .team-card .team-photo{ box-shadow:0 0 0 1px rgba(6,17,58,.08); }
+  .team-card .team-photo img{ width:100%!important; height:100%!important; object-fit:cover; }
+  .team-card .team-info{ grid-column:2; grid-row:1; padding:0!important; margin:0!important; }
+  .team-card .team-bio{ grid-column:1 / -1; margin:0!important; padding:0!important; }
+}
+
+/* ================= Subtle cookie notice: compact floating card (wording, buttons and behaviour unchanged) ================= */
+html body .cookie-banner{ left:auto!important; right:auto!important; top:auto!important; bottom:20px!important; inset-inline-start:20px!important; width:min(440px, calc(100% - 40px))!important;
+  background:#fff!important; border:1px solid rgba(6,17,58,.10)!important; border-top:1px solid rgba(6,17,58,.10)!important; border-radius:14px!important;
+  box-shadow:0 18px 44px -18px rgba(6,17,58,.32), 0 2px 6px rgba(6,17,58,.06)!important; padding:16px 18px 14px!important; transition:transform .35s ease, opacity .35s ease!important; }
+html body .cookie-banner.is-hidden{ transform:translateY(calc(100% + 40px))!important; opacity:0!important; pointer-events:none!important; }
+html body .cookie-banner .cookie-inner{ width:auto!important; max-width:none!important; padding:0!important; margin:0!important; display:block!important; }
+html body .cookie-banner .cookie-text{ color:#4A5470!important; font-size:12.5px!important; line-height:1.5!important; margin:0 0 12px!important; min-width:0!important; }
+html body .cookie-banner .cookie-text a{ color:#06113A!important; text-decoration:underline!important; text-underline-offset:2px; font-weight:600; }
+html body .cookie-banner .cookie-actions{ display:flex!important; flex-wrap:wrap!important; align-items:center!important; gap:8px!important; width:auto!important; justify-content:flex-end!important; grid-template-columns:none!important; }
+html body .cookie-banner .cookie-actions .btn{ width:auto!important; min-height:0!important; height:34px!important; padding:0 14px!important; font-size:12.5px!important; font-weight:600!important; border-radius:8px!important; white-space:nowrap!important; box-shadow:none!important; justify-content:center; }
+html body .cookie-banner #cookie-manage{ margin-right:auto!important; padding:0 2px!important; background:transparent!important; border:0!important; color:#4A5470!important; text-decoration:underline!important; text-underline-offset:3px; grid-column:auto!important; }
+html body .cookie-banner #cookie-manage:hover{ color:#06113A!important; }
+html body .cookie-banner #cookie-essential{ background:#fff!important; color:#06113A!important; border:1px solid rgba(6,17,58,.22)!important; }
+html body .cookie-banner #cookie-essential:hover{ border-color:#06113A!important; }
+html body .cookie-banner #cookie-accept{ background:#06113A!important; color:#fff!important; border:1px solid #06113A!important; }
+html body .cookie-banner #cookie-accept:hover{ background:#0F1E5A!important; }
+html body .cookie-banner .btn:focus-visible{ outline:2px solid #C99B3F!important; outline-offset:2px!important; }
+@media (max-width:760px){
+  html body .cookie-banner{ inset-inline-start:12px!important; bottom:12px!important; width:calc(100% - 24px)!important; padding:12px 14px!important; }
+  html body .cookie-banner .cookie-text{ font-size:12px!important; line-height:1.45!important; margin-bottom:10px!important; }
+  html body .cookie-banner .cookie-actions{ gap:6px!important; }
+  html body .cookie-banner .cookie-actions .btn{ height:32px!important; padding:0 10px!important; font-size:12px!important; }
+}
+@media (max-width:380px){
+  html body .cookie-banner .cookie-actions{ display:grid!important; grid-template-columns:1fr 1fr!important; }
+  html body .cookie-banner #cookie-manage{ grid-column:1 / -1!important; justify-self:start; height:24px!important; margin:0!important; }
+  html body .cookie-banner #cookie-essential, html body .cookie-banner #cookie-accept{ width:100%!important; }
+}
 </style></head>
 <body>
-<!-- Google Tag Manager (noscript) -->
-<noscript><iframe src="https://www.googletagmanager.com/ns.html?id=GTM-T24ZGR86" height="0" width="0" style="display:none;visibility:hidden" title="GTM"></iframe></noscript>
-<!-- End Google Tag Manager (noscript) -->
+<!-- GTM noscript fallback removed: without JavaScript a visitor cannot give consent. -->
 <noscript><div role="status" style="position:relative;z-index:3;background:#fff4d6;color:#06113A;padding:10px 18px;text-align:center;font:600 14px/1.4 -apple-system,BlinkMacSystemFont,Segoe UI,sans-serif;border-bottom:1px solid #C99B3F;">The website content remains available, but interactive navigation, forms and policy dialogs require JavaScript.</div></noscript>
 
 
@@ -2159,7 +2220,7 @@ input::placeholder,textarea::placeholder{ color:#6B778F!important; opacity:1; }
     <!-- ============================= INTRODUCERS ============================= -->
     <section class="page" data-page="introducers" hidden="">
       <div class="page-hero"><div class="container"><p class="eyebrow">For introducers</p><h1>For Management Companies Acting as Intermediaries</h1><p class="lead" style="margin-top:16px;max-width:680px;">A structured, compliance-led partnership for advisors and intermediaries referring eligible clients to ARIE Finance.</p></div></div>
-      <section class="section section--canvas"><div class="container"><div class="prose" style="max-width:840px;margin-bottom:28px;"><p class="intro">Since 2020, more than 100 clients — including investment funds, family offices and management companies — have trusted the ARIE Group, working alongside our established banking partners, with close to $1 billion in transactions.</p><p>With the launch of our new technology platform under our Payment Intermediary Services ("PIS") licence, ARIE Finance is set to elevate this experience further. We have partnered with an established UK-based fintech to provide your clients with a secure, modern technology platform for conducting controlled, efficient transactions.</p></div><div class="feature-grid two"><article class="feature"><span>01</span><h4>Structured partner model</h4><p>A structured introducer partnership with monthly reporting on referred client activity and no minimum referral volumes. Commercial terms are agreed per partner.</p></article><article class="feature"><span>02</span><h4>Co-branded onboarding</h4><p>Refer eligible clients into a structured onboarding pathway with a co-branded onboarding option, while ARIE Finance coordinates compliance and operations end-to-end.</p></article><article class="feature"><span>03</span><h4>Partner portal access</h4><p>Consolidated visibility across your referred client groups, with hierarchical permissions and a single operational point of contact.</p></article><article class="feature"><span>04</span><h4>KYC support</h4><p>Full KYC and KYB on all referred clients, with documented escalation and complaints handled under FSC Mauritius supervision.</p></article></div><div style="margin-top:32px;text-align:center;"><a class="btn btn-primary" href="#contact" data-route="contact">Discuss an Introducer Relationship <span aria-hidden="true">→</span></a></div></div></section>
+      <section class="section section--canvas"><div class="container"><div class="prose" style="max-width:840px;margin-bottom:28px;"><p class="intro">Since 2020, more than 100 clients — including investment funds, family offices and management companies — have trusted the ARIE Group, working alongside our established banking partners, with close to $1 billion in transactions.</p><p>With the launch of our new technology platform under our Payment Intermediary Services ("PIS") licence, ARIE Finance is set to elevate this experience further. We have partnered with an established UK-based fintech to provide your clients with a secure, modern technology platform for conducting controlled, efficient transactions.</p></div><div class="feature-grid two"><article class="feature"><span>01</span><h4>Structured partner model</h4><p>A structured introducer partnership with monthly reporting on referred client activity and no minimum referral volumes. Commercial terms are agreed per partner.</p></article><article class="feature"><span>02</span><h4>Co-branded onboarding</h4><p>Refer eligible clients into a structured onboarding pathway with a co-branded onboarding option, while ARIE Finance coordinates compliance and operations end-to-end.</p></article><article class="feature"><span>03</span><h4>Partner portal access</h4><p>Consolidated visibility across your referred client groups, with hierarchical permissions and a single operational point of contact.</p></article><article class="feature"><span>04</span><h4>KYC support</h4><p>Full KYC and KYB on all referred clients, with documented escalation and complaints handled under FSC Mauritius supervision.</p></article></div><div style="margin-top:32px;text-align:center;"><a class="btn btn-primary" href="#contact" data-route="contact" data-topic-preset="introducer">Discuss an Introducer Relationship <span aria-hidden="true">→</span></a></div></div></section>
     </section>
 
     <!-- ============================= TEAM ============================= -->
@@ -2750,7 +2811,7 @@ input::placeholder,textarea::placeholder{ color:#6B778F!important; opacity:1; }
     try{ hasPref = !!localStorage.getItem('arie_analytics_consent') || localStorage.getItem('arie_cookies_ok')==='1'; }catch(e){}
     if(banner && !hasPref) banner.classList.remove('is-hidden');
     var overlay = doc.getElementById('cookie-modal-overlay');
-    function acceptAll(){ try{ localStorage.setItem('arie_analytics_consent','granted'); localStorage.setItem('arie_cookies_ok','1'); }catch(e){} try{ if(typeof gtag==='function'){ gtag('consent','update',{analytics_storage:'granted'}); } }catch(e){} if(banner) banner.classList.add('is-hidden'); if(overlay) overlay.classList.add('is-hidden'); }
+    function acceptAll(){ try{ localStorage.setItem('arie_analytics_consent','granted'); localStorage.setItem('arie_cookies_ok','1'); }catch(e){} try{ if(typeof gtag==='function'){ gtag('consent','update',{analytics_storage:'granted'}); } }catch(e){} try{ if(typeof window.__arieLoadGTM==='function'){ window.__arieLoadGTM(); } }catch(e){} if(banner) banner.classList.add('is-hidden'); if(overlay) overlay.classList.add('is-hidden'); }
     function essentialOnly(){ try{ localStorage.setItem('arie_analytics_consent','denied'); localStorage.removeItem('arie_cookies_ok'); }catch(e){} try{ if(typeof gtag==='function'){ gtag('consent','update',{analytics_storage:'denied'}); } }catch(e){} if(banner) banner.classList.add('is-hidden'); if(overlay) overlay.classList.add('is-hidden'); }
     var aBtn = doc.getElementById('cookie-accept'); if(aBtn) aBtn.addEventListener('click', acceptAll);
     var mBtn = doc.getElementById('cookie-modal-accept'); if(mBtn) mBtn.addEventListener('click', acceptAll);

@@ -42,16 +42,12 @@
   - Time and source URL.
 - No reference number is shown, because nothing is stored that could be looked up.
 
-## Indicative pricing (release gate)
+## Indicative pricing
 
 - The full v0.9 fee schedule is implemented unchanged: Standard and Enhanced profiles, SWIFT charges, the closure fee, the FSC licence line and the disclaimers.
-- `PRICING_PUBLIC_APPROVED = false` in `index.html` (the same flag v0.9 uses). While it is false:
-  - **Production hosts** (`ariefinance.com`): no pricing screen. Results link directly to `/onboarding-requirements` using v0.9's no-fees wording, and intro tile 03 reads "Prepare your documents".
-  - **Other hosts** (Vercel previews, localhost): pricing is shown so management can review it. This mirrors v0.9's team-demo mode.
-- To release pricing after management authorisation, set `PRICING_PUBLIC_APPROVED = true`.
+- The v0.9 rules and fees were confirmed as approved by management on 10 Nov 2026, so `PRICING_PUBLIC_APPROVED = true` in `index.html`.
+- If pricing ever needs to be withdrawn, set it to `false`. Production hosts (`ariefinance.com`) then skip the pricing screen and use v0.9's no-fees wording; previews and localhost still show it for review.
 
 ## Before go-live
 
-- Compliance confirms the rules against the approved "List of Restricted and High Risk Jurisdictions" and activity policy. v0.9 itself is marked "Proposed rules pending Compliance approval".
-- Management authorises (or amends) the indicative fees.
 - Run one labelled, fictional Further Review submission from the preview, and confirm it actually arrives in the customercare@ inbox with the full answers.

@@ -3328,12 +3328,11 @@ body:has(section.page.is-active[data-page="eligibility"]) .wa-float{ display:non
    - on-hold and "cannot proceed" results lead to a secure Further Review request to ARIE (/api/website-form);
    - permitted applicants finish at the existing /onboarding-requirements page (no separate hand-off screen);
    - demo-only controls, diagnostics and demo statements are removed.
-   Indicative pricing: PRICING_PUBLIC_APPROVED stays false until management authorises the figures. Until then the
-   pricing screen is shown only on non-production hosts (Vercel previews, localhost) for internal review, as v0.9
-   showed it only in its team-demo mode. */
+   Indicative pricing: v0.9 fees approved by management, so PRICING_PUBLIC_APPROVED=true. Setting it to false hides
+   pricing on production hosts (previews and localhost still show it, as in v0.9's team-demo mode). */
 (function(){
 var app=document.getElementById('elig-app');if(!app)return;
-var PRICING_PUBLIC_APPROVED=false;
+var PRICING_PUBLIC_APPROVED=true; // v0.9 fees approved by management (10 Nov 2026)
 var PRICING_REVIEW_HOST=!/(^|\.)ariefinance\.com$/i.test(location.hostname);
 var SHOW_FEES=PRICING_PUBLIC_APPROVED||PRICING_REVIEW_HOST;
 var REQUIREMENTS_URL='/onboarding-requirements';

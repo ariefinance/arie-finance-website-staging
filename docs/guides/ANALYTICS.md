@@ -1,6 +1,6 @@
 # Marketing analytics and website report
 
-**Event script:** `assets/analytics.v1.js`. **Report path:** `/managementreport/website-analytics/`. **Reviewed:** 26 October 2026 (code and guide).
+**Event script:** `assets/analytics.v1.js` (loaded with `?v=20261110` to avoid stale immutable asset caching). **Report path:** `/managementreport/website-analytics/`. **Reviewed:** 26 October 2026 (code and guide).
 
 ## Features
 Marketing-page hash section tracking, application/contact interactions, selected CTA and contact-link clicks, consent-aware GA4/GTM data layer, and a two-page monthly website analytics report.

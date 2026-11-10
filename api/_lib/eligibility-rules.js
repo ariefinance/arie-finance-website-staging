@@ -61,7 +61,6 @@ function normalise(raw) {
     outgoing: codeList(a.outgoing), outgoingUnknown: bool(a.outgoingUnknown),
   };
   for (const t of SPECIAL) n[t] = mode(a[t]);
-  if (n.company.length < 2) return { error: 'invalid_company' };
   if (!COUNTRY_CODES.has(n.incorp)) return { error: 'invalid_incorporation' };
   if (!n.opsMode || (n.opsMode === 'yes' && !n.operations.length)) return { error: 'invalid_operations' };
   if (n.opsMode !== 'yes') n.operations = [];
@@ -132,7 +131,10 @@ function evaluate(raw) {
   const followUps = pendingFollowUps(v.answers);
   if (followUps.length) return { followUps, answers: v.answers };
   const r = determine(v.answers);
-  return { route: routeFor(r), answers: v.answers, internal: { kind: r.kind, reasons: r.reasons, policy: POLICY_VERSION, rules: RULES_VERSION } };
+  const route = routeFor(r);
+  // v0.9 shows a different on-hold lead sentence when a country connection is restricted; expose only that flag.
+  const notice = route === 'hold' && r.reasons.some((x) => x.startsWith('Restricted jurisdiction connection:')) ? 'restricted_country' : null;
+  return { route, notice, answers: v.answers, internal: { kind: r.kind, reasons: r.reasons, policy: POLICY_VERSION, rules: RULES_VERSION } };
 }
 
 module.exports = { evaluate, ACTIVITY_BY_ID, POLICY_VERSION, RULES_VERSION };

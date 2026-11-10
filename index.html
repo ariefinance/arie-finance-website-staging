@@ -1985,102 +1985,205 @@ body:has(section.page.is-active[data-page="eligibility"]) .wa-float{ display:non
 }
 @media (hover:none){ .wa-float .wa-tip{ display:none; } }
 @media (prefers-reduced-motion:reduce){ .wa-float .wa-tip{ transition:none; } }
-[data-page="eligibility"] .page-hero{ padding-bottom:46px; }
-[data-page="eligibility"] .contact-section{ background:#ECF1F8; border-top:1px solid var(--border-soft); padding:58px 0 66px; }
-[data-page="eligibility"] .form-layout{ gap:40px; align-items:start; }
-[data-page="eligibility"] .form-card{ border:1px solid var(--border-soft); border-radius:20px; padding:34px 36px; box-shadow:0 1px 2px rgba(6,17,58,.04), 0 16px 40px -28px rgba(6,17,58,.18); }
-[data-page="eligibility"] .form-card form{ gap:20px; }
-[data-page="eligibility"] .intent-fieldset legend{ margin-bottom:13px; }
-[data-page="eligibility"] .intent-grid{ display:grid; grid-template-columns:1fr 1fr; gap:12px; }
-[data-page="eligibility"] .intent-chip span{ display:flex; align-items:center; gap:12px; width:100%; justify-content:flex-start; text-align:left; min-height:58px; padding:15px 17px; border-radius:12px; border:1px solid var(--border); background:var(--surface); font-size:14.5px; font-weight:500; color:var(--text); letter-spacing:0; text-transform:none; box-shadow:0 1px 1px rgba(6,17,58,.03); transition:border-color .18s ease, background .18s ease, box-shadow .18s ease, transform .18s ease; }
-[data-page="eligibility"] .intent-chip span::before{ width:16px; height:16px; border-radius:50%; border:1.5px solid var(--border); background:#fff; box-shadow:none; flex:0 0 auto; }
-[data-page="eligibility"] .intent-chip span:hover{ border-color:var(--indigo); background:#fff; box-shadow:0 1px 3px -1px rgba(6,17,58,.12); }
-[data-page="eligibility"] .intent-chip input:checked + span{ border-color:var(--indigo); background:var(--indigo-soft); box-shadow:inset 0 0 0 1px var(--indigo); }
-[data-page="eligibility"] .intent-chip input:checked + span::before{ border-color:var(--gold); background:var(--gold); box-shadow:inset 0 0 0 3px #fff; }
-[data-page="eligibility"] .intent-chip input:focus-visible + span{ border-color:var(--indigo); box-shadow:0 0 0 3px rgba(46,42,140,.20); }
-[data-page="eligibility"] .form-section-head{ display:flex; align-items:center; gap:12px; margin-top:4px; padding-top:22px; border-top:1px solid var(--border-soft); }
-[data-page="eligibility"] .form-section-head::before{ content:''; height:2px; width:26px; border-radius:2px; background:var(--grad-gold); flex:0 0 auto; }
-[data-page="eligibility"] .form-section-head span{ color:var(--muted); font-size:11px; letter-spacing:.15em; text-transform:uppercase; font-weight:700; }
-[data-page="eligibility"] .form-card label{ margin-bottom:8px; }
-[data-page="eligibility"] .form-card input, [data-page="eligibility"] .form-card textarea{ min-height:48px; border:1px solid var(--border); background:#fff; border-radius:10px; padding:13px 14px; font-size:15px; }
-[data-page="eligibility"] .form-card input::placeholder, [data-page="eligibility"] .form-card textarea::placeholder{ color:#9aa4b6; }
-[data-page="eligibility"] .form-card input:focus, [data-page="eligibility"] .form-card textarea:focus{ border-color:var(--indigo); box-shadow:0 0 0 3px rgba(46,42,140,.13); }
-[data-page="eligibility"] .form-card .form-grid{ gap:18px; }
-[data-page="eligibility"] aside.contact-stack.info-card{ padding:0; overflow:hidden; border:1px solid var(--border-soft); border-radius:20px; box-shadow:0 1px 2px rgba(6,17,58,.05), 0 22px 52px -32px rgba(6,17,58,.28); align-self:start; }
-[data-page="eligibility"] .contact-head{ background:linear-gradient(180deg,#0B1748,#06113A); border-bottom:2px solid var(--gold); padding:18px 24px; }
-[data-page="eligibility"] .contact-head span{ color:#fff; font-family:var(--display); font-weight:600; font-size:15.5px; letter-spacing:.01em; }
-[data-page="eligibility"] .contact-body{ padding:6px 24px 20px; }
-[data-page="eligibility"] .contact-body .contact-block{ border-top:1px solid var(--border); padding:16px 0; }
-[data-page="eligibility"] .contact-body .contact-block:first-child{ border-top:0; }
-  [data-page="eligibility"] .intent-grid{ grid-template-columns:1fr; gap:8px; }
-  [data-page="eligibility"] .intent-chip span{ min-height:50px; padding:11px 15px; }
-  [data-page="eligibility"] .form-card{ padding:22px 18px; }
-  [data-page="eligibility"] .contact-section{ background:var(--canvas); padding:40px 0 48px; }
-  [data-page="eligibility"] .intent-chip span{ font-size:13.5px; padding:11px 14px; gap:10px; }
-@media (min-width:1061px){ [data-page="eligibility"] .contact-stack{ position:sticky; top:96px; align-self:start; } }
-/* Eligibility check (/#eligibility) — reuses the Contact page styles above */
-[data-page="eligibility"] #el-form .form-section-head:first-of-type{ border-top:0; padding-top:0; margin-top:0; }
-[data-page="eligibility"] select{ width:100%; min-height:48px; border:1px solid var(--border); background:#fff; border-radius:10px; padding:0 14px; font:inherit; font-size:15px; color:var(--text); }
-[data-page="eligibility"] select:focus{ border-color:var(--indigo); box-shadow:0 0 0 3px rgba(46,42,140,.13); outline:none; }
-[data-page="eligibility"] .form-card form{ display:grid; gap:20px; }
-[data-page="eligibility"] .btn-primary[type="submit"]{ min-height:54px; }
-.el-ticks{ list-style:none; margin:22px 0 0; padding:0; display:flex; flex-wrap:wrap; gap:10px 24px; color:rgba(226,232,245,.9); font-size:14.5px; }
-.el-ticks li{ display:inline-flex; align-items:center; gap:8px; }
-.el-ticks li::before{ content:"\2713"; width:18px; height:18px; border-radius:50%; background:rgba(226,191,115,.18); color:#E7C987; display:inline-grid; place-items:center; font-size:11px; font-weight:700; }
-.el-q{ border:0; margin:0; padding:0; min-width:0; display:grid; gap:10px; }
-.el-q legend{ padding:0; margin-bottom:10px; color:var(--text); font-weight:600; font-size:14.5px; }
-.el-choices{ display:flex; flex-wrap:wrap; gap:10px; }
-[data-page="eligibility"] .el-choices .intent-chip span{ min-height:46px; padding:11px 15px; }
-.el-opt{ letter-spacing:0; text-transform:none; font-weight:400; }
-.el-help{ margin:6px 0 0; font-size:12.8px; color:var(--muted); line-height:1.5; }
-.el-tags{ display:grid; gap:8px; min-width:0; }
-.el-chips{ list-style:none; margin:0; padding:0; display:flex; flex-wrap:wrap; gap:8px; }
-.el-chips:empty{ display:none; }
-.el-chips li{ display:inline-flex; align-items:center; gap:4px; padding:4px 4px 4px 12px; border-radius:999px; background:#F3F6FB; border:1px solid #DCE3EF; font-size:13.5px; color:#06113A; }
-.el-chips button{ border:0; background:transparent; width:28px; height:28px; border-radius:50%; cursor:pointer; font-size:17px; line-height:1; color:#5D6787; }
-.el-chips button:hover,.el-chips button:focus-visible{ background:#E3E8F2; color:#06113A; }
-.el-unsure{ display:inline-flex; align-items:center; gap:8px; font-size:13.5px; color:var(--text); text-transform:none!important; letter-spacing:0!important; font-weight:500!important; cursor:pointer; width:max-content; }
-.el-tags.is-unknown input[list]{ opacity:.55; }
-.el-activities{ display:grid; gap:8px; border:1px solid var(--border); border-radius:12px; padding:12px; background:#FBFCFE; }
-.el-activity-list{ display:grid; gap:2px; max-height:300px; overflow-y:auto; }
-.el-activity{ display:flex; gap:10px; align-items:flex-start; padding:8px 6px; border-radius:8px; font-size:14px; color:var(--text); text-transform:none!important; letter-spacing:0!important; font-weight:400!important; cursor:pointer; line-height:1.45; }
-.el-activity:hover{ background:#F1F4FA; }
-.el-activity input{ margin-top:3px; width:16px; height:16px; min-height:0; flex:none; accent-color:var(--gold); }
-.el-errors{ padding:14px 16px; border-radius:12px; background:#FDF1EF; border:1px solid #F0C9C2; color:#7A2A20; font-size:14px; }
-.el-errors ul{ margin:6px 0 0; padding-left:18px; }
-.el-hp{ position:absolute; width:1px; height:1px; overflow:hidden; left:-9999px; top:-9999px; }
-.el-steps{ list-style:none; margin:0; padding:0; }
-.el-steps li{ display:grid; grid-template-columns:30px 1fr; gap:12px; padding:14px 0; border-top:1px solid var(--border); }
-.el-steps li:first-child{ border-top:0; }
-.el-steps b{ width:30px; height:30px; border-radius:50%; display:grid; place-items:center; font-size:13px; background:#F3F6FB; color:#06113A; border:1px solid var(--border); }
-.el-steps li.is-now b{ background:#06113A; color:#E7C987; border-color:#06113A; }
-.el-steps strong{ display:block; color:#06113A; font-size:14.5px; }
-.el-steps span{ display:block; color:var(--muted); font-size:13px; line-height:1.5; margin-top:2px; }
-.el-aside-note{ font-size:12.5px; color:var(--muted); line-height:1.5; padding-top:14px; margin:4px 0 0; border-top:1px solid var(--border); }
-.el-result{ display:grid; gap:16px; }
-.el-result .eyebrow{ margin:0; }
-.el-result h2{ margin:0; font-size:clamp(23px,2.4vw,30px); line-height:1.2; color:#06113A; }
-.el-result h2:focus{ outline:none; }
-.el-lead{ margin:0; color:#4A5470; font-size:16px; line-height:1.6; max-width:62ch; }
-.el-mark{ width:52px; height:52px; border-radius:50%; display:grid; place-items:center; font-size:24px; font-weight:700; }
-.el-mark.ok{ background:#E8F3EC; color:#1E7B4E; }
-.el-mark.rv{ background:#FBF2DF; color:#9A6400; }
-.el-callout{ border:1px solid rgba(201,155,63,.4); background:#FFFBF2; border-radius:12px; padding:14px 16px; font-size:14px; color:#3B4563; line-height:1.55; }
-.el-callout strong{ color:#06113A; }
-.el-actions{ display:flex; flex-wrap:wrap; gap:14px 20px; align-items:center; }
-.el-link{ background:none; border:0; padding:6px 0; color:#06113A; font:inherit; font-weight:600; font-size:14.5px; text-decoration:underline; text-underline-offset:3px; cursor:pointer; min-height:44px; display:inline-flex; align-items:center; }
-.el-fine{ margin:0; font-size:12.8px; color:var(--muted); line-height:1.5; }
-.el-status{ margin:0; font-size:13.5px; color:var(--muted); min-height:1em; }
-#el-review{ display:grid; gap:18px; }
-.el-fees{ display:grid; grid-template-columns:repeat(auto-fit,minmax(230px,1fr)); gap:14px; }
-.el-fee{ border:1px solid var(--border); border-radius:14px; padding:18px 20px; background:#fff; }
-.el-fee h3{ margin:0 0 8px; font-size:17px; color:#06113A; }
-.el-fee-row{ display:grid; grid-template-columns:1fr auto; gap:2px 10px; padding:10px 0; border-top:1px solid #E7EBF3; }
-.el-fee-row span{ color:#4A5470; font-size:14px; } .el-fee-row b{ color:#06113A; } .el-fee-row small{ grid-column:1/-1; color:#8A93AD; font-size:12px; }
-.el-sum{ display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:10px 22px; margin:0; border:1px solid var(--border); border-radius:12px; padding:16px 18px; background:#fff; }
-.el-sum dt{ font-size:11px; letter-spacing:.14em; text-transform:uppercase; color:var(--muted); font-weight:600; }
-.el-sum dd{ margin:2px 0 0; font-size:14.5px; color:#06113A; font-weight:600; }
-@media (max-width:640px){ .el-sum{ grid-template-columns:1fr; } .el-actions .btn{ width:100%; justify-content:center; } [data-page="eligibility"] .el-choices .intent-chip{ flex:1 1 100%; } }
+/* Check Your Eligibility (/#eligibility) — prototype v0.9 styles, scoped to #elig-root */
+/* Neutralise site-wide element styles inside the eligibility page so the v0.9 rules below render as designed */
+#elig-root label{display:block;color:inherit;font-size:inherit;letter-spacing:normal;text-transform:none;font-weight:inherit;margin:0}
+#elig-root button{min-height:0}
+#elig-root input,#elig-root textarea{width:auto;min-height:0;padding:0;border-radius:0;transition:none}
+#elig-root input:not([type="checkbox"]):not([type="radio"]):not([type="file"]),#elig-root select{border-color:#dfe3eb!important;border-radius:9px!important}
+#elig-root input:focus,#elig-root select:focus,#elig-root textarea:focus{border-color:#8375d7!important;box-shadow:0 0 0 3px #eae7fd!important}
+#elig-root input[type="checkbox"]{width:auto;height:auto;accent-color:var(--indigo)}
+#elig-root h1,#elig-root h2,#elig-root h3,#elig-root p{margin-top:revert}
+#elig-root h1,#elig-root h2{font-family:"Newsreader",Georgia,"Times New Roman",serif!important;font-weight:500!important;letter-spacing:-.035em!important}
+#elig-root .quick-section-head h2{letter-spacing:normal!important}
+#elig-root .fee-sheet h2{letter-spacing:-.025em!important}
+#elig-root .eyebrow{display:block;font-size:11px!important;letter-spacing:.18em!important;font-weight:800!important;font-feature-settings:normal}
+#elig-root .eyebrow:before{content:none}
+#elig-root .result-hero .eyebrow{letter-spacing:.13em!important}
+#elig-root table{min-width:0}
+#elig-root th{background:none;font-weight:700}
+#elig-root td,#elig-root th{vertical-align:middle;line-height:inherit}
+#elig-root{--navy:#06113A;--indigo:#2E2A8C;--indigo-2:#4940D6;--gold:#C99B3F;--gold-2:#E6CB86;--gold-deep:#7E6120;--gold-hair:#B88A32;--ink:#06113A;--soft:#454E66;--muted:#65738A;--bg:#F4F7FB;--edge:#D8E2EE;--white:#fff;--good:#176b50;--good-bg:#eaf7f0;--warn:#9b6420;--warn-bg:#fff6e5;--bad:#b04245;--bad-bg:#fff0f0;--radius:18px}
+#elig-root *,#elig-root{box-sizing:border-box}#elig-root{margin:0;background:radial-gradient(900px 480px at 100% 0%,#eaeafb 0%,transparent 70%),var(--bg);color:var(--ink);font-family:Inter,"Segoe UI",Arial,sans-serif;font-size:15px;line-height:1.55}
+#elig-root button,#elig-root input,#elig-root select,#elig-root textarea{font:inherit}#elig-root button{cursor:pointer}#elig-root button:disabled{cursor:not-allowed;opacity:.54}#elig-root a{color:var(--indigo)}#elig-root a:focus-visible,#elig-root button:focus-visible,#elig-root input:focus-visible,#elig-root select:focus-visible,#elig-root textarea:focus-visible{outline:3px solid #a79be5;outline-offset:3px}
+#elig-root [hidden]{display:none!important}
+#elig-root #elig-app{max-width:1170px;margin:0 auto;padding:40px 24px 82px}#elig-root .eyebrow{text-transform:uppercase;font-size:11px;letter-spacing:.18em;color:#7569b7;font-weight:800;margin-bottom:12px}#elig-root .title-serif{font-family:Georgia,"Times New Roman",serif;font-weight:500;letter-spacing:-.035em;line-height:1.11;color:var(--navy)}
+#elig-root .hero{display:grid;grid-template-columns:1.12fr .88fr;background:#fff;border:1px solid #e8e7ed;border-radius:26px;overflow:hidden;box-shadow:0 26px 80px #09163f0b;min-height:565px}#elig-root .hero-content{padding:68px 64px 66px}#elig-root .hero h1{font-size:clamp(36px,4.4vw,60px);max-width:570px;margin:0 0 23px}#elig-root .hero-lead{font-size:16px;color:#657087;max-width:465px;margin:0 0 26px;line-height:1.9}#elig-root .hero-illustration{background:linear-gradient(140deg,#06113a,#150c5e 75%);position:relative;isolation:isolate;min-height:410px;display:flex;align-items:center;justify-content:center;overflow:hidden}#elig-root .hero-illustration:before{content:"";position:absolute;inset:6% -28% auto auto;width:450px;height:450px;border:1px solid #C99B3F41;border-radius:50%;box-shadow:0 0 0 38px #C99B3F11,0 0 0 79px #C99B3F09;z-index:-1}#elig-root .hero-illustration:after{content:"";position:absolute;width:430px;height:430px;left:-180px;bottom:-290px;border-radius:50%;background:#4c39ba45;filter:blur(20px)}#elig-root .orbit-label{position:absolute;background:#fff;color:var(--navy);padding:10px 15px;border-radius:10px;font-weight:750;font-size:11px;box-shadow:0 10px 26px #0003}#elig-root .orbit-label.one{top:0;left:-34px}#elig-root .orbit-label.two{right:-32px;bottom:30px}
+#elig-root .cta{border:0;background:linear-gradient(120deg,var(--navy),var(--indigo));color:#fff;min-height:47px;padding:12px 19px;border-radius:9px;font-weight:760;font-size:13px;display:inline-flex;align-items:center;justify-content:center;gap:12px;transition:transform .12s,box-shadow .12s;text-decoration:none}#elig-root .cta:hover:not(:disabled){transform:translateY(-1px);box-shadow:0 8px 20px #2E2A8C29}#elig-root .cta .arrow{font-size:19px;line-height:1}#elig-root .cta.light{color:var(--indigo);background:#fff;border:1px solid #cbc9e7;box-shadow:none}#elig-root .cta.light:hover{background:#f9f8ff}#elig-root .cta.plain{background:transparent;color:var(--soft);border:1px solid var(--edge);box-shadow:none}#elig-root .cta.plain:hover{background:#f7f8fa}#elig-root .cta.block{width:100%}#elig-root .cta.sm{min-height:37px;padding:8px 13px;font-size:12px}
+#elig-root .checkpoint-list{display:flex;flex-wrap:wrap;gap:14px 22px;margin-top:30px}#elig-root .checkpoint-list span{display:flex;align-items:center;gap:7px;color:#627087;font-size:12px}#elig-root .small-check{border-radius:50%;width:16px;height:16px;background:#eaf4ef;color:#1d7657;display:grid;place-items:center;font-size:10px;font-weight:900}
+#elig-root .after-hero{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-top:21px}#elig-root .info-tile{padding:20px 23px;border:1px solid var(--edge);border-radius:14px;background:#ffffffcb}#elig-root .info-tile .num{font-size:11px;letter-spacing:.14em;color:#7E6120;font-weight:800}#elig-root .info-tile h3{font-size:14px;margin:8px 0 5px}#elig-root .info-tile p{font-size:12px;line-height:1.65;margin:0;color:#778299}#elig-root .form-card{background:#fff;border:1px solid #e6e9f0;border-radius:20px;box-shadow:0 12px 32px #0c1c4208}#elig-root .form-card{padding:34px 39px 27px;min-height:450px}#elig-root .form-card h2{font-family:Georgia,serif;font-size:29px;font-weight:500;margin:0 0 7px;letter-spacing:-.025em;color:var(--navy)}#elig-root .card-sub{font-size:13px;color:var(--soft);line-height:1.75;margin:0 0 25px;max-width:650px}#elig-root .form-kicker{font-size:10px;font-weight:800;letter-spacing:.16em;text-transform:uppercase;color:#8175bb;margin-bottom:9px}
+#elig-root .form-grid{display:grid;grid-template-columns:1fr 1fr;gap:19px}#elig-root .field{margin-bottom:20px}#elig-root .field label,#elig-root .field-label{display:block;color:#2b3851;font-weight:750;font-size:12px;margin-bottom:7px}#elig-root .field .optional{color:#a3acb8;font-weight:550}#elig-root .field input,#elig-root .field select,#elig-root .field textarea,#elig-root .country-picker select{width:100%;height:45px;background:#fff;border:1px solid #dfe3eb;border-radius:9px;padding:10px 12px;color:#1b2840;outline:none;transition:border .1s}#elig-root .field textarea{height:auto;min-height:88px;resize:vertical}#elig-root .field input:focus,#elig-root .field select:focus,#elig-root .field textarea:focus,#elig-root .country-picker select:focus{border-color:#8375d7;box-shadow:0 0 0 3px #eae7fd}#elig-root .help{font-size:11px;color:#8490a2;margin-top:7px;line-height:1.6}#elig-root .rule{border:0;border-top:1px solid #eff1f5;margin:23px 0}#elig-root .required-star{color:#C99B3F;margin-left:2px}
+#elig-root .mode-row{display:flex;flex-wrap:wrap;gap:9px;margin:8px 0 14px}#elig-root .choice{border:1px solid #e0e4ed;background:#fff;padding:10px 14px;border-radius:9px;display:inline-flex;align-items:center;gap:8px;font-weight:680;color:#59657d;font-size:12px;transition:.15s;min-height:44px}#elig-root .choice.selected{background:#f4f2ff;border-color:#6e61b9;color:var(--indigo);box-shadow:0 0 0 2px #bbb1f626}#elig-root .choice .radio-dot{width:14px;height:14px;display:block;border:1.5px solid #a2a8b5;border-radius:50%;flex-shrink:0}#elig-root .choice.selected .radio-dot{border:4px solid var(--indigo)}
+#elig-root .multi-label{display:flex;align-items:baseline;justify-content:space-between;gap:10px}#elig-root .country-picker{display:flex;gap:8px}#elig-root .country-picker select{flex:1;min-width:0}#elig-root .country-picker button{min-width:72px;background:#f4f3ff;border:1px solid #d1cbec;border-radius:8px;color:#332e91;font-weight:740;padding:0 12px}#elig-root .country-picker button:hover{background:#e9e6fa}#elig-root .chips{display:flex;gap:7px;flex-wrap:wrap;margin-top:9px}#elig-root .chip{border:1px solid #e1e4ec;background:#f8f9fb;color:#465269;font-size:11px;border-radius:999px;padding:6px 10px;display:inline-flex;align-items:center;gap:7px}#elig-root .chip button{border:0;background:none;font-size:16px;line-height:1;color:#8c91a0;padding:0 1px;cursor:pointer}#elig-root .empty-chip{font-size:11px;color:#99a2b1;font-style:italic;padding:4px 0}
+#elig-root .question-block{background:#fbfcfe;border:1px solid #e7eaf1;border-radius:13px;padding:19px 19px 15px;margin-bottom:18px}#elig-root .question-block h3{font-size:13px;margin:0 0 6px}#elig-root .question-block p{color:#7c879a;font-size:11px;margin:0 0 10px;line-height:1.7}
+#elig-root .activity-panel{border:1px solid #e4e8f0;border-radius:12px;overflow:hidden;margin-top:13px}#elig-root .activity-panel-top{padding:14px 15px;border-bottom:1px solid #eef0f4;display:flex;justify-content:space-between;align-items:center;gap:14px}#elig-root .activity-panel-top strong{font-size:12px}#elig-root .tiny-note{font-size:10px;color:#8e97a6}#elig-root .activity-search{width:100%;border:1px solid #e0e4ed;border-radius:8px;padding:9px 12px;font-size:12px;min-height:39px}#elig-root .activity-body{padding:11px 15px;max-height:335px;overflow:auto;display:grid;grid-template-columns:1fr 1fr;gap:6px 13px}#elig-root .activity-option{display:flex;align-items:flex-start;gap:9px;cursor:pointer;border-radius:7px;padding:8px 7px;font-size:11px;line-height:1.5;color:#4c566b}#elig-root .activity-option:hover{background:#f8f8fc}#elig-root .activity-option input{margin-top:3px;accent-color:var(--indigo);flex-shrink:0}#elig-root .activity-option.no-match{display:none}#elig-root .activity-empty{display:none;padding:10px 14px;color:#8991a1;font-size:12px}#elig-root .activity-empty.visible{display:block}
+#elig-root .alert{border-radius:10px;padding:12px 14px;font-size:12px;line-height:1.6;display:flex;gap:9px;margin:14px 0}#elig-root .alert .glyph{font-weight:850}#elig-root .alert.neutral{background:#f5f6fb;border:1px solid #e7e8f3;color:#64718b}#elig-root .alert.warning{background:#fff9e9;border:1px solid #f3e4bb;color:#8b6531}#elig-root .alert.error{background:#fff0f0;border:1px solid #f7c9c9;color:#a83e46}#elig-root .alert strong{font-weight:800}#elig-root .attest{display:flex;align-items:flex-start;gap:11px;background:#f8f9fc;border:1px solid #e6eaf1;padding:15px;border-radius:10px;cursor:pointer;margin-top:17px;font-size:12px;color:#4e5c72}#elig-root .attest input{margin-top:3px;accent-color:var(--indigo)}
+#elig-root .result-stage{background:#fff;border-radius:24px;border:1px solid #e5e8ef;padding:45px 48px 37px;max-width:840px;margin:16px auto;box-shadow:0 18px 60px #111d3d0c}#elig-root .result-mark{width:62px;height:62px;border-radius:17px;display:grid;place-items:center;font-size:27px;font-weight:900;margin-bottom:21px}#elig-root .result-mark.match{background:var(--good-bg);color:var(--good)}#elig-root .result-mark.review{background:var(--warn-bg);color:var(--warn)}#elig-root .result-mark.unable{background:var(--bad-bg);color:var(--bad)}#elig-root .result-stage h2{font-family:Georgia,serif;font-size:39px;letter-spacing:-.035em;font-weight:500;line-height:1.15;margin:0 0 15px;color:var(--navy)}#elig-root .result-stage .result-intro{font-size:15px;color:#68758b;line-height:1.85;max-width:670px}#elig-root .result-stage .next-card{background:#f8f9fb;border:1px solid #e7eaf1;border-radius:14px;padding:22px;margin:26px 0}#elig-root .next-card h3{margin:0 0 7px;font-size:14px;color:#22324d}#elig-root .next-card p{font-size:12px;line-height:1.75;color:#758195;margin:0}#elig-root .result-actions{display:flex;flex-wrap:wrap;gap:10px}#elig-root .disclaimer{color:#98a0ae;font-size:11px;line-height:1.7;margin-top:22px}
+@media(max-width:960px){#elig-root .hero-content{padding:45px 39px}#elig-root .form-card{padding:28px 25px}}@media(max-width:750px){#elig-root #elig-app{padding:22px 15px 55px}#elig-root .hero{grid-template-columns:1fr}#elig-root .hero-content{padding:38px 27px}#elig-root .hero-illustration{min-height:260px}#elig-root .orbit-label{font-size:9px}#elig-root .after-hero{grid-template-columns:1fr}#elig-root .form-grid{grid-template-columns:1fr}#elig-root .form-card{padding:25px 19px}#elig-root .activity-body{grid-template-columns:1fr}#elig-root .result-stage{padding:29px 23px}#elig-root .result-stage h2{font-size:30px}}
+@media(max-width:390px){#elig-root .choice{padding:9px 11px}#elig-root .result-actions .cta{width:100%}}
+#elig-root .fee-page{max-width:950px;margin:0 auto}
+#elig-root .fee-intro{display:flex;justify-content:space-between;align-items:flex-start;gap:20px;margin-bottom:21px}
+#elig-root .fee-intro .title-serif{font-size:clamp(32px,4.5vw,49px);margin:3px 0 8px}
+#elig-root .fee-intro p{color:var(--soft);font-size:13px;margin:0;max-width:650px;line-height:1.8}
+#elig-root .fee-breadcrumb{display:flex;align-items:center;gap:9px;font-size:11px;font-weight:750;color:#79699c;white-space:nowrap}
+#elig-root .fee-breadcrumb .b-separated{color:#a6acb8}
+#elig-root .fee-sheet{background:#f5f2e6;border:1px solid #e0d7b5;border-radius:16px;padding:30px 34px 23px;box-shadow:0 18px 45px #07123f0b}
+#elig-root .fee-sheet-top{display:flex;justify-content:space-between;align-items:center;gap:18px;border-bottom:1px solid #d9cb9d;padding:0 0 16px;margin-bottom:20px}
+#elig-root .fee-sheet-top .label{color:#947c36;font-size:10px;letter-spacing:.16em;text-transform:uppercase;font-weight:800}
+#elig-root .fee-sheet-top .entity{font-size:12px;font-weight:800;color:var(--navy);margin-top:3px}
+#elig-root .fee-sheet-top .right{text-align:right;color:#6f6585;font-size:10px;line-height:1.55}
+#elig-root .fee-sheet h2{font-family:Georgia,'Times New Roman',serif;color:var(--navy);font-size:clamp(28px,3vw,38px);font-weight:500;letter-spacing:-.025em;margin:4px 0 3px}
+#elig-root .fee-sheet .fee-sub{color:#8f7b4f;font-size:10px;font-weight:800;letter-spacing:.12em;text-transform:uppercase}
+#elig-root .fee-description{font-size:12px;color:#48526b;line-height:1.8;margin:18px 0 21px}
+#elig-root .fee-rule-label{display:flex;align-items:center;gap:12px;margin:24px 0 11px;text-transform:uppercase;letter-spacing:.14em;font-size:10px;font-weight:850;color:var(--navy)}
+#elig-root .fee-rule-label:after{content:'';height:1px;background:#d6c58e;flex:1}
+#elig-root .fee-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+#elig-root .fee-card{border:1px solid #dacb9c;background:#fffef9;border-radius:9px;padding:22px 23px 16px}
+#elig-root .fee-card h3{font-size:12px;text-transform:uppercase;letter-spacing:.09em;color:var(--navy);margin:0 0 7px}
+#elig-root .fee-accent{width:27px;height:2px;background:#C99B3F;margin-bottom:18px}
+#elig-root .fee-line{padding:0 0 13px;margin:0 0 13px;border-bottom:1px solid #ede7cd}
+#elig-root .fee-line:last-child{border:0;padding:0;margin:0}
+#elig-root .fee-line .k{font-size:10px;letter-spacing:.095em;text-transform:uppercase;color:#7E6120;font-weight:650;margin-bottom:4px}
+#elig-root .fee-line .v{font-size:22px;font-weight:800;color:var(--navy);line-height:1.3}
+#elig-root .fee-line .unit{font-size:10px;letter-spacing:.05em;text-transform:uppercase;color:#7E6120;margin-top:2px}
+#elig-root .fee-charge-table{border:1px solid #d7cdac;border-radius:9px;overflow:hidden;background:#fffcf5;width:100%;border-collapse:separate;border-spacing:0}
+#elig-root .fee-charge-table th{background:#f1ebd1;padding:11px 14px;font-size:11px;color:var(--navy);text-align:left;text-transform:uppercase;letter-spacing:.05em}
+#elig-root .fee-charge-table td{padding:13px 14px;font-size:12px;color:#46506c;border-top:1px solid #e7dfc0}
+#elig-root .fee-charge-table td strong{color:var(--navy)}
+#elig-root .fee-charge-table td small{display:block;font-size:10px;color:#7a6c58;margin-top:2px;line-height:1.45}
+#elig-root .fee-sheet .fine-print{font-size:11px;color:#65606a;line-height:1.7;margin:12px 0 0}
+#elig-root .fee-closure{display:flex;justify-content:space-between;gap:20px;align-items:center;border:1px solid #d8c9a1;border-radius:8px;padding:14px 17px;background:#fffef9;color:var(--navy);font-size:12px}
+#elig-root .fee-closure strong{font-size:17px}
+#elig-root .fee-sheet-footer{border-top:1px solid #d7cba4;margin-top:23px;padding-top:12px;display:flex;justify-content:space-between;gap:10px;font-size:9px;color:#8a7c65}
+#elig-root .fee-callout{background:#fff;border:1px solid #e1e4ed;border-left:4px solid var(--indigo);padding:18px 21px;border-radius:10px;margin:18px 0;display:flex;gap:13px;align-items:flex-start}
+#elig-root .fee-callout .callout-icon{width:28px;height:28px;display:grid;place-items:center;color:var(--indigo);border-radius:50%;font-weight:800;background:#f1efff;flex-shrink:0}
+#elig-root .fee-callout strong{font-size:13px;color:var(--navy)}
+#elig-root .fee-callout p{font-size:12px;color:#69758d;line-height:1.7;margin:5px 0 0}
+#elig-root .fee-actions{display:flex;gap:12px;flex-wrap:wrap;align-items:center;margin:20px 0 0}
+@media(max-width:700px){#elig-root .fee-intro{display:block}#elig-root .fee-breadcrumb{margin:15px 0 0;white-space:normal}#elig-root .fee-sheet{padding:20px 15px 17px}#elig-root .fee-grid{grid-template-columns:1fr}#elig-root .fee-sheet-top{align-items:flex-start}#elig-root .fee-sheet-top .right{max-width:140px}#elig-root .fee-charge-table td,#elig-root .fee-charge-table th{padding:10px 8px;font-size:10px}#elig-root .fee-line .v{font-size:20px}#elig-root .fee-charge-table thead{display:none}#elig-root .fee-charge-table tr,#elig-root .fee-charge-table td{display:block;width:100%}#elig-root .fee-charge-table td{border-top:0;padding:9px 13px}#elig-root .fee-charge-table td:before{content:attr(data-label);display:block;color:#7E6120;font-size:9px;font-weight:800;text-transform:uppercase;letter-spacing:.08em;margin-bottom:4px}#elig-root .fee-charge-table td:not(:first-child){border-top:1px solid #eee7ce}#elig-root .fee-actions .cta{width:100%}}
+#elig-root{font-family:"Hanken Grotesk","Segoe UI",Arial,sans-serif;
+  background:radial-gradient(950px 500px at 100% 0%,rgba(230,203,134,.13),transparent 76%),var(--bg)}
+#elig-root .eyebrow,#elig-root .form-kicker,#elig-root .fee-sheet-top .label{color:var(--gold-deep)}
+#elig-root .title-serif,#elig-root .form-card h2,#elig-root .result-stage h2{font-family:"Newsreader",Georgia,"Times New Roman",serif}
+#elig-root .hero{grid-template-columns:minmax(0,1fr) minmax(0,1.03fr);background:#fffdf8;border-color:#E6E0CE}
+#elig-root .hero-content{padding:70px 49px 68px;display:flex;flex-direction:column;align-items:flex-start;justify-content:center}
+#elig-root .hero-content .eyebrow{padding-left:12px;border-left:3px solid var(--gold);margin-bottom:21px}
+#elig-root .hero h1{font-size:clamp(36px,4.05vw,56px)}
+#elig-root .hero-illustration{background:radial-gradient(ellipse at 44% 56%,#ffffff 0%,#faf8f0 56%,#f5efdf 100%);
+    min-height:490px;display:flex;justify-content:center;align-items:center;overflow:hidden}
+#elig-root .hero-illustration:before,#elig-root .hero-illustration:after{content:none!important;display:none!important}
+#elig-root .hero-image{width:100%;max-width:100%;height:auto;max-height:96%;display:block;object-fit:contain;
+  filter:drop-shadow(0 18px 29px rgba(126,97,32,.06))}
+#elig-root .info-tile .num{color:var(--gold-deep)}
+#elig-root .fee-accent{background:var(--gold)}
+#elig-root .fee-sheet-top{border-color:#E6CB86}
+#elig-root .fee-sheet-top .label{color:var(--gold-deep)}
+#elig-root .fee-rule-label:after{background:#DCCB8E}
+@media(max-width:960px){#elig-root .hero-content{padding:48px 35px}}
+@media(max-width:750px){
+  #elig-root .hero{grid-template-columns:minmax(0,1fr)}
+  #elig-root .hero-content{padding:40px 28px 28px}
+  #elig-root .hero-illustration{min-height:230px;padding:6px 14px 18px}
+  #elig-root .hero-image{width:min(100%,540px);height:auto}
+}
+@media(max-width:420px){#elig-root .hero-content{padding:31px 23px 24px}#elig-root .hero-illustration{padding:0 7px 13px;min-height:198px}}
+#elig-root .result-stage{max-width:none;margin:0;border:0;background:transparent;padding:0;box-shadow:none}
+#elig-root .result-hero{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.03fr);overflow:hidden;border:1px solid #E6E0CE;border-radius:26px;background:#fffdf8;box-shadow:0 26px 80px #09163f0b;min-height:535px}
+#elig-root .result-hero .hero-content{padding:53px 49px 44px;align-items:flex-start;justify-content:center}
+#elig-root .result-hero .hero-illustration{background:radial-gradient(ellipse at 44% 56%,#fff 0%,#faf8f0 56%,#f5efdf 100%);min-height:470px}
+#elig-root .result-hero .hero-image{max-height:97%}
+#elig-root .result-hero .eyebrow{padding-left:12px;border-left:3px solid var(--gold);margin:0 0 16px;color:var(--gold-deep);letter-spacing:.13em}
+#elig-root .result-hero h2{font-size:clamp(32px,3.6vw,53px);line-height:1.07;letter-spacing:-.035em;max-width:600px;margin:0 0 18px;color:var(--navy)}
+#elig-root .result-hero .result-intro{font-size:15px;line-height:1.7;color:var(--soft);margin:0 0 20px;max-width:520px}
+#elig-root .result-hero .result-mark{width:45px;height:45px;border-radius:13px;margin:0 0 18px;font-size:25px}
+#elig-root .result-hero .next-card{border:1px solid #E5E6EA;background:rgba(255,255,255,.83);border-radius:12px;padding:16px 18px;margin:0 0 22px;max-width:580px}
+#elig-root .result-hero .next-card h3{color:var(--navy);font-size:13px;margin:0 0 4px}
+#elig-root .result-hero .next-card p{color:var(--soft);font-size:12px;line-height:1.6;margin:0}
+#elig-root .result-hero .result-actions{gap:8px;align-items:center}
+#elig-root .result-hero .result-actions .cta{font-size:12px;min-height:44px;padding:10px 15px}
+#elig-root .result-hero .disclaimer{color:#65738A;font-size:10px;line-height:1.55;margin:20px 0 0;max-width:560px}
+#elig-root .result-extra{padding:18px 24px;margin-top:17px;background:#fff;border:1px solid var(--edge);border-radius:14px;display:flex;align-items:center;gap:15px;flex-wrap:wrap}
+#elig-root .result-extra .extra-kicker{font-size:11px;letter-spacing:.10em;text-transform:uppercase;font-weight:800;color:var(--gold-deep);min-width:165px}
+#elig-root .result-extra p{flex:1;font-size:12px;color:var(--soft);margin:0;line-height:1.55;min-width:220px}
+@media(max-width:960px){#elig-root .result-hero .hero-content{padding:40px 35px}#elig-root .result-hero .hero-illustration{min-height:440px}}
+@media(max-width:750px){#elig-root .result-hero{grid-template-columns:1fr}#elig-root .result-hero .hero-content{padding:37px 28px 31px}#elig-root .result-hero .hero-illustration{min-height:215px;padding:0 14px 15px}#elig-root .result-hero .hero-image{width:min(100%,540px)}#elig-root .result-hero h2{font-size:clamp(31px,8vw,44px)}#elig-root .result-extra{padding:15px 18px}}
+@media(max-width:420px){#elig-root .result-hero .hero-content{padding:31px 23px}#elig-root .result-hero .hero-illustration{min-height:195px;padding:0 7px 12px}#elig-root .result-hero .result-actions{width:100%}#elig-root .result-hero .result-actions .cta{width:100%}}
+#elig-root .field .optional,#elig-root .tiny-note,#elig-root .result-hero .disclaimer{color:#454E66!important;font-size:max(12px,0.75rem)!important}
+#elig-root .activity-option{align-items:center;gap:10px}
+#elig-root .activity-option .suggested{font-size:10px;color:#7E6120;background:#FBF1D8;padding:3px 6px;border-radius:5px;white-space:nowrap;margin-left:auto}
+#elig-root .result-hero .disclaimer{line-height:1.55}
+@media(max-width:750px){
+ #elig-root .chip button{min-width:34px;min-height:34px;display:inline-grid;place-items:center;font-size:17px}
+ #elig-root .cta.sm,#elig-root .country-picker button{min-height:44px!important}
+ #elig-root .activity-option .suggested{white-space:normal;line-height:1.3}
+}
+#elig-root .quick-page{max-width:1050px;margin:0 auto}#elig-root .quick-intro{display:flex;align-items:flex-end;justify-content:space-between;gap:18px;margin-bottom:24px}
+#elig-root .quick-intro h1{font-size:clamp(34px,4.1vw,52px);margin:0 0 8px}#elig-root .quick-intro p{color:var(--soft);margin:0;max-width:690px}
+#elig-root .time-pill{white-space:nowrap;flex-shrink:0;border:1px solid #e3d5af;border-radius:999px;background:#fffbef;color:#795d25;padding:8px 13px;font-size:11px;font-weight:750}
+#elig-root .quick-form{background:#fff;border:1px solid var(--edge);box-shadow:0 16px 55px #09163f0b;border-radius:22px;padding:18px 35px 28px}
+#elig-root .quick-section{padding:22px 0 25px;border-bottom:1px solid #e4e6ec}
+#elig-root .quick-section-head{display:flex;gap:14px;align-items:flex-start;margin-bottom:20px}
+#elig-root .quick-number{width:38px;height:38px;display:grid;place-items:center;flex-shrink:0;background:#fff8e8;color:#7E6120;border:1px solid #E6CB86;border-radius:11px;font-size:12px;font-weight:800}
+#elig-root .quick-section-head h2{font:500 27px/1.15 "Newsreader",Georgia,serif;margin:0 0 5px;color:var(--navy)}
+#elig-root .quick-section-head p{font-size:12px;color:var(--muted);margin:0}
+#elig-root .quick-section .field{margin-bottom:16px}#elig-root .quick-section .field-label{font-size:13px;font-weight:700;color:var(--navy)}
+#elig-root .quick-section .question-block{padding:0;margin:0;border:0;background:none}#elig-root .quick-section .question-block h3{font-size:13px;color:var(--navy);margin:0 0 5px}
+#elig-root .quick-section .question-block p{font-size:11px;margin:0 0 11px;color:var(--muted)}
+#elig-root .quick-exposure{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px;margin-top:20px}
+#elig-root .quick-exposure .question-block{padding:15px;border:1px solid var(--edge);border-radius:12px;background:#fbfcfe}
+#elig-root .quick-exposure .mode-row{gap:4px;margin-bottom:12px;flex-wrap:wrap}
+#elig-root .quick-exposure .mode-row .choice{padding:8px 9px;font-size:11px;min-height:40px}
+#elig-root .quick-exposure .country-picker{display:flex;flex-wrap:wrap;gap:6px}
+#elig-root .quick-exposure .country-picker select{min-width:0;flex:1 1 150px;max-width:100%}
+#elig-root .quick-exposure .country-picker button{flex:0 0 auto}
+#elig-root .quick-section .activity-body{max-height:260px}
+#elig-root .quick-section .alert{margin:12px 0}
+#elig-root .quick-finish{padding:22px 0 0}
+#elig-root .quick-optional{max-width:440px}
+#elig-root .quick-finish .attest{max-width:100%;margin:12px 0 20px}
+#elig-root .quick-actions{display:flex;gap:15px;justify-content:space-between;align-items:center;flex-wrap:wrap}
+#elig-root .quick-actions>span{color:var(--muted);font-size:11px;max-width:410px}
+#elig-root .quick-actions .cta{min-height:46px}
+@media(max-width:900px){#elig-root .quick-exposure{grid-template-columns:1fr}#elig-root .quick-exposure .question-block{padding:16px}#elig-root .quick-form{padding:15px 25px 25px}}
+@media(max-width:650px){#elig-root .quick-intro{display:block}#elig-root .time-pill{display:inline-block;margin-top:13px}#elig-root .quick-intro h1{font-size:38px}#elig-root .quick-form{padding:10px 18px 24px}#elig-root .quick-section-head h2{font-size:25px}#elig-root .quick-section{padding:20px 0}#elig-root .quick-actions .cta{width:100%;justify-content:center}#elig-root .quick-actions>span{order:2}}
+#elig-root .quick-number{background:#06113A;color:#fff;border-color:#06113A}
+#elig-root .time-pill{background:#06113A;color:#fff;border-color:#06113A}
+#elig-root .choice.selected{background:#F7F0E4;color:#06113A;border-color:#C99B3F;box-shadow:0 0 0 2px rgba(201,155,63,.12)}
+#elig-root .choice.selected .radio-dot{border-color:#7E6120}
+#elig-root .country-picker button{background:#F7F0E4;color:#06113A;border-color:#E6CB86}
+#elig-root .country-picker button:hover{background:#efe3cc;border-color:#C99B3F}
+#elig-root .choice:focus-visible,#elig-root .country-picker button:focus-visible{outline:2px solid #06113A;outline-offset:3px}
+#elig-root .activity-panel-visible{margin-top:6px;background:#fff}
+#elig-root .activity-panel-visible .activity-panel-top{align-items:center}
+#elig-root .activity-count-pill{display:inline-flex;flex-shrink:0;white-space:nowrap;padding:6px 10px;border-radius:999px;background:#F7F0E4;border:1px solid #E6CB86;color:#06113A;font-size:11px;font-weight:750}
+#elig-root .activity-search-wrap{padding:12px 14px 0}
+#elig-root .activity-panel-visible .activity-body{max-height:260px;padding:10px 14px;scrollbar-gutter:stable}
+#elig-root .activity-panel-visible .activity-option{font-size:12px;min-height:36px}
+#elig-root .activity-panel-visible .activity-option input{accent-color:#06113A;min-width:15px;min-height:15px}
+#elig-root .activity-panel-visible .activity-option:has(input:checked){background:#F7F0E4;color:#06113A;font-weight:650}
+#elig-root .activity-decision{margin-top:13px;background:#FBFCFE;border:1px solid #D8E2EE;border-radius:12px;padding:14px 15px 10px}
+#elig-root .activity-decision .field{margin:0}
+#elig-root .activity-decision .field-label{font-size:12px;color:#06113A;font-weight:750}
+#elig-root .activity-decision .choice{font-size:12px}
+#elig-root .activity-decision-note{margin:0 0 3px;font-size:11px;color:#65738A;line-height:1.6}
+@media(max-width:640px){#elig-root .activity-panel-visible .activity-body{max-height:255px;grid-template-columns:1fr}#elig-root .activity-panel-visible .activity-panel-top{align-items:flex-start;flex-direction:column;gap:8px}#elig-root .activity-decision .mode-row{flex-direction:column;align-items:stretch}#elig-root .activity-decision .choice{width:100%}}
+@media (min-width:901px){
+  #elig-root .quick-exposure{align-items:stretch}
+  #elig-root .quick-exposure .question-block{display:flex;flex-direction:column;min-width:0;height:100%;margin:0}
+  #elig-root .quick-exposure .question-block h3{min-height:21px;margin:0 0 5px}
+  #elig-root .quick-exposure .question-block > p{min-height:57px;line-height:1.55;margin:0 0 8px}
+  #elig-root .quick-exposure .mode-row{min-height:45px;margin:0 0 12px;align-items:flex-start}
+  #elig-root .quick-exposure .country-group{margin:0;min-width:0}
+}
+#elig-root .quick-exposure .country-picker{display:grid;grid-template-columns:minmax(0,1fr) 72px;gap:6px;align-items:stretch}
+#elig-root .quick-exposure .country-picker select{min-width:0;width:100%;height:45px;flex:none}
+#elig-root .quick-exposure .country-picker button{width:72px;min-width:0;height:45px}
+#elig-root .quick-exposure .country-group .chips{margin-top:10px;min-height:28px}
+#elig-root .quick-exposure .country-group .multi-label{min-height:22px}
+@media (max-width:900px){
+  #elig-root .quick-exposure .question-block > p{min-height:0}
+  #elig-root .quick-exposure .mode-row{margin-bottom:12px}
+}
 </style></head>
 <body>
 <!-- GTM noscript fallback removed: without JavaScript a visitor cannot give consent. -->
@@ -2457,38 +2560,7 @@ body:has(section.page.is-active[data-page="eligibility"]) .wa-float{ display:non
 
     <!-- ============================= ELIGIBILITY ============================= -->
     <section class="page" data-page="eligibility" hidden="">
-      <div class="page-hero"><div class="container"><p class="eyebrow">Start your application</p><h1>Check your eligibility</h1><p class="lead" style="margin-top:16px;max-width:720px;">See whether your business may be suitable for onboarding with ARIE Finance before you gather corporate documents. Where your profile needs a closer look, our team reviews it personally.</p><ul class="el-ticks"><li>About 3 minutes</li><li>No documents required</li><li>Preliminary assessment only</li></ul></div></div>
-      <section class="section section--canvas contact-section"><div class="container form-layout"><div><div class="form-card" id="el-card">
-        <form id="el-form" novalidate="">
-          <div class="el-errors" id="el-errors" role="alert" tabindex="-1" hidden=""></div>
-          <div class="form-section-head"><span>1 · Your company</span></div>
-          <div><label for="el-company">Company name</label><input id="el-company" name="company" maxlength="150" autocomplete="organization" placeholder="e.g. Example Holdings Ltd"></div>
-          <div><label for="el-incorp">Country of incorporation</label><select id="el-incorp" name="incorp"><option value="">Select a country</option></select></div>
-          <fieldset class="el-q"><legend>Does the company operate in other countries?</legend><div class="el-choices" data-mode="opsMode"><label class="intent-chip"><input type="radio" name="opsMode" value="no"><span>No other countries</span></label><label class="intent-chip"><input type="radio" name="opsMode" value="yes"><span>Yes</span></label><label class="intent-chip"><input type="radio" name="opsMode" value="unsure"><span>Not sure</span></label></div>
-            <div class="el-tags" data-tags="operations" hidden=""><label for="el-operations-input">Countries of operation</label><ul class="el-chips" aria-live="polite"></ul><input id="el-operations-input" list="el-country-list" autocomplete="off" placeholder="Type a country and press Enter"></div></fieldset>
-
-          <div class="form-section-head"><span>2 · What your business does</span></div>
-          <div><label for="el-sector">Principal business sector</label><select id="el-sector" name="sector"><option value="">Select the principal sector</option></select></div>
-          <div><label for="el-description">Brief description of goods or services <span class="el-opt">(optional)</span></label><textarea id="el-description" name="description" maxlength="350" placeholder="What does the business sell or provide?"></textarea></div>
-          <fieldset class="el-q"><legend>Does the business undertake any of the activities on ARIE’s list?</legend><div class="el-choices"><label class="intent-chip"><input type="radio" name="activityMode" value="no"><span>None of these</span></label><label class="intent-chip"><input type="radio" name="activityMode" value="yes"><span>Yes — select activities</span></label><label class="intent-chip"><input type="radio" name="activityMode" value="unsure"><span>Not sure</span></label></div>
-            <div class="el-activities" id="el-activities" hidden=""><label for="el-activity-search">Search the list</label><input id="el-activity-search" type="search" autocomplete="off" placeholder="Try crypto, cars, NGO, betting, metals…"><div class="el-activity-list" id="el-activity-list" role="group" aria-label="Activities"></div><p class="el-help" id="el-activity-empty" hidden="">No exact match. If unsure, choose “Not sure” rather than assuming the activity is not listed.</p></div>
-            <p class="el-help">If you are unsure whether an activity applies, choose “Not sure”. Our team will discuss it with you.</p></fieldset>
-
-          <div class="form-section-head"><span>3 · Countries and payments</span></div>
-          <div class="el-tags" data-tags="owners"><label for="el-owners-input">Nationalities of the ultimate beneficial owners</label><ul class="el-chips" aria-live="polite"></ul><input id="el-owners-input" list="el-country-list" autocomplete="off" placeholder="Type a country and press Enter"><label class="el-unsure"><input type="checkbox" data-unknown="ownerUnknown"> Not sure</label><p class="el-help">Nationalities only. No names or identity documents are needed.</p></div>
-          <div class="el-tags" data-tags="incoming"><label for="el-incoming-input">Countries you expect to receive payments from</label><ul class="el-chips" aria-live="polite"></ul><input id="el-incoming-input" list="el-country-list" autocomplete="off" placeholder="Type a country and press Enter"><label class="el-unsure"><input type="checkbox" data-unknown="incomingUnknown"> Not sure</label></div>
-          <div class="el-tags" data-tags="outgoing"><label for="el-outgoing-input">Countries you expect to send payments to</label><ul class="el-chips" aria-live="polite"></ul><input id="el-outgoing-input" list="el-country-list" autocomplete="off" placeholder="Type a country and press Enter"><label class="el-unsure"><input type="checkbox" data-unknown="outgoingUnknown"> Not sure</label></div>
-          <div id="el-followups" hidden=""></div>
-
-          <div class="checkbox-row"><input id="el-attest" type="checkbox"><label for="el-attest">I confirm these answers are accurate to the best of my knowledge and understand this is <strong>not an account-opening application, acceptance or compliance clearance</strong>.</label></div>
-          <button class="btn btn-primary" type="submit" id="el-submit">View preliminary result <span aria-hidden="true">&rarr;</span></button>
-          <p class="note" style="margin-top:4px;">No documents are required and nothing is sent to ARIE at this stage.</p>
-          <datalist id="el-country-list"></datalist>
-        </form>
-        <div id="el-view" hidden=""></div>
-      </div></div>
-      <aside class="contact-stack info-card"><div class="contact-head"><span>How it works</span></div><div class="contact-body"><ol class="el-steps" id="el-steps"><li data-step="1"><b>1</b><div><strong>Check your eligibility</strong><span>One page about your business, countries and payments.</span></div></li><li data-step="2"><b>2</b><div><strong>Preliminary result</strong><span>Whether to continue, or to speak with our team first.</span></div></li><li data-step="3"><b>3</b><div><strong>Indicative pricing</strong><span>A non-binding guide. Final pricing is confirmed by ARIE.</span></div></li><li data-step="4"><b>4</b><div><strong>Prepare your documents</strong><span>Using ARIE’s onboarding requirements and checklist.</span></div></li></ol><p class="el-aside-note">A preliminary result is not account approval or an application. ARIE confirms eligibility and pricing after its own review.</p></div></aside>
-      </div></section>
+      <div id="elig-root"><div id="elig-app"><noscript><p>Please enable JavaScript to check your eligibility, or contact us at customercare@ariefinance.com.</p></noscript></div></div>
     </section>
 
     <!-- ============================= FEEDBACK ============================= -->
@@ -3250,206 +3322,228 @@ body:has(section.page.is-active[data-page="eligibility"]) .wa-float{ display:non
 })();
 </script>
 <script>
-/* Eligibility check (/#eligibility). The browser holds only public lists (country names,
-   activity names, sectors). Routes are decided server-side by /api/eligibility; risk lists,
-   reasons and hold conditions never reach the page. See docs/guides/ELIGIBILITY.md. */
+/* Check Your Eligibility (/#eligibility) — website port of the ARIE Eligibility one-page prototype v0.9.
+   Questions, wording, options, order and layout follow v0.9. Deliberate differences (see docs/guides/ELIGIBILITY.md):
+   - the decision is made server-side by /api/eligibility (risk lists and reasons never reach the browser);
+   - on-hold and "cannot proceed" results lead to a secure Further Review request to ARIE (/api/website-form);
+   - permitted applicants finish at the existing /onboarding-requirements page (no separate hand-off screen);
+   - demo-only controls, diagnostics and demo statements are removed.
+   Indicative pricing: PRICING_PUBLIC_APPROVED stays false until management authorises the figures. Until then the
+   pricing screen is shown only on non-production hosts (Vercel previews, localhost) for internal review, as v0.9
+   showed it only in its team-demo mode. */
 (function(){
-  var doc = document, form = doc.getElementById('el-form'); if(!form) return;
-  var REQUIREMENTS_URL = 'https://www.ariefinance.com/onboarding-requirements';
-  /* Indicative pricing: keep null until management approves the figures for public display.
-     When approved, set e.g. { profiles:[{title:'Standard profile', onboarding:'From USD …', monthly:'USD …', transaction:'USD …'}, …] } */
-  var ELIGIBILITY_PRICING = null;
-  var COUNTRIES = [["AF", "Afghanistan"], ["AL", "Albania"], ["DZ", "Algeria"], ["AS", "American Samoa"], ["AD", "Andorra"], ["AO", "Angola"], ["AI", "Anguilla"], ["AQ", "Antarctica"], ["AG", "Antigua and Barbuda"], ["AR", "Argentina"], ["AM", "Armenia"], ["AW", "Aruba"], ["AU", "Australia"], ["AT", "Austria"], ["AZ", "Azerbaijan"], ["BS", "Bahamas"], ["BH", "Bahrain"], ["XB", "Balkans (regional exposure — needs clarification)"], ["BD", "Bangladesh"], ["BB", "Barbados"], ["BY", "Belarus"], ["BE", "Belgium"], ["BZ", "Belize"], ["BJ", "Benin"], ["BM", "Bermuda"], ["BT", "Bhutan"], ["BO", "Bolivia"], ["BQ", "Bonaire, Sint Eustatius and Saba"], ["BA", "Bosnia and Herzegovina"], ["BW", "Botswana"], ["BV", "Bouvet Island"], ["BR", "Brazil"], ["IO", "British Indian Ocean Territory"], ["BN", "Brunei"], ["BG", "Bulgaria"], ["BF", "Burkina Faso"], ["BI", "Burundi"], ["CV", "Cabo Verde"], ["KH", "Cambodia"], ["CM", "Cameroon"], ["CA", "Canada"], ["KY", "Cayman Islands"], ["CF", "Central African Republic"], ["TD", "Chad"], ["CL", "Chile"], ["CN", "China"], ["CX", "Christmas Island"], ["CC", "Cocos (Keeling) Islands"], ["CO", "Colombia"], ["KM", "Comoros"], ["CK", "Cook Islands"], ["CR", "Costa Rica"], ["HR", "Croatia"], ["CU", "Cuba"], ["CW", "Curaçao"], ["CY", "Cyprus"], ["CZ", "Czechia"], ["CI", "Côte d’Ivoire"], ["CD", "Democratic Republic of the Congo"], ["DK", "Denmark"], ["DJ", "Djibouti"], ["DM", "Dominica"], ["DO", "Dominican Republic"], ["EC", "Ecuador"], ["EG", "Egypt"], ["SV", "El Salvador"], ["GQ", "Equatorial Guinea"], ["ER", "Eritrea"], ["EE", "Estonia"], ["SZ", "Eswatini"], ["ET", "Ethiopia"], ["FK", "Falkland Islands (Malvinas)"], ["FO", "Faroe Islands"], ["FJ", "Fiji"], ["FI", "Finland"], ["FR", "France"], ["GF", "French Guiana"], ["PF", "French Polynesia"], ["TF", "French Southern Territories"], ["GA", "Gabon"], ["GM", "Gambia"], ["GE", "Georgia"], ["DE", "Germany"], ["GH", "Ghana"], ["GI", "Gibraltar"], ["GR", "Greece"], ["GL", "Greenland"], ["GD", "Grenada"], ["GP", "Guadeloupe"], ["GU", "Guam"], ["GT", "Guatemala"], ["GG", "Guernsey"], ["GN", "Guinea"], ["GW", "Guinea-Bissau"], ["GY", "Guyana"], ["HT", "Haiti"], ["HM", "Heard Island and McDonald Islands"], ["HN", "Honduras"], ["HK", "Hong Kong"], ["HU", "Hungary"], ["IS", "Iceland"], ["IN", "India"], ["ID", "Indonesia"], ["IR", "Iran"], ["IQ", "Iraq"], ["IE", "Ireland"], ["IM", "Isle of Man"], ["IL", "Israel"], ["IT", "Italy"], ["JM", "Jamaica"], ["JP", "Japan"], ["JE", "Jersey"], ["JO", "Jordan"], ["KZ", "Kazakhstan"], ["KE", "Kenya"], ["KI", "Kiribati"], ["XK", "Kosovo"], ["KW", "Kuwait"], ["KG", "Kyrgyzstan"], ["LA", "Laos"], ["LV", "Latvia"], ["LB", "Lebanon"], ["LS", "Lesotho"], ["LR", "Liberia"], ["LY", "Libya"], ["LI", "Liechtenstein"], ["LT", "Lithuania"], ["LU", "Luxembourg"], ["MO", "Macao"], ["MG", "Madagascar"], ["MW", "Malawi"], ["MY", "Malaysia"], ["MV", "Maldives"], ["ML", "Mali"], ["MT", "Malta"], ["MH", "Marshall Islands"], ["MQ", "Martinique"], ["MR", "Mauritania"], ["MU", "Mauritius"], ["YT", "Mayotte"], ["MX", "Mexico"], ["FM", "Micronesia"], ["MD", "Moldova"], ["MC", "Monaco"], ["MN", "Mongolia"], ["ME", "Montenegro"], ["MS", "Montserrat"], ["MA", "Morocco"], ["MZ", "Mozambique"], ["MM", "Myanmar"], ["NA", "Namibia"], ["NR", "Nauru"], ["NP", "Nepal"], ["NL", "Netherlands"], ["NC", "New Caledonia"], ["NZ", "New Zealand"], ["NI", "Nicaragua"], ["NE", "Niger"], ["NG", "Nigeria"], ["NU", "Niue"], ["NF", "Norfolk Island"], ["KP", "North Korea"], ["MK", "North Macedonia"], ["MP", "Northern Mariana Islands"], ["NO", "Norway"], ["OM", "Oman"], ["PK", "Pakistan"], ["PW", "Palau"], ["PS", "Palestine"], ["PA", "Panama"], ["PG", "Papua New Guinea"], ["PY", "Paraguay"], ["PE", "Peru"], ["PH", "Philippines"], ["PN", "Pitcairn"], ["PL", "Poland"], ["PT", "Portugal"], ["PR", "Puerto Rico"], ["QA", "Qatar"], ["CG", "Republic of the Congo"], ["RO", "Romania"], ["RU", "Russia"], ["RW", "Rwanda"], ["RE", "Réunion"], ["BL", "Saint Barthélemy"], ["SH", "Saint Helena, Ascension and Tristan da Cunha"], ["KN", "Saint Kitts and Nevis"], ["LC", "Saint Lucia"], ["MF", "Saint Martin (French part)"], ["PM", "Saint Pierre and Miquelon"], ["VC", "Saint Vincent and the Grenadines"], ["WS", "Samoa"], ["SM", "San Marino"], ["ST", "Sao Tome and Principe"], ["SA", "Saudi Arabia"], ["SN", "Senegal"], ["RS", "Serbia"], ["SC", "Seychelles"], ["SL", "Sierra Leone"], ["SG", "Singapore"], ["SX", "Sint Maarten (Dutch part)"], ["SK", "Slovakia"], ["SI", "Slovenia"], ["SB", "Solomon Islands"], ["SO", "Somalia"], ["ZA", "South Africa"], ["GS", "South Georgia and the South Sandwich Islands"], ["KR", "South Korea"], ["SS", "South Sudan"], ["ES", "Spain"], ["LK", "Sri Lanka"], ["SD", "Sudan"], ["SR", "Suriname"], ["SJ", "Svalbard and Jan Mayen"], ["SE", "Sweden"], ["CH", "Switzerland"], ["SY", "Syria"], ["TW", "Taiwan"], ["TJ", "Tajikistan"], ["TZ", "Tanzania"], ["TH", "Thailand"], ["TL", "Timor-Leste"], ["TG", "Togo"], ["TK", "Tokelau"], ["TO", "Tonga"], ["TT", "Trinidad and Tobago"], ["TN", "Tunisia"], ["TR", "Turkey"], ["TM", "Turkmenistan"], ["TC", "Turks and Caicos Islands"], ["TV", "Tuvalu"], ["UG", "Uganda"], ["UA", "Ukraine"], ["AE", "United Arab Emirates"], ["GB", "United Kingdom"], ["US", "United States"], ["UM", "United States Minor Outlying Islands"], ["UY", "Uruguay"], ["UZ", "Uzbekistan"], ["VU", "Vanuatu"], ["VA", "Vatican City"], ["VE", "Venezuela"], ["VN", "Vietnam"], ["VG", "Virgin Islands, British"], ["VI", "Virgin Islands, U.S."], ["WF", "Wallis and Futuna"], ["EH", "Western Sahara"], ["YE", "Yemen"], ["ZM", "Zambia"], ["ZW", "Zimbabwe"], ["AX", "Åland Islands"]];
-  var ACTIVITIES = [["R01", "Anonymous, numbered or special-named accounts where the owner cannot be identified"], ["R02", "Arms/munitions or nuclear, chemical, biological, radiological weapons and explosives dealing/manufacture"], ["R03", "Art or antiques dealing and auctioneering"], ["R04", "Companies with bearer shares"], ["R05", "Conflict or blood diamond trading"], ["R06", "Activities involving incitement to violence or racial hatred"], ["R07", "Unauthorised public fundraising"], ["R08", "Online or interactive gambling, including supporting services or infrastructure"], ["R09", "Carbon credits or carbon offset schemes"], ["R10", "Extremist groups or cults promoting violence"], ["R11", "Foreign charities, clubs or associations"], ["R12", "Foreign casino or gambling businesses"], ["R13", "Foreign money service businesses or informal/unregistered value transfers"], ["R14", "Foreign animal testing, live exports or fur trading"], ["R15", "Unregulated foreign online forex trading"], ["R16", "Unlicensed bet-related services in Mauritius"], ["R17", "Illegal investment or Ponzi schemes"], ["R18", "Illegal or unlicensed wildlife trading"], ["R19", "Activities involving human rights abuses or child labour"], ["R20", "Military-type security services or defence sector"], ["R21", "Pornography business"], ["R22", "Unlicensed banks or shell banks"], ["R23", "Unlicensed trade in Iraqi or Syrian cultural heritage"], ["H01", "Designated non-financial businesses and professions (DNFBPs)"], ["H02", "Automobile dealing"], ["H03", "Regulated foreign online forex trading"], ["H04", "Non-profit organisations funded through public/non-member contributions"], ["H05", "Investment dealing"], ["H06", "Payment intermediary services"], ["H07", "Virtual asset service providers (VASPs)"]];
-  var SECTORS = [["professional", "Professional and advisory services"], ["technology", "Technology and software"], ["wholesale", "Wholesale and trading"], ["manufacturing", "Manufacturing and logistics"], ["hospitality", "Hospitality and tourism"], ["property", "Property and real estate"], ["health", "Healthcare and education"], ["financial", "Financial or regulated services"], ["nonprofit", "Charity or non-profit"], ["other", "Other / not sure how to classify"]];
-  var KEYWORDS = {R02:'nuclear chemical biological radiological wmd munitions arms',R03:'auction collectibles antique art',R05:'blood diamond',R08:'online betting casino gambling gaming sportsbook',R09:'carbon credits offset',R11:'foreign charity charities ngo clubs association non profit nonprofit',R12:'foreign casino gambling',R13:'money services remittance foreign msb',R14:'fur animal testing live export',R15:'unregulated foreign exchange forex',R16:'betting wager gambling',R21:'adult explicit pornography',H01:'lawyer accountant real estate property trust service provider dnfbp',H02:'car cars vehicle vehicles motor automotive auto',H03:'regulated forex foreign exchange trading',H04:'charity charitable ngo nonprofit non-profit donations',H05:'investment dealer securities broker',H06:'payments payment intermediary service',H07:'crypto bitcoin blockchain token virtual assets virtual asset digital assets vasp'};
-  var NAME = {}; COUNTRIES.forEach(function(c){ NAME[c[0]] = c[1]; });
-  var BY_NAME = {}; COUNTRIES.forEach(function(c){ BY_NAME[c[1].toLowerCase()] = c[0]; });
-  var S = { operations:[], owners:[], incoming:[], outgoing:[], activities:[], ownerUnknown:false, incomingUnknown:false, outgoingUnknown:false, government:null, precious:null, oilgas:null, followUps:[], route:null };
-  var view = doc.getElementById('el-view'), errBox = doc.getElementById('el-errors');
-  function esc(s){ return String(s == null ? '' : s).replace(/[&<>"']/g, function(c){ return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]; }); }
-  function $(id){ return doc.getElementById(id); }
-
-  /* ---------- populate selects / lists ---------- */
-  var incorp = $('el-incorp'), dl = $('el-country-list'), sector = $('el-sector');
-  COUNTRIES.forEach(function(c){ var o = doc.createElement('option'); o.value = c[0]; o.textContent = c[1]; incorp.appendChild(o); var d = doc.createElement('option'); d.value = c[1]; dl.appendChild(d); });
-  SECTORS.forEach(function(s){ var o = doc.createElement('option'); o.value = s[0]; o.textContent = s[1]; sector.appendChild(o); });
-  var list = $('el-activity-list');
-  ACTIVITIES.forEach(function(a){ var l = doc.createElement('label'); l.className = 'el-activity'; l.setAttribute('data-search', (a[1] + ' ' + (KEYWORDS[a[0]] || '')).toLowerCase()); l.innerHTML = '<input type="checkbox" value="' + a[0] + '"> <span>' + esc(a[1]) + '</span>'; list.appendChild(l); });
-
-  /* ---------- country tag inputs ---------- */
-  function renderTags(box){
-    var key = box.getAttribute('data-tags'), ul = box.querySelector('.el-chips');
-    ul.innerHTML = S[key].map(function(code){ return '<li><span>' + esc(NAME[code]) + '</span><button type="button" data-remove="' + code + '" aria-label="Remove ' + esc(NAME[code]) + '">&times;</button></li>'; }).join('');
-  }
-  function addFrom(input){
-    var box = input.closest('.el-tags'), key = box.getAttribute('data-tags');
-    var code = BY_NAME[input.value.trim().toLowerCase()];
-    if(code && S[key].indexOf(code) < 0){ S[key].push(code); renderTags(box); input.value = ''; return true; }
-    return false;
-  }
-  doc.querySelectorAll('#el-form .el-tags').forEach(function(box){
-    var input = box.querySelector('input[list]');
-    input.addEventListener('keydown', function(e){ if(e.key === 'Enter'){ e.preventDefault(); addFrom(input); } });
-    input.addEventListener('change', function(){ addFrom(input); });
-    input.addEventListener('blur', function(){ addFrom(input); });
-    box.addEventListener('click', function(e){ var b = e.target.closest('[data-remove]'); if(!b) return; var key = box.getAttribute('data-tags'); S[key] = S[key].filter(function(c){ return c !== b.getAttribute('data-remove'); }); renderTags(box); input.focus(); });
-    var unk = box.querySelector('[data-unknown]');
-    if(unk) unk.addEventListener('change', function(){ S[unk.getAttribute('data-unknown')] = unk.checked; input.disabled = unk.checked; box.classList.toggle('is-unknown', unk.checked); });
-  });
-
-  /* ---------- reveal dependent questions ---------- */
-  form.addEventListener('change', function(e){
-    var t = e.target;
-    if(t.name === 'opsMode') form.querySelector('[data-tags="operations"]').hidden = t.value !== 'yes';
-    if(t.name === 'activityMode') $('el-activities').hidden = t.value !== 'yes';
-    if(t.closest && t.closest('#el-activity-list')) S.activities = Array.prototype.map.call(list.querySelectorAll('input:checked'), function(i){ return i.value; });
-    if(t.name && /^el-fu-/.test(t.name)) S[t.name.slice(6)] = t.value;
-  });
-  $('el-activity-search').addEventListener('input', function(){
-    var q = this.value.trim().toLowerCase(), shown = 0;
-    list.querySelectorAll('.el-activity').forEach(function(l){ var ok = !q || l.getAttribute('data-search').indexOf(q) > -1; l.hidden = !ok; if(ok) shown++; });
-    $('el-activity-empty').hidden = shown > 0;
-  });
-
-  function radio(name){ var r = form.querySelector('input[name="' + name + '"]:checked'); return r ? r.value : null; }
-  function answers(){
-    return { company: $('el-company').value.trim(), incorp: incorp.value, opsMode: radio('opsMode'), operations: S.operations.slice(),
-      sector: sector.value, description: $('el-description').value.trim(), activityMode: radio('activityMode'), activities: S.activities.slice(),
-      owners: S.owners.slice(), ownerUnknown: S.ownerUnknown, incoming: S.incoming.slice(), incomingUnknown: S.incomingUnknown,
-      outgoing: S.outgoing.slice(), outgoingUnknown: S.outgoingUnknown, government: S.government, precious: S.precious, oilgas: S.oilgas };
-  }
-  function validate(a){
-    var e = [];
-    if(a.company.length < 2) e.push(['el-company','Enter the company name.']);
-    if(!a.incorp) e.push(['el-incorp','Select the country of incorporation.']);
-    if(!a.opsMode) e.push(['opsMode','Say whether the company operates in other countries.']);
-    else if(a.opsMode === 'yes' && !a.operations.length) e.push(['el-operations-input','Add at least one country of operation.']);
-    if(!a.sector) e.push(['el-sector','Select the principal business sector.']);
-    if(!a.activityMode) e.push(['activityMode','Answer the activities question.']);
-    else if(a.activityMode === 'yes' && !a.activities.length) e.push(['el-activity-search','Select at least one activity, or choose “Not sure”.']);
-    if(!a.ownerUnknown && !a.owners.length) e.push(['el-owners-input','Add beneficial-owner nationalities, or tick “Not sure”.']);
-    if(!a.incomingUnknown && !a.incoming.length) e.push(['el-incoming-input','Add incoming payment countries, or tick “Not sure”.']);
-    if(!a.outgoingUnknown && !a.outgoing.length) e.push(['el-outgoing-input','Add outgoing payment countries, or tick “Not sure”.']);
-    S.followUps.forEach(function(f){ if(!a[f.type]) e.push(['el-fu-' + f.type, 'Answer the additional country question.']); });
-    if(!$('el-attest').checked) e.push(['el-attest','Confirm the declaration.']);
-    return e;
-  }
-  function showErrors(list){
-    form.querySelectorAll('[aria-invalid]').forEach(function(n){ n.removeAttribute('aria-invalid'); });
-    if(!list.length){ errBox.hidden = true; return; }
-    errBox.innerHTML = '<strong>Please check the following:</strong><ul>' + list.map(function(x){ return '<li>' + esc(x[1]) + '</li>'; }).join('') + '</ul>';
-    errBox.hidden = false;
-    list.forEach(function(x){ var n = $(x[0]) || form.querySelector('[name="' + x[0] + '"]'); if(n) n.setAttribute('aria-invalid','true'); });
-    errBox.focus();
-  }
-  var FU_TEXT = { government:'Will your business deal with government entities in: ', precious:'Will your business deal in precious stones, metals or related products involving: ', oilgas:'Will your business deal in oil or gas related activities involving: ' };
-  function renderFollowUps(){
-    var box = $('el-followups');
-    if(!S.followUps.length){ box.hidden = true; box.innerHTML = ''; return; }
-    box.innerHTML = '<div class="form-section-head"><span>A few country-specific questions</span></div>' + S.followUps.map(function(f){
-      var names = f.countries.map(function(c){ return NAME[c] || c; }).join(', ');
-      return '<fieldset class="el-q"><legend>' + esc(FU_TEXT[f.type] + names + '?') + '</legend><div class="el-choices">' + [['no','No'],['yes','Yes'],['unsure','Not sure']].map(function(o){
-        return '<label class="intent-chip"><input type="radio" id="' + (o[0]==='no' ? 'el-fu-' + f.type : '') + '" name="el-fu-' + f.type + '" value="' + o[0] + '"' + (S[f.type]===o[0] ? ' checked' : '') + '><span>' + o[1] + '</span></label>'; }).join('') + '</div></fieldset>';
-    }).join('');
-    box.hidden = false;
-  }
-
-  /* ---------- views ---------- */
-  function setStep(n){ doc.querySelectorAll('#el-steps li').forEach(function(li){ li.classList.toggle('is-now', +li.getAttribute('data-step') === n); }); }
-  function show(html, step){
-    form.hidden = true; view.innerHTML = html; view.hidden = false; setStep(step);
-    var h = view.querySelector('h2'); if(h){ h.setAttribute('tabindex','-1'); }
-    var top = $('el-card').getBoundingClientRect().top + window.pageYOffset - 96; window.scrollTo({ top: Math.max(0, top), behavior: 'auto' });
-    if(h) h.focus({ preventScroll: true });
-  }
-  function backToForm(){ view.hidden = true; view.innerHTML = ''; form.hidden = false; setStep(1); S.route = null; }
-  var NOT_APPROVAL = 'This is not account approval or an application. Preparing documents does not submit anything to ARIE.';
-  function resultView(route){
-    if(route === 'hold') return holdView();
-    var std = route === 'standard';
-    return '<div class="el-result"><div class="el-mark ' + (std ? 'ok' : 'rv') + '" aria-hidden="true">' + (std ? '&#10003;' : '!') + '</div><p class="eyebrow">Your preliminary result</p>'
-      + (std ? '<h2>You may proceed to document preparation</h2><p class="el-lead">Based on your answers, this preliminary check has not identified a factor that needs further review before you prepare your documents.</p>'
-             : '<h2>You may continue — further review required</h2><p class="el-lead">Your answers include factors that require additional Compliance review. You can continue to indicative pricing and document preparation, and ARIE will review your application before any onboarding decision.</p>')
-      + '<div class="el-callout"><strong>What happens next?</strong> ' + (std ? 'Review the indicative pricing, then prepare your onboarding documents. ARIE will confirm your eligibility and pricing after its own review.' : 'Review the indicative pricing and prepare your documents. ARIE may request additional information during its review.') + '</div>'
-      + '<div class="el-actions"><button class="btn btn-primary" type="button" data-act="pricing">View indicative pricing <span aria-hidden="true">&rarr;</span></button><button class="el-link" type="button" data-act="edit">Edit my answers</button></div>'
-      + '<p class="el-fine">' + (std ? NOT_APPROVAL : 'No approval has been given. This is not an application, and preparing documents does not submit anything to ARIE.') + '</p></div>';
-  }
-  function pricingView(){
-    var body;
-    if(ELIGIBILITY_PRICING && ELIGIBILITY_PRICING.profiles){
-      body = '<p class="el-lead">These fees are a non-binding guide. Your final pricing depends on your business profile, onboarding assessment and service requirements, and is confirmed by ARIE.</p><div class="el-fees">'
-        + ELIGIBILITY_PRICING.profiles.map(function(p){ return '<article class="el-fee"><h3>' + esc(p.title) + '</h3>' + [['Onboarding fee', p.onboarding, 'One-time'],['Monthly service fee', p.monthly, 'Per account per month'],['Payment transaction fee', p.transaction, 'Per outgoing payment']].map(function(r){ return '<div class="el-fee-row"><span>' + r[0] + '</span><b>' + esc(r[1]) + '</b><small>' + r[2] + '</small></div>'; }).join('') + '</article>'; }).join('')
-        + '</div><p class="el-fine">Third-party, correspondent-bank, SWIFT and foreign-exchange charges may apply.' + (S.route === 'continue_review' ? ' Further review does not automatically place you in a higher pricing profile.' : '') + '</p>';
-    } else {
-      body = '<p class="el-lead">Our indicative fee schedule is being finalised. ARIE will confirm your pricing, which depends on your business profile, onboarding assessment and service requirements.</p>';
-    }
-    return '<div class="el-result"><p class="eyebrow">Indicative pricing</p><h2>Understand our indicative pricing</h2>' + body
-      + '<div class="el-actions"><a class="btn btn-primary" href="' + REQUIREMENTS_URL + '">Continue to onboarding requirements <span aria-hidden="true">&rarr;</span></a><button class="el-link" type="button" data-act="result">Back to my result</button></div>'
-      + '<p class="el-fine">The requirements page offers the full requirements, a personalised checklist and the Corporate Onboarding Pack. Preparing documents does not submit an application or mean your account is approved.</p></div>';
-  }
-  function holdView(){
-    return '<div class="el-result"><div class="el-mark rv" aria-hidden="true">i</div><p class="eyebrow">Your preliminary result</p><h2>Your business requires further review</h2>'
-      + '<p class="el-lead">Certain business activities, jurisdictions or circumstances require additional assessment by our team.</p>'
-      + '<div class="el-callout"><strong>This does not automatically mean your business is ineligible.</strong> Contact ARIE Finance so we can better understand your requirements and guide you through the next steps. Your answers are included, so you won’t need to repeat them.</div>'
-      + '<form id="el-review" novalidate><div aria-hidden="true" class="el-hp"><label>Leave this field blank<input type="text" name="hp_url" tabindex="-1" autocomplete="off"></label></div>'
-      + '<div class="el-errors" id="el-review-errors" role="alert" tabindex="-1" hidden></div>'
-      + '<div class="form-section-head"><span>Your contact details</span></div>'
-      + '<div class="form-grid"><div><label for="el-r-name">Full name</label><input id="el-r-name" name="name" autocomplete="name" maxlength="150"></div><div><label for="el-r-email">Business email</label><input id="el-r-email" name="email" type="email" autocomplete="email" maxlength="254"></div></div>'
-      + '<div class="form-grid"><div><label for="el-r-phone">Phone <span class="el-opt">(optional)</span></label><input id="el-r-phone" name="phone" type="tel" autocomplete="tel" maxlength="50"></div><div><label for="el-r-note">Anything else we should know? <span class="el-opt">(optional)</span></label><input id="el-r-note" name="note" maxlength="2000" placeholder="For example, licences held"></div></div>'
-      + '<div class="checkbox-row"><input id="el-r-tcs" name="tcs" type="checkbox"><label for="el-r-tcs">I agree that ARIE Finance may use my answers and details to review my enquiry and contact me, as described in the <a href="#" data-policy-open="privacy-policy" style="color:inherit;text-decoration:underline;">Privacy Policy</a>.</label></div>'
-      + '<div class="el-actions"><button class="btn btn-primary" type="submit">Contact ARIE for Further Review <span aria-hidden="true">&rarr;</span></button><button class="el-link" type="button" data-act="edit">Edit my answers</button></div>'
-      + '<p class="el-status" data-status role="status" aria-live="polite"></p></form>'
-      + '<p class="el-fine">This is a preliminary indication, not a decision. Our team assesses every request individually and will tell you whether you can continue.</p></div>';
-  }
-  function sentView(name, a){
-    return '<div class="el-result"><div class="el-mark ok" aria-hidden="true">&#10003;</div><p class="eyebrow">Request sent</p><h2>Thank you' + (name ? ', ' + esc(name.split(' ')[0]) : '') + '. Your request has been sent to our team.</h2>'
-      + '<p class="el-lead">A member of our team will review your answers and contact you by email to understand your requirements. If you can continue, we’ll guide you through pricing and document preparation.</p>'
-      + '<dl class="el-sum"><div><dt>Company</dt><dd>' + esc(a.company) + '</dd></div><div><dt>Incorporated in</dt><dd>' + esc(NAME[a.incorp] || a.incorp) + '</dd></div><div><dt>Sector</dt><dd>' + esc((SECTORS.filter(function(s){ return s[0] === a.sector; })[0] || ['', a.sector])[1]) + '</dd></div><div><dt>Contact</dt><dd>' + esc(name) + '</dd></div></dl>'
-      + '<p class="el-fine">Please don’t send documents, passwords or payment instructions by email or WhatsApp. If documents are needed, we’ll tell you how to provide them securely.</p>'
-      + '<div class="el-actions"><a class="el-link" href="#home" data-route="home">Return to the homepage</a></div></div>';
-  }
-
-  /* ---------- server calls ---------- */
-  var busy = false;
-  function post(path, payload){ return fetch(path, { method:'POST', headers:{ 'Content-Type':'application/json' }, body: JSON.stringify(payload) }).then(function(r){ return r.json().catch(function(){ return { ok:false }; }).then(function(j){ j.status = r.status; return j; }); }); }
-  form.addEventListener('submit', function(e){
-    e.preventDefault(); if(busy) return;
-    var a = answers(), errs = validate(a); showErrors(errs); if(errs.length) return;
-    busy = true; var btn = $('el-submit'); btn.disabled = true;
-    post('/api/eligibility', { answers: a }).then(function(j){
-      busy = false; btn.disabled = false;
-      if(j.ok && j.followUps){ S.followUps = j.followUps; renderFollowUps(); var f = $('el-followups'); f.scrollIntoView({ block:'center' }); var first = f.querySelector('input'); if(first) first.focus(); return; }
-      if(j.ok && j.route){ S.route = j.route; S.answers = a; show(resultView(j.route), 2); return; }
-      showErrors([['el-submit', j.status === 429 ? 'Too many checks in a short time. Please wait a minute and try again.' : 'We couldn’t check your answers just now. Please try again, or contact us at customercare@ariefinance.com.']]);
-    }).catch(function(){ busy = false; btn.disabled = false; showErrors([['el-submit','We couldn’t check your answers just now. Please check your connection and try again.']]); });
-  });
-  view.addEventListener('click', function(e){
-    var b = e.target.closest('[data-act]'); if(!b) return;
-    var act = b.getAttribute('data-act');
-    if(act === 'edit') backToForm();
-    else if(act === 'pricing' && S.route && S.route !== 'hold') show(pricingView(), 3);
-    else if(act === 'result' && S.route) show(resultView(S.route), 2);
-  });
-  view.addEventListener('submit', function(e){
-    if(e.target.id !== 'el-review') return; e.preventDefault(); if(busy) return;
-    var f = e.target, box = $('el-review-errors'), status = f.querySelector('[data-status]');
-    var name = f.name.value.trim(), email = f.email.value.trim(), errs = [];
-    if(name.length < 2) errs.push(['el-r-name','Enter your full name.']);
-    if(!/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(email)) errs.push(['el-r-email','Enter a valid business email.']);
-    if(!f.tcs.checked) errs.push(['el-r-tcs','Agree to the use of your answers to continue.']);
-    f.querySelectorAll('[aria-invalid]').forEach(function(n){ n.removeAttribute('aria-invalid'); });
-    if(errs.length){ box.innerHTML = '<strong>Please check the following:</strong><ul>' + errs.map(function(x){ return '<li>' + esc(x[1]) + '</li>'; }).join('') + '</ul>'; box.hidden = false; errs.forEach(function(x){ var n = $(x[0]); if(n) n.setAttribute('aria-invalid','true'); }); box.focus(); return; }
-    box.hidden = true; busy = true; var btn = f.querySelector('button[type="submit"]'); btn.disabled = true; status.textContent = 'Sending…';
-    post('/api/website-form', { form:'eligibility_review', url: location.href, referrer: doc.referrer || '', fields:{ name:name, email:email, phone:f.phone.value.trim(), note:f.note.value.trim(), tcs:true, hp_url:f.hp_url.value }, answers: S.answers }).then(function(j){
-      busy = false; btn.disabled = false;
-      if(j.ok){ show(sentView(name, S.answers), 2); return; }
-      status.textContent = '';
-      box.innerHTML = j.status === 429 ? 'Too many requests in a short time. Please wait a minute and try again.' : 'We could not send your request. Please try again, or email customercare@ariefinance.com. Your answers have not been lost.';
-      box.hidden = false; box.focus();
-    }).catch(function(){ busy = false; btn.disabled = false; status.textContent = ''; box.innerHTML = 'We could not send your request. Please check your connection and try again, or email customercare@ariefinance.com.'; box.hidden = false; box.focus(); });
-  });
-  setStep(1);
+var app=document.getElementById('elig-app');if(!app)return;
+var PRICING_PUBLIC_APPROVED=false;
+var PRICING_REVIEW_HOST=!/(^|\.)ariefinance\.com$/i.test(location.hostname);
+var SHOW_FEES=PRICING_PUBLIC_APPROVED||PRICING_REVIEW_HOST;
+var REQUIREMENTS_URL='/onboarding-requirements';
+var HERO_IMAGE='/assets/eligibility-hero.webp';
+var D={"COUNTRIES":[["AF","Afghanistan"],["AL","Albania"],["DZ","Algeria"],["AS","American Samoa"],["AD","Andorra"],["AO","Angola"],["AI","Anguilla"],["AQ","Antarctica"],["AG","Antigua and Barbuda"],["AR","Argentina"],["AM","Armenia"],["AW","Aruba"],["AU","Australia"],["AT","Austria"],["AZ","Azerbaijan"],["BS","Bahamas"],["BH","Bahrain"],["BD","Bangladesh"],["BB","Barbados"],["BY","Belarus"],["BE","Belgium"],["BZ","Belize"],["BJ","Benin"],["BM","Bermuda"],["BT","Bhutan"],["BO","Bolivia"],["BQ","Bonaire, Sint Eustatius and Saba"],["BA","Bosnia and Herzegovina"],["BW","Botswana"],["BV","Bouvet Island"],["BR","Brazil"],["IO","British Indian Ocean Territory"],["BN","Brunei"],["BG","Bulgaria"],["BF","Burkina Faso"],["BI","Burundi"],["CV","Cabo Verde"],["KH","Cambodia"],["CM","Cameroon"],["CA","Canada"],["KY","Cayman Islands"],["CF","Central African Republic"],["TD","Chad"],["CL","Chile"],["CN","China"],["CX","Christmas Island"],["CC","Cocos (Keeling) Islands"],["CO","Colombia"],["KM","Comoros"],["CK","Cook Islands"],["CR","Costa Rica"],["HR","Croatia"],["CU","Cuba"],["CW","Curaçao"],["CY","Cyprus"],["CZ","Czechia"],["CI","Côte d’Ivoire"],["CD","Democratic Republic of the Congo"],["DK","Denmark"],["DJ","Djibouti"],["DM","Dominica"],["DO","Dominican Republic"],["EC","Ecuador"],["EG","Egypt"],["SV","El Salvador"],["GQ","Equatorial Guinea"],["ER","Eritrea"],["EE","Estonia"],["SZ","Eswatini"],["ET","Ethiopia"],["FK","Falkland Islands (Malvinas)"],["FO","Faroe Islands"],["FJ","Fiji"],["FI","Finland"],["FR","France"],["GF","French Guiana"],["PF","French Polynesia"],["TF","French Southern Territories"],["GA","Gabon"],["GM","Gambia"],["GE","Georgia"],["DE","Germany"],["GH","Ghana"],["GI","Gibraltar"],["GR","Greece"],["GL","Greenland"],["GD","Grenada"],["GP","Guadeloupe"],["GU","Guam"],["GT","Guatemala"],["GG","Guernsey"],["GN","Guinea"],["GW","Guinea-Bissau"],["GY","Guyana"],["HT","Haiti"],["HM","Heard Island and McDonald Islands"],["HN","Honduras"],["HK","Hong Kong"],["HU","Hungary"],["IS","Iceland"],["IN","India"],["ID","Indonesia"],["IR","Iran"],["IQ","Iraq"],["IE","Ireland"],["IM","Isle of Man"],["IL","Israel"],["IT","Italy"],["JM","Jamaica"],["JP","Japan"],["JE","Jersey"],["JO","Jordan"],["KZ","Kazakhstan"],["KE","Kenya"],["KI","Kiribati"],["XK","Kosovo"],["KW","Kuwait"],["KG","Kyrgyzstan"],["LA","Laos"],["LV","Latvia"],["LB","Lebanon"],["LS","Lesotho"],["LR","Liberia"],["LY","Libya"],["LI","Liechtenstein"],["LT","Lithuania"],["LU","Luxembourg"],["MO","Macao"],["MG","Madagascar"],["MW","Malawi"],["MY","Malaysia"],["MV","Maldives"],["ML","Mali"],["MT","Malta"],["MH","Marshall Islands"],["MQ","Martinique"],["MR","Mauritania"],["MU","Mauritius"],["YT","Mayotte"],["MX","Mexico"],["FM","Micronesia"],["MD","Moldova"],["MC","Monaco"],["MN","Mongolia"],["ME","Montenegro"],["MS","Montserrat"],["MA","Morocco"],["MZ","Mozambique"],["MM","Myanmar"],["NA","Namibia"],["NR","Nauru"],["NP","Nepal"],["NL","Netherlands"],["NC","New Caledonia"],["NZ","New Zealand"],["NI","Nicaragua"],["NE","Niger"],["NG","Nigeria"],["NU","Niue"],["NF","Norfolk Island"],["KP","North Korea"],["MK","North Macedonia"],["MP","Northern Mariana Islands"],["NO","Norway"],["OM","Oman"],["PK","Pakistan"],["PW","Palau"],["PS","Palestine"],["PA","Panama"],["PG","Papua New Guinea"],["PY","Paraguay"],["PE","Peru"],["PH","Philippines"],["PN","Pitcairn"],["PL","Poland"],["PT","Portugal"],["PR","Puerto Rico"],["QA","Qatar"],["CG","Republic of the Congo"],["RO","Romania"],["RU","Russia"],["RW","Rwanda"],["RE","Réunion"],["BL","Saint Barthélemy"],["SH","Saint Helena, Ascension and Tristan da Cunha"],["KN","Saint Kitts and Nevis"],["LC","Saint Lucia"],["MF","Saint Martin (French part)"],["PM","Saint Pierre and Miquelon"],["VC","Saint Vincent and the Grenadines"],["WS","Samoa"],["SM","San Marino"],["ST","Sao Tome and Principe"],["SA","Saudi Arabia"],["SN","Senegal"],["RS","Serbia"],["SC","Seychelles"],["SL","Sierra Leone"],["SG","Singapore"],["SX","Sint Maarten (Dutch part)"],["SK","Slovakia"],["SI","Slovenia"],["SB","Solomon Islands"],["SO","Somalia"],["ZA","South Africa"],["GS","South Georgia and the South Sandwich Islands"],["KR","South Korea"],["SS","South Sudan"],["ES","Spain"],["LK","Sri Lanka"],["SD","Sudan"],["SR","Suriname"],["SJ","Svalbard and Jan Mayen"],["SE","Sweden"],["CH","Switzerland"],["SY","Syria"],["TW","Taiwan"],["TJ","Tajikistan"],["TZ","Tanzania"],["TH","Thailand"],["TL","Timor-Leste"],["TG","Togo"],["TK","Tokelau"],["TO","Tonga"],["TT","Trinidad and Tobago"],["TN","Tunisia"],["TR","Turkey"],["TM","Turkmenistan"],["TC","Turks and Caicos Islands"],["TV","Tuvalu"],["UG","Uganda"],["UA","Ukraine"],["AE","United Arab Emirates"],["GB","United Kingdom"],["US","United States"],["UM","United States Minor Outlying Islands"],["UY","Uruguay"],["UZ","Uzbekistan"],["VU","Vanuatu"],["VA","Vatican City"],["VE","Venezuela"],["VN","Vietnam"],["VG","Virgin Islands, British"],["VI","Virgin Islands, U.S."],["WF","Wallis and Futuna"],["EH","Western Sahara"],["YE","Yemen"],["ZM","Zambia"],["ZW","Zimbabwe"],["AX","Åland Islands"]],"ACTIVITIES":[["R01","Anonymous, numbered or special-named accounts where the owner cannot be identified"],["R02","Arms/munitions or nuclear, chemical, biological, radiological weapons and explosives dealing/manufacture"],["R03","Art or antiques dealing and auctioneering"],["R04","Companies with bearer shares"],["R05","Conflict or blood diamond trading"],["R06","Activities involving incitement to violence or racial hatred"],["R07","Unauthorised public fundraising"],["R08","Online or interactive gambling, including supporting services or infrastructure"],["R09","Carbon credits or carbon offset schemes"],["R10","Extremist groups or cults promoting violence"],["R11","Foreign charities, clubs or associations"],["R12","Foreign casino or gambling businesses"],["R13","Foreign money service businesses or informal/unregistered value transfers"],["R14","Foreign animal testing, live exports or fur trading"],["R15","Unregulated foreign online forex trading"],["R16","Unlicensed bet-related services in Mauritius"],["R17","Illegal investment or Ponzi schemes"],["R18","Illegal or unlicensed wildlife trading"],["R19","Activities involving human rights abuses or child labour"],["R20","Military-type security services or defence sector"],["R21","Pornography business"],["R22","Unlicensed banks or shell banks"],["R23","Unlicensed trade in Iraqi or Syrian cultural heritage"],["H01","Designated non-financial businesses and professions (DNFBPs)"],["H02","Automobile dealing"],["H03","Regulated foreign online forex trading"],["H04","Non-profit organisations funded through public/non-member contributions"],["H05","Investment dealing"],["H06","Payment intermediary services"],["H07","Virtual asset service providers (VASPs)"]],"SECTORS":[["","Select the principal sector"],["professional","Professional and advisory services"],["technology","Technology and software"],["wholesale","Wholesale and trading"],["manufacturing","Manufacturing and logistics"],["hospitality","Hospitality and tourism"],["property","Property and real estate"],["health","Healthcare and education"],["financial","Financial or regulated services"],["nonprofit","Charity or non-profit"],["other","Other / not sure how to classify"]],"KEYWORDS":{"R02":"nuclear chemical biological radiological wmd munitions arms","R03":"auction collectibles antique art","R05":"blood diamond","R08":"online betting casino gambling gaming sportsbook","R09":"carbon credits offset","R11":"foreign charity charities ngo clubs association non profit nonprofit","R12":"foreign casino gambling","R13":"money services remittance foreign msb","R14":"fur animal testing live export","R15":"unregulated foreign exchange forex","R16":"betting wager gambling","R21":"adult explicit pornography","H01":"lawyer accountant real estate property trust service provider dnfbp","H02":"car cars vehicle vehicles motor automotive auto","H03":"regulated forex foreign exchange trading","H04":"charity charitable ngo nonprofit non-profit donations","H05":"investment dealer securities broker","H06":"payments payment intermediary service","H07":"crypto bitcoin blockchain token virtual assets virtual asset digital assets vasp"},"SECTOR_PRIORITY":{"financial":["H05","H06","H07","H03","R13","R15","R22"],"nonprofit":["R11","H04","R07"],"property":["H01"],"professional":["H01"],"wholesale":["H02","R03","R05","R09"],"technology":["H07","R08","R16"]},"REGULATED":{"government":["AF","CF","CD","LY"],"precious":["CF","CD"],"oilgas":["LY","RU"]}};
+var COUNTRIES=D.COUNTRIES.map(function(c){return {id:c[0],name:c[1]};});
+var ACTIVITIES=D.ACTIVITIES.map(function(a){return {id:a[0],name:a[1]};});
+var SECTORS=D.SECTORS, ACTIVITY_KEYWORDS=D.KEYWORDS, SECTOR_PRIORITY=D.SECTOR_PRIORITY;
+var REGULATED_COUNTRIES={};Object.keys(D.REGULATED).forEach(function(k){REGULATED_COUNTRIES[k]=D.REGULATED[k];});
+var COUNTRY_NAME={};COUNTRIES.forEach(function(c){COUNTRY_NAME[c.id]=c.name;});
+function blank(){return {step:0,company:'',incorp:'',operations:[],opsMode:null,sector:'',activityMode:null,activities:[],owners:[],ownerUnknown:false,incoming:[],incomingUnknown:false,outgoing:[],outgoingUnknown:false,government:null,precious:null,oilgas:null,attested:false,route:null,notice:null,sentName:''};}
+var S=blank(), errors=[], busy=false;
+function uniq(a){return a.filter(function(x,i){return a.indexOf(x)===i;});}
+function exposure(type){var all=[S.incorp].concat(S.operations,S.incoming,S.outgoing);return uniq(all.filter(function(id){return REGULATED_COUNTRIES[type].indexOf(id)>-1;})).sort();}
+function exposureSignature(){var o={};['government','precious','oilgas'].forEach(function(t){o[t]=exposure(t).join(',');});return o;}
+function clearChangedQuestions(before){var after=exposureSignature();Object.keys(after).forEach(function(k){if(after[k]!==before[k])S[k]=null;});}
+function summarizeActivitySector(){return S.sector==='financial'?'The financial-services category includes activities requiring specialist review. If none of the listed activities seems relevant, we will still ask ARIE to confirm your business type.':S.sector==='nonprofit'?'Charities, associations and certain non-profit activities may require specialist review. Select any matching activities; otherwise ARIE will confirm the classification.':'';}
+function refreshSectorRecommendations(){
+ var body=document.getElementById('activityBody');if(!body)return;
+ var priority=SECTOR_PRIORITY[S.sector]||[];
+ var options=Array.prototype.slice.call(body.querySelectorAll('.activity-option'));
+ var idx=function(id){for(var i=0;i<ACTIVITIES.length;i++)if(ACTIVITIES[i].id===id)return i;return 999;};
+ options.sort(function(a,b){var aid=a.querySelector('[data-activity]').getAttribute('data-activity'),bid=b.querySelector('[data-activity]').getAttribute('data-activity');var ar=priority.indexOf(aid)>-1?priority.indexOf(aid):999,br=priority.indexOf(bid)>-1?priority.indexOf(bid):999;return ar-br||idx(aid)-idx(bid);});
+ options.forEach(function(option){var id=option.querySelector('[data-activity]').getAttribute('data-activity');var suggested=priority.indexOf(id)>-1;var old=option.querySelector('.suggested');
+  if(suggested&&!old){var b=document.createElement('span');b.className='suggested';b.textContent='Relevant to your sector';option.appendChild(b);}else if(!suggested&&old){old.remove();}
+  body.appendChild(option);});
+ var note=document.getElementById('sector-relevance-note');if(note){var m=summarizeActivitySector();note.innerHTML=m?warning(e(m)):'';}
+ var search=document.getElementById('activitySearch');var q=((search&&search.value)||'').trim().toLowerCase();var count=0;
+ options.forEach(function(option){var show=option.getAttribute('data-search').indexOf(q)>-1;option.classList.toggle('no-match',!show);if(show)count++;});
+ var em=document.getElementById('activityEmpty');if(em)em.classList.toggle('visible',count===0);
+ body.scrollTop=0;
+}
+function scrollFocus(top,selector){if(top){var r=document.getElementById('elig-root');window.scrollTo({top:Math.max(0,r.getBoundingClientRect().top+window.pageYOffset-90),behavior:'auto'});}var f=selector?app.querySelector(selector):top?(app.querySelector('[role="alert"]')||app.querySelector('.result-hero h2')||app.querySelector('h1,h2')):null;if(f){if(!f.hasAttribute('tabindex')&&!f.matches('button,input,select,textarea,a'))f.setAttribute('tabindex','-1');f.focus({preventScroll:!top});}}
+function e(v){return String(v==null?'':v).replace(/[&<>"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c];});}
+function val(id){var n=document.getElementById(id);return (n&&n.value)||'';}
+function name(id){return COUNTRY_NAME[id]||id;}
+function warning(t){return '<div class="alert warning"><span class="glyph">!</span><span>'+t+'</span></div>';}
+function errBanner(){return errors.length?'<div class="alert error" role="alert"><span class="glyph">!</span><span>'+errors.map(e).join(' · ')+'</span></div>':'';}
+function countryOptions(sel){return COUNTRIES.map(function(c){return '<option value="'+c.id+'"'+(sel===c.id?' selected':'')+'>'+e(c.name)+'</option>';}).join('');}
+function countrySelect(field,label,help){return '<div class="field country-group"><div class="multi-label"><label for="c_'+field+'">'+label+'</label></div><div class="country-picker"><select id="c_'+field+'" aria-label="'+e(label.replace(/<[^>]+>/g,'').trim())+'"><option value="">Select a country...</option>'+countryOptions('')+'</select><button type="button" data-act="addcountry" data-field="'+field+'">Add</button></div><div class="chips" aria-label="Selected countries">'+(S[field].length?S[field].map(function(id){return '<span class="chip">'+e(name(id))+' <button type="button" data-act="removecountry" data-field="'+field+'" data-id="'+id+'" aria-label="Remove '+e(name(id))+'">×</button></span>';}).join(''):'<span class="empty-chip">No countries added</span>')+'</div>'+(help?'<div class="help">'+help+'</div>':'')+'</div>';}
+function modeQuestion(key,label,choices){choices=choices||[['no','No'],['yes','Yes'],['unsure','Not sure']];return '<div class="field"><div class="field-label">'+label+'</div><div class="mode-row">'+choices.map(function(c){return '<button type="button" class="choice '+(S[key]===c[0]?'selected':'')+'" data-act="mode" data-field="'+key+'" data-value="'+c[0]+'" aria-pressed="'+(S[key]===c[0])+'"><span class="radio-dot"></span>'+c[1]+'</button>';}).join('')+'</div></div>';}
+function intro(){return '<section class="hero"><div class="hero-content"><div class="eyebrow">The first step in getting started</div><h1 class="title-serif">A clearer path to your onboarding.</h1><p class="hero-lead">Check whether your business may be suitable for onboarding with ARIE Finance—before you spend time gathering corporate documents.</p><button class="cta" data-act="start">Check your eligibility <span class="arrow">→</span></button><div class="checkpoint-list"><span><i class="small-check">✓</i> About 3 minutes</span><span><i class="small-check">✓</i> No documents required</span><span><i class="small-check">✓</i> Preliminary assessment only</span></div></div><div class="hero-illustration"><img class="hero-image" src="'+HERO_IMAGE+'" width="1492" height="840" alt="ARIE Finance global payments illustration with a globe, payment card, security shield and brand symbol" decoding="async"></div></section><div class="after-hero"><div class="info-tile"><span class="num">01 / SCREEN</span><h3>Understand your business</h3><p>One page covering your activity, locations and expected payments.</p></div><div class="info-tile"><span class="num">02 / REVIEW</span><h3>Receive preliminary guidance</h3><p>Your result will indicate whether to prepare documents or contact ARIE.</p></div><div class="info-tile"><span class="num">03 / NEXT STEP</span>'+(SHOW_FEES?'<h3>Indicative fees, then documents</h3><p>Review indicative fees before proceeding to onboarding requirements.</p>':'<h3>Prepare your documents</h3><p>Proceed to onboarding requirements to prepare your documents.</p>')+'</div></div>';}
+function uncertainGroup(field,unknownKey,title,help){return '<div class="question-block"><h3>'+title+'</h3><p>'+help+'</p><div class="mode-row"><button type="button" class="choice '+(!S[unknownKey]?'selected':'')+'" data-act="unknown" data-field="'+unknownKey+'" data-value="false"><span class="radio-dot"></span>I can specify</button><button type="button" class="choice '+(S[unknownKey]?'selected':'')+'" data-act="unknown" data-field="'+unknownKey+'" data-value="true"><span class="radio-dot"></span>Not sure</button></div>'+(!S[unknownKey]?countrySelect(field,field==='owners'?'Nationalities <span class="required-star">*</span>':'Countries <span class="required-star">*</span>'):'<div class="help">This answer will be referred for further review.</div>')+'</div>';}
+function targeted(){var parts=[];
+ [['government','Will your business deal with government entities in: '],['precious','Will your business deal in precious stones, metals or related products involving: '],['oilgas','Will your business deal in oil or gas related activities involving: ']].forEach(function(g){var countries=exposure(g[0]);if(countries.length)parts.push(modeQuestion(g[0],e(g[1]+countries.map(name).join(', ')+'?')));});
+ return parts.length?'<hr class="rule"><div class="form-kicker">Additional country-specific questions</div><p class="card-sub">Please answer explicitly for each relevant activity. A positive answer will require Compliance review.</p>'+parts.join(''):'';}
+function quickForm(){
+ var suggested=SECTOR_PRIORITY[S.sector]||[];
+ var sorted=ACTIVITIES.slice().sort(function(a,b){return (suggested.indexOf(b.id)>-1?1:0)-(suggested.indexOf(a.id)>-1?1:0);});
+ var options=sorted.map(function(a){return '<label class="activity-option" data-search="'+e((a.name+' '+(ACTIVITY_KEYWORDS[a.id]||'')).toLowerCase())+'"><input type="checkbox" data-activity="'+a.id+'" '+(S.activities.indexOf(a.id)>-1?'checked':'')+'><span>'+e(a.name)+'</span>'+(suggested.indexOf(a.id)>-1?'<span class="suggested">Relevant to your sector</span>':'')+'</label>';}).join('');
+ var sectorHelp=summarizeActivitySector();
+ return '<div class="quick-page">'+
+ '<div class="quick-intro"><div><div class="eyebrow">Client eligibility / One-page check</div><h1 class="title-serif">A simpler way to get started.</h1><p>Tell us about your business and expected payments. No documents or registration required.</p></div><span class="time-pill">One page · Approximately 3 minutes</span></div>'+
+ '<section class="quick-form" aria-label="Eligibility questions">'+errBanner()+
+ '<div class="quick-section"><div class="quick-section-head"><span class="quick-number">01</span><div><h2>About your business</h2><p>Two essentials to begin.</p></div></div>'+
+ '<div class="form-grid"><div class="field"><label for="incorp">Country of incorporation <span class="required-star">*</span></label><select id="incorp"><option value="">Select a country...</option>'+countryOptions(S.incorp)+'</select></div>'+
+ '<div class="field"><label for="sector">Main business sector <span class="required-star">*</span></label><select id="sector">'+SECTORS.map(function(x){return '<option value="'+x[0]+'" '+(S.sector===x[0]?'selected':'')+'>'+e(x[1])+'</option>';}).join('')+'</select></div></div>'+
+ '</div>'+
+ '<div class="quick-section"><div class="quick-section-head"><span class="quick-number">02</span><div><h2>Business activities</h2><p>Find your activity below. Tick any that apply; otherwise confirm at the bottom.</p></div></div>'+
+ '<div id="sector-relevance-note">'+(sectorHelp?warning(e(sectorHelp)):'')+'</div>'+
+ '<div class="activity-panel activity-panel-visible" role="group" aria-label="Business activities screening">'+
+ '<div class="activity-panel-top"><div><strong>Which of these activities does your business undertake?</strong><div class="tiny-note">Select all that apply. The list is searchable and scrollable.</div></div><span class="activity-count-pill" id="activity-count">'+S.activities.length+' selected</span></div>'+
+ '<div class="activity-search-wrap"><input class="activity-search" id="activitySearch" type="search" placeholder="Search: crypto, vehicles, charities, gambling..." aria-label="Search business activities"></div>'+
+ '<div class="activity-body" id="activityBody">'+options+'</div>'+
+ '<div class="activity-empty" id="activityEmpty">No matching activity. Try a different term, or choose “I am not sure” below.</div>'+
+ '</div>'+
+ '<div class="activity-decision">'+modeQuestion('activityMode','If none of the above activities apply, please confirm:',[['no','None of the listed activities apply'],['unsure','I am not sure — ARIE can review']])+
+ '<p class="activity-decision-note" id="activity-decision-note" aria-live="polite">'+(S.activities.length?S.activities.length+' selected — you can continue to the next section.':'Please review the list, then choose an option if nothing applies.')+'</p></div>'+
+ '</div>'+'<div class="quick-section"><div class="quick-section-head"><span class="quick-number">03</span><div><h2>Countries involved</h2><p>Only the countries relevant to your business—no names or documents.</p></div></div>'+
+ modeQuestion('opsMode','Does the company operate in other countries?')+
+ (S.opsMode==='yes'?countrySelect('operations','Other countries of operation <span class="required-star">*</span>'):'')+
+ '<div class="quick-exposure">'+
+ uncertainGroup('owners','ownerUnknown','Beneficial owners','What nationalities do the ultimate beneficial owners hold? Select all that apply.')+
+ uncertainGroup('incoming','incomingUnknown','Incoming payments','Where will payments generally come from?')+
+ uncertainGroup('outgoing','outgoingUnknown','Outgoing payments','Where will payments generally go?')+
+ '</div>'+targeted()+'</div>'+
+ '<div class="quick-finish"><div class="field quick-optional"><label for="company">Company name <span class="optional">(optional)</span></label><input id="company" type="text" value="'+e(S.company)+'" maxlength="150" autocomplete="organization" placeholder="For your own reference"></div>'+
+ '<label class="attest"><input type="checkbox" id="attested" '+(S.attested?'checked':'')+'><span>I confirm these answers are accurate to the best of my knowledge. I understand that this check is not an application or a compliance approval.</span></label>'+
+ '<div class="quick-actions"><span>Only a preliminary screening · Your answers are not saved unless you choose to contact ARIE</span><button class="cta" data-act="next"'+(busy?' disabled':'')+'>Check preliminary eligibility <span class="arrow">→</span></button></div></div>'+
+ '</section></div>';
+}
+function canProceed(){return S.route==='standard'||S.route==='continue_review';}
+function result(){
+ var match=S.route==='standard', proceed=canProceed(), showFees=proceed&&SHOW_FEES;
+ var c=match?{
+  title:'You may proceed to document preparation',
+  lead:'Based on your answers, this preliminary screening has not identified a listed restricted or high-risk factor.',
+  next:showFees?'Review indicative pricing, then prepare your onboarding documentation. ARIE will confirm your final eligibility and fees separately.':'You may prepare the onboarding requirements. ARIE will communicate pricing separately.',
+  symbol:'✓',kind:'match',detail:'Next: '+(showFees?'review indicative fees, then prepare your documentation.':'prepare onboarding documentation.')
+ }:proceed?{
+  title:'You may continue — further review required',
+  lead:'Your answers indicate a high-risk business or jurisdiction exposure. You can continue preparing your documents, but ARIE will carry out additional Compliance review before any onboarding decision.',
+  next:showFees?'Review indicative fees and continue to onboarding requirements. ARIE may request additional information as part of its review.':'Continue to the onboarding requirements. ARIE will confirm pricing and may request additional information.',
+  symbol:'!',kind:'review',detail:'Next: prepare your documentation. Further Compliance review is required; no approval has been granted.'
+ }:{
+  title:'Please contact ARIE for further assessment',
+  lead:S.notice==='restricted_country'?'One or more country connections are listed as restricted in ARIE’s policy. Please contact ARIE before continuing.':'Some answers need clarification or involve specific restrictions. Please contact ARIE before continuing.',
+  next:'Progression is on hold pending further assessment by ARIE. Pricing and onboarding preparation are not available for this result. Send your answers to our team and we will contact you.',
+  symbol:'!',kind:'review',detail:'Next: contact ARIE for manual assessment. No application has been submitted.'
+ };
+ var btn=showFees?'<button data-act="pricing" class="cta">View indicative fees <span class="arrow">→</span></button>':proceed?'<a class="cta" href="'+REQUIREMENTS_URL+'">View onboarding requirements <span class="arrow">→</span></a>':'<button data-act="contact" class="cta">Contact ARIE Finance <span class="arrow">→</span></button>';
+ return '<section class="result-stage" aria-label="Preliminary eligibility outcome"><div class="result-hero"><div class="hero-content"><div class="eyebrow">Your preliminary assessment</div><div class="result-mark '+c.kind+'" aria-hidden="true">'+c.symbol+'</div><h2>'+c.title+'</h2><p class="result-intro">'+c.lead+'</p><div class="next-card"><h3>What happens next?</h3><p>'+c.next+'</p></div><div class="result-actions">'+btn+'<button class="cta plain" data-act="edit">Edit answers</button><button class="cta light" data-act="reset">Start a new check</button></div><p class="disclaimer">Preliminary screening does not constitute acceptance or AML/CFT clearance.</p></div><div class="hero-illustration"><img class="hero-image" src="'+HERO_IMAGE+'" width="1492" height="840" alt="ARIE Finance global payments illustration" decoding="async"></div></div><div class="result-extra"><div class="extra-kicker">Your next step</div><p>'+c.detail+'</p></div></section>';
+}
+function feeRow(label,value,unit){return '<div class="fee-line"><div class="k">'+label+'</div><div class="v">'+value+'</div><div class="unit">'+unit+'</div></div>';}
+function feeCard(title,onboard,monthly,transaction){return '<article class="fee-card"><h3>'+title+'</h3><div class="fee-accent"></div>'+feeRow('Onboarding fee','From USD '+onboard,'One-time fee')+feeRow('Monthly service fee','USD '+monthly,'Per month per account')+feeRow('Payment transaction fee','USD '+transaction,'Per outgoing payment')+'</article>';}
+function pricing(){
+ if(!canProceed()||!SHOW_FEES)return result();
+ var explanation='The fees displayed are indicative. Your final pricing will depend on your business profile, onboarding assessment and applicable service requirements.';
+ var extra=S.route==='continue_review'?'<p>Further Compliance review is required for your application. This does not automatically place you in the Enhanced Review pricing profile.</p>':'';
+ var action='<a class="cta" href="'+REQUIREMENTS_URL+'">Continue to onboarding requirements <span class="arrow">→</span></a>';
+ return '<div class="fee-page"><div class="fee-intro"><div><div class="eyebrow">After eligibility screening · Step 02</div><h1 class="title-serif">Understand indicative pricing.</h1><p>Review the indicative fees before preparing onboarding documents. Your final pricing is confirmed separately by ARIE Finance.</p></div><div class="fee-breadcrumb"><span>01 · Eligibility</span><span class="b-separated">/</span><span>02 · Fees</span><span class="b-separated">/</span><span>03 · Requirements</span></div></div>'+
+ '<div class="fee-callout"><span class="callout-icon" aria-hidden="true">i</span><div><strong>Your pricing will be confirmed following review.</strong><p>'+explanation+'</p>'+extra+'</div></div>'+
+ '<section class="fee-sheet" aria-label="Indicative ARIE Finance fee schedule"><div class="fee-sheet-top"><div><div class="label">ARIE Finance</div><div class="entity">Indicative Fee Schedule</div></div><div class="right">Regulated by the Financial Services Commission (Mauritius)<br>Payment Intermediary Services Licence · GB25205028</div></div><div class="fee-sub">For international business clients</div><h2>Indicative Fee Schedule</h2><p class="fee-description">ARIE Finance provides relationship-led international payment services for globally active businesses, supported by structured onboarding and a dedicated Relationship Manager.<br><br>The fees below are indicative and intended as a guide only. Final pricing is subject to onboarding and compliance approval and may vary according to the client profile, jurisdiction, ownership structure, expected transaction activity and service requirements.</p>'+
+ '<div class="fee-rule-label">Fee structure</div><div class="fee-grid">'+feeCard('Standard profile','2,500','150','40')+feeCard('Enhanced review profile','5,000','250','60')+'</div>'+
+ '<div class="fee-rule-label">Third-party payment charges</div><table class="fee-charge-table"><thead><tr><th>Charge</th><th>Incoming</th><th>Outgoing</th></tr></thead><tbody><tr><td data-label="Charge"><strong>Correspondent-Bank / SWIFT Charges</strong></td><td data-label="Incoming">Not applicable</td><td data-label="Outgoing"><strong>0.15%</strong><small>Minimum USD 70 · Maximum USD 150<br>Plus applicable SWIFT charges</small></td></tr></tbody></table><p class="fine-print">Additional third-party, correspondent-bank and foreign exchange charges may apply depending on the payment route, currency and transaction requirements.</p>'+
+ '<div class="fee-rule-label">Additional fees</div><div class="fee-closure"><span>Service Closure Fee</span><strong>USD 300</strong></div><div class="fee-sheet-footer"><span>ARIE Finance · Indicative only</span><span>www.ariefinance.com · customercare@ariefinance.com</span></div></section>'+
+ '<div class="fee-actions">'+action+'<button class="cta light" data-act="result">← Back to eligibility result</button><button class="cta plain" data-act="reset">Start a new check</button></div></div>';
+}
+/* Further Review request (authorised addition: replaces v0.9's external "Contact ARIE Finance" link on on-hold results) */
+function contact(){
+ return '<div class="quick-page"><div class="quick-intro"><div><div class="eyebrow">Your preliminary assessment / Contact ARIE</div><h1 class="title-serif">Contact ARIE for further assessment.</h1><p>Progression is on hold until our team has reviewed your answers. Share your contact details and we will send your answers to ARIE’s team for review.</p></div></div>'+
+ '<form class="quick-form" id="el-review" novalidate>'+errBanner()+
+ '<div aria-hidden="true" style="position:absolute;left:-9999px;width:1px;height:1px;overflow:hidden"><label>Leave this field blank<input type="text" name="hp_url" tabindex="-1" autocomplete="off"></label></div>'+
+ '<div class="quick-section"><div class="form-grid"><div class="field"><label for="el-r-name">Full name <span class="required-star">*</span></label><input id="el-r-name" name="name" autocomplete="name" maxlength="150"></div><div class="field"><label for="el-r-email">Business email <span class="required-star">*</span></label><input id="el-r-email" name="email" type="email" autocomplete="email" maxlength="200"></div></div>'+
+ '<div class="form-grid"><div class="field"><label for="el-r-phone">Phone <span class="optional">(optional)</span></label><input id="el-r-phone" name="phone" type="tel" autocomplete="tel" maxlength="50"></div><div class="field"><label for="el-r-note">Anything else we should know? <span class="optional">(optional)</span></label><input id="el-r-note" name="note" maxlength="2000"></div></div></div>'+
+ '<div class="quick-finish"><label class="attest"><input type="checkbox" id="el-r-tcs" name="tcs"><span>I agree that ARIE Finance may use my answers and details to review my enquiry and contact me, as described in the <a href="#" data-policy-open="privacy-policy">Privacy Policy</a>.</span></label>'+
+ '<div class="quick-actions"><span>Please don’t send documents, passwords or payment instructions by email or WhatsApp.</span><div class="result-actions"><button type="button" class="cta plain" data-act="result">← Back to result</button><button type="submit" class="cta"'+(busy?' disabled':'')+'>'+(busy?'Sending…':'Send to ARIE for review')+' <span class="arrow">→</span></button></div></div></div>'+
+ '</form></div>';
+}
+function sent(){
+ return '<section class="result-stage" aria-label="Further review request sent"><div class="result-hero"><div class="hero-content"><div class="eyebrow">Request sent</div><div class="result-mark match" aria-hidden="true">✓</div><h2>Thank you'+(S.sentName?', '+e(S.sentName):'')+'. Your request has been sent to our team.</h2><p class="result-intro">A member of ARIE’s team will review your answers and contact you by email. Progression remains on hold until then.</p><div class="next-card"><h3>What happens next?</h3><p>If documents are needed, we will tell you how to provide them securely. Please don’t send documents, passwords or payment instructions by email or WhatsApp.</p></div><div class="result-actions"><a class="cta light" href="#home" data-route="home">Return to the homepage</a></div><p class="disclaimer">Preliminary screening does not constitute acceptance or AML/CFT clearance.</p></div><div class="hero-illustration"><img class="hero-image" src="'+HERO_IMAGE+'" width="1492" height="840" alt="ARIE Finance global payments illustration" decoding="async"></div></div></section>';
+}
+function render(moveTop,focusSelector){
+ app.innerHTML=S.step===0?intro():S.step===5?result():S.step===7?pricing():S.step===8?contact():S.step===9?sent():quickForm();
+ scrollFocus(moveTop,errors.length?'[role="alert"]':focusSelector);
+}
+function sync(){
+ if(document.getElementById('incorp'))S.incorp=val('incorp');
+ if(document.getElementById('sector'))S.sector=val('sector');
+ if(document.getElementById('company'))S.company=val('company').trim();
+ var at=document.getElementById('attested');if(at)S.attested=!!at.checked;
+}
+function validate(){
+ errors=[];sync();
+ if(!S.incorp)errors.push('Choose the country of incorporation');
+ if(!S.sector)errors.push('Choose the main business sector');
+ if(!S.opsMode)errors.push('Confirm whether the business operates elsewhere');
+ if(S.opsMode==='yes'&&!S.operations.length)errors.push('Add an operating country');
+ if(!S.activityMode)errors.push('Select an applicable activity, confirm that none apply, or choose Not sure');
+ if(S.activityMode==='yes'&&!S.activities.length)errors.push('Select a listed activity');
+ if(!S.ownerUnknown&&!S.owners.length)errors.push('Add an UBO nationality or choose Not sure');
+ if(!S.incomingUnknown&&!S.incoming.length)errors.push('Add an incoming-payment country or choose Not sure');
+ if(!S.outgoingUnknown&&!S.outgoing.length)errors.push('Add an outgoing-payment country or choose Not sure');
+ var all=[S.incorp].concat(S.operations,S.incoming,S.outgoing);
+ [['government','government dealings'],['precious','precious stones or metals'],['oilgas','oil and gas activities']].forEach(function(p){if(REGULATED_COUNTRIES[p[0]].some(function(c){return all.indexOf(c)>-1;})&&!S[p[0]])errors.push('Answer the question about '+p[1]);});
+ if(!S.attested)errors.push('Confirm your answers before proceeding');
+ return errors.length===0;
+}
+function answers(){return {company:S.company,incorp:S.incorp,opsMode:S.opsMode,operations:S.operations.slice(),sector:S.sector,activityMode:S.activityMode,activities:S.activities.slice(),owners:S.owners.slice(),ownerUnknown:S.ownerUnknown,incoming:S.incoming.slice(),incomingUnknown:S.incomingUnknown,outgoing:S.outgoing.slice(),outgoingUnknown:S.outgoingUnknown,government:S.government,precious:S.precious,oilgas:S.oilgas};}
+function post(path,payload){return fetch(path,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(payload)}).then(function(r){return r.json().catch(function(){return {ok:false};}).then(function(j){j.status=r.status;return j;});});}
+var GENERIC='We couldn’t check your answers just now. Please try again, or contact us at customercare@ariefinance.com.';
+function check(){
+ if(busy)return;if(!validate()){render(true);return;}
+ busy=true;render(false,'[data-act="next"]');
+ post('/api/eligibility',{answers:answers()}).then(function(j){busy=false;
+  if(j.ok&&j.route){S.route=j.route;S.notice=j.notice||null;S.step=5;errors=[];render(true);return;}
+  errors=[j.status===429?'Too many checks in a short time. Please wait a minute and try again.':j.ok&&j.followUps?'Answer the additional country-specific questions':GENERIC];render(true);
+ }).catch(function(){busy=false;errors=[GENERIC];render(true);});
+}
+function sendReview(f){
+ if(busy)return;
+ var nm=f.name.value.trim(),em=f.email.value.trim(),ph=f.phone.value.trim(),nt=f.note.value.trim();errors=[];
+ if(nm.length<2)errors.push('Enter your full name');
+ if(!/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(em))errors.push('Enter a valid business email');
+ if(!f.tcs.checked)errors.push('Agree to the use of your answers and details');
+ var keep=function(){var g=document.getElementById('el-review');if(!g)return;g.name.value=nm;g.email.value=em;g.phone.value=ph;g.note.value=nt;g.tcs.checked=f.tcs.checked;};
+ if(errors.length){render(true);keep();return;}
+ busy=true;var hp=f.hp_url.value;render(false);keep();
+ post('/api/website-form',{form:'eligibility_review',url:location.href,referrer:document.referrer||'',fields:{name:nm,email:em,phone:ph,note:nt,tcs:true,hp_url:hp},answers:answers()}).then(function(j){busy=false;
+  if(j.ok){S.sentName=nm.split(' ')[0];S.step=9;errors=[];render(true);return;}
+  errors=[j.status===429?'Too many requests in a short time. Please wait a minute and try again.':'We could not send your request. Please try again, or email customercare@ariefinance.com. Your answers have not been lost.'];render(true);keep();
+ }).catch(function(){busy=false;errors=['We could not send your request. Please check your connection and try again, or email customercare@ariefinance.com.'];render(true);keep();});
+}
+function action(el){var a=el.getAttribute('data-act');if(!a)return;
+ var field=el.getAttribute('data-field'),currentMode=el.getAttribute('data-value');
+ if(a==='start'){S.step=1;errors=[];render(true);return;}
+ if(a==='reset'){if(S.step>0&&S.step!==9&&!window.confirm('Start a new check? Your current answers will be cleared.'))return;S=blank();errors=[];render(true);return;}
+ if(a==='mode'){sync();var before=exposureSignature();S.route=null;S.attested=false;S[field]=currentMode;if(field==='activityMode'&&S.activityMode!=='yes')S.activities=[];if(field==='opsMode'&&S.opsMode!=='yes')S.operations=[];clearChangedQuestions(before);errors=[];render(false,'[data-act="mode"][data-field="'+field+'"][data-value="'+currentMode+'"]');return;}
+ if(a==='unknown'){sync();var b2=exposureSignature();S.route=null;S.attested=false;S[field]=currentMode==='true';var list={ownerUnknown:'owners',incomingUnknown:'incoming',outgoingUnknown:'outgoing'}[field];if(S[field])S[list]=[];clearChangedQuestions(b2);errors=[];render(false,'[data-act="unknown"][data-field="'+field+'"][data-value="'+currentMode+'"]');return;}
+ if(a==='addcountry'){sync();var b3=exposureSignature();var id=val('c_'+field);if(id&&S[field].indexOf(id)<0){S.route=null;S.attested=false;S[field].push(id);clearChangedQuestions(b3);errors=[];render(false,'#c_'+field);}return;}
+ if(a==='removecountry'){sync();var b4=exposureSignature();S.route=null;S.attested=false;var rid=el.getAttribute('data-id');S[field]=S[field].filter(function(c){return c!==rid;});clearChangedQuestions(b4);errors=[];render(false,'#c_'+field);return;}
+ if(a==='next'){check();return;}
+ if(a==='edit'){S.step=1;S.route=null;S.attested=false;errors=[];render(true);return;}
+ if(a==='pricing'&&canProceed()&&SHOW_FEES){S.step=7;render(true);return;}
+ if(a==='contact'&&S.route==='hold'){S.step=8;errors=[];render(true);return;}
+ if(a==='result'&&S.route){S.step=5;errors=[];render(true);return;}
+}
+app.addEventListener('click',function(ev){var t=ev.target.closest('[data-act]');if(t&&app.contains(t)){ev.preventDefault();action(t);}});
+app.addEventListener('submit',function(ev){if(ev.target.id==='el-review'){ev.preventDefault();sendReview(ev.target);}});
+app.addEventListener('change',function(ev){var t=ev.target;
+ if(t.hasAttribute('data-activity')){S.route=null;S.attested=false;var id=t.getAttribute('data-activity');if(t.checked&&S.activities.indexOf(id)<0)S.activities.push(id);if(!t.checked)S.activities=S.activities.filter(function(x){return x!==id;});S.activityMode=S.activities.length?'yes':null;var ack=document.getElementById('attested');if(ack)ack.checked=false;var count=document.getElementById('activity-count');if(count)count.textContent=S.activities.length+' selected';app.querySelectorAll('[data-act="mode"][data-field="activityMode"]').forEach(function(b){b.classList.remove('selected');b.setAttribute('aria-pressed','false');});var note=document.getElementById('activity-decision-note');if(note)note.textContent=S.activities.length?S.activities.length+' selected — you can continue to the next section.':'Please review the list, then choose an option if nothing applies.';}
+ else if(t.id==='attested'){S.attested=t.checked;}
+ else if(t.id==='incorp'){var before=exposureSignature();var hadQ=app.querySelector('.form-kicker')!==null;S.incorp=t.value;S.route=null;S.attested=false;var ack2=document.getElementById('attested');if(ack2)ack2.checked=false;clearChangedQuestions(before);var sig=exposureSignature();if(hadQ||sig.government||sig.precious||sig.oilgas)render(false,'#incorp');}
+ else if(t.id==='sector'){S.sector=t.value;S.route=null;S.attested=false;var ack3=document.getElementById('attested');if(ack3)ack3.checked=false;refreshSectorRecommendations();}
+});
+app.addEventListener('input',function(ev){var t=ev.target;
+ if(t.id==='activitySearch'){var q=t.value.trim().toLowerCase(),shown=0;app.querySelectorAll('.activity-option').forEach(function(n){var show=n.getAttribute('data-search').indexOf(q)>-1;n.classList.toggle('no-match',!show);if(show)shown++;});var em=document.getElementById('activityEmpty');if(em)em.classList.toggle('visible',shown===0);}
+ if(t.id==='company'){S.company=t.value;S.route=null;S.attested=false;var ack=document.getElementById('attested');if(ack)ack.checked=false;}
+});
+render();
 })();
 </script>
 </body></html>

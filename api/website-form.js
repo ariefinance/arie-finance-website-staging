@@ -557,7 +557,7 @@ module.exports = async function handler(req, res) {
     const list = (arr, unknown) => unknown ? 'Not sure' : (arr.length ? arr.join(', ') : '—');
     const ROUTE_LABEL = { standard: 'Standard (may proceed)', continue_review: 'May continue — further Compliance review', hold: 'ON HOLD — further review required' };
     replyTo = email;
-    subject = 'ARIE Eligibility — Further Review — ' + headerSafe(n.company) + ' — ' + headerSafe(fullname);
+    subject = 'ARIE Eligibility — Further Review — ' + headerSafe(n.company || 'Company not given') + ' — ' + headerSafe(fullname);
     dedupeSeed = ip + '|eligibility|' + email + '|' + cheapHash(JSON.stringify(n) + note);
     const pairs = [
       ['Form type', 'Website eligibility check — Contact ARIE for Further Review'],
@@ -567,7 +567,7 @@ module.exports = async function handler(req, res) {
       ['Email', email],
       ['Phone', phone || '—'],
       ['Applicant note', note || '—'],
-      ['Company', n.company],
+      ['Company', n.company || '—'],
       ['Country of incorporation', n.incorp],
       ['Other countries of operation', n.opsMode === 'unsure' ? 'Not sure' : list(n.operations)],
       ['Principal sector', n.sector],

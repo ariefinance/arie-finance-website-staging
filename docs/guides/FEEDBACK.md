@@ -11,12 +11,12 @@
 - **Storage:** there is no separate database or storage service. The customer-care mailbox is the record, as it is for Contact enquiries.
 
 ## Entry points
+- Contact dropdown in the main navigation ("Leave Feedback", between Get in Touch and Careers)
 - Footer (Company list)
 - Contact page side card
-- The line under the homepage client quotes
 - The signed-out portal page's "Tell us more" link
 
-There is no top-level navigation item.
+There is no top-level navigation item. The line under the homepage client quotes was removed in favour of the Contact dropdown link.
 
 ## Possible later stage
 A dedicated feedback-management system, with references, a separate record store and complaint routing, can be added later as a separate decision.

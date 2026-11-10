@@ -79,8 +79,24 @@
       "source": "/security",
       "destination": "/#compliance",
       "permanent": true
+    },
+    {
+      "source": "/eligibility/",
+      "destination": "/eligibility",
+      "permanent": true
     }
   ],
+  "rewrites": [
+    {
+      "source": "/eligibility",
+      "destination": "/api/eligibility-page"
+    }
+  ],
+  "functions": {
+    "api/eligibility-page.js": {
+      "includeFiles": "index.html"
+    }
+  },
   "headers": [
     {
       "source": "/(.*)",

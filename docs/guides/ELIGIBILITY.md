@@ -55,3 +55,16 @@
 ## Preview testing
 
 On Vercel **preview** deployments only (`VERCEL_ENV=preview`), the form APIs also accept requests whose `Origin` is the deployment's own URL (`VERCEL_URL` / `VERCEL_BRANCH_URL`, set by Vercel). This lets branch previews be tested end to end. Production still accepts only `ALLOWED_ORIGIN`.
+
+## Sharing and measurement (November 2026)
+- **Shareable URL:** `https://www.ariefinance.com/eligibility`.
+  - `api/eligibility-page.js` (via a `vercel.json` rewrite) serves the normal site with its own title, description and preview image (`assets/og-eligibility.jpg`, 1200×630).
+  - A one-line script then adds `#eligibility`, so the checker opens directly.
+  - There is no redirect, so the referrer and UTM parameters survive.
+- **Share action** on the intro screen:
+  - Uses the device's native share sheet where available.
+  - Otherwise shows a small menu: Copy link, WhatsApp and Email.
+  - Shared links carry `utm_source=share` (or the visitor's incoming introducer source/campaign) and `utm_medium=<method>`.
+- **Introducer links:** `https://www.ariefinance.com/eligibility?utm_source=introducer&utm_campaign=<introducer code>`.
+  - Never put client names, answers or other personal details in links.
+- **Funnel events and reporting:** see [ANALYTICS.md](ANALYTICS.md#check-your-eligibility-funnel-added-november-2026). No eligibility outcome or screening data is ever sent to analytics.

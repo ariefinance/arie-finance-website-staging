@@ -1,6 +1,6 @@
 # WhatsApp — Enquiries & Onboarding
 
-**Where:** a floating button on the marketing pages, plus a compact entry in the Contact page's "Prefer to contact us directly?" card. **Source:** `index.html` (the `#wa-contact-block` and `#wa-float-button` templates, and the `WA_ENABLED` switch near the end of the file). **Status:** built, **switched off** until launch is approved.
+**Where:** a floating button on the marketing pages, plus a compact entry in the Contact page's "Prefer to contact us directly?" card. **Source:** `index.html` (the `#wa-contact-block` and `#wa-float-button` templates, and the `WA_ENABLED` switch near the end of the file). **Status:** **live** (activated 10 November 2026, PR #60), with management confirmation of every launch dependency below.
 
 **Business hours** (Monday–Friday, 9:00 AM–5:00 PM, Mauritius Time) appear as their own Contact entry. They are not part of the switch, so they show whether or not WhatsApp is on.
 
@@ -15,12 +15,11 @@
 - **Contact entry:** the number, "Real people. Thoughtful responses.", the human-led sentence, and one security line.
 - **Not used for:** payment instructions, authentication, passwords or OTPs, identity documents, confidential account data, or approving payments or beneficiary changes.
 
-## Switching it on (or off)
-1. Confirm the launch dependencies below.
-2. In `index.html`, change `var WA_ENABLED = false;` to `true`, then go through the normal PR, preview and merge process.
-3. To withdraw it, set the switch back to `false`. While it is off, no WhatsApp element is shown.
+## Switching it off (or back on)
+- To withdraw it, set `var WA_ENABLED = true;` in `index.html` to `false` and release through the normal PR, preview and merge process. While it is off, no WhatsApp element is shown; Business hours stay visible.
+- To restore it, set the switch back to `true`.
 
-## Launch dependencies
+## Launch dependencies (confirmed by management, 10 November 2026)
 - **Number:** +230 5919 4957 is company-owned (not a personal account), registered on WhatsApp Business, and opens correctly from the website link.
 - **People:** a named owner and a backup. Two-step verification is on, with the PIN and recovery email held by the company. The device has a screen lock.
 - **Profile:** set up as below, including hours, and the greeting and away messages switched on.

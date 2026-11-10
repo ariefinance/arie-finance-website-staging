@@ -1915,30 +1915,26 @@ html body .cookie-banner .btn:focus-visible{ outline:2px solid #C99B3F!important
 /* ================= Human-led Why ARIE, Careers illustration, feedback, Contact dropdown ================= */
 #why-arie .why-lead{ color:rgba(226,232,245,.82); font-size:17px; line-height:1.6; max-width:760px; margin:0 0 40px; }
 #why-arie .why-lead strong{ display:block; color:#fff; font-weight:600; font-size:clamp(20px,1.9vw,24px); line-height:1.3; letter-spacing:-.015em; margin-bottom:8px; }
-#why-arie .why-human{ display:grid; grid-template-columns:1fr 1.05fr; gap:56px; align-items:start; }
+#why-arie .why-human{ display:grid; grid-template-columns:1fr 1.05fr; gap:56px; align-items:center; }
 #why-arie .why-list{ list-style:none; margin:0; padding:0; display:grid; grid-template-columns:1fr 1fr; gap:34px 36px; }
 #why-arie .why-list li{ border-top:1px solid rgba(231,201,135,.28); padding-top:18px; }
 #why-arie .why-n{ display:block; font:600 12px/1 var(--display); letter-spacing:.14em; color:#E7C987; margin-bottom:12px; }
 #why-arie .why-list h3{ color:#fff; font-size:17px; font-weight:600; letter-spacing:-.01em; margin:0 0 8px; }
 #why-arie .why-list p{ color:rgba(226,232,245,.72); font-size:14px; line-height:1.6; margin:0; }
-#why-arie .why-practice{ margin-top:30px; border:1px solid rgba(231,201,135,.35); border-left:3px solid #C99B3F; border-radius:12px; padding:18px 20px; background:rgba(255,255,255,.04); }
-#why-arie .why-practice span{ display:block; font-size:11px; font-weight:600; letter-spacing:.16em; text-transform:uppercase; color:#E7C987; margin-bottom:8px; }
-#why-arie .why-practice p{ margin:0; color:#fff; font-size:15.5px; line-height:1.6; }
-#why-arie .why-practice a{ color:#E7C987; text-decoration:underline; text-underline-offset:2px; }
 #why-arie .why-photo{ margin:0; }
 #why-arie .why-photo img{ display:block; width:100%; height:auto; aspect-ratio:3/2; object-fit:cover; border-radius:16px; box-shadow:0 30px 60px -30px rgba(0,0,0,.6); }
 #why-arie .why-photo figcaption{ margin-top:12px; font-size:13.5px; color:rgba(226,232,245,.7); }
-#why-arie .why-btn{ margin-top:22px; display:inline-flex; align-items:center; gap:8px; height:50px; padding:0 22px!important; border-radius:10px!important; background:transparent!important; color:#fff!important; border:1px solid rgba(231,201,135,.55)!important; font-weight:600; font-size:15px; text-decoration:none; box-shadow:none!important; transition:background .2s ease,border-color .2s ease; }
-#why-arie .why-btn:hover{ background:rgba(231,201,135,.12)!important; border-color:#E7C987!important; transform:none!important; }
+#why-arie .why-btn{ margin-top:22px; display:inline-flex; align-items:center; gap:8px; height:50px; padding:0 22px!important; border-radius:10px!important; background:linear-gradient(180deg,#E2BF73,#C99B3F)!important; color:#06113A!important; border:1px solid transparent!important; font-weight:600; font-size:15px; text-decoration:none; box-shadow:0 10px 24px -12px rgba(201,155,63,.7)!important; transition:filter .2s ease, transform .2s ease; }
+#why-arie .why-btn:hover{ filter:brightness(1.05); transform:translateY(-1px)!important; }
 #why-arie .why-btn:focus-visible{ outline:2px solid #E7C987; outline-offset:3px; }
 @media (max-width:1060px){ #why-arie .why-human{ grid-template-columns:1fr; gap:36px; } #why-arie .why-right{ order:-1; } }
 @media (max-width:640px){ #why-arie .why-list{ grid-template-columns:1fr; gap:22px; } #why-arie .why-lead{ font-size:16px; margin-bottom:28px; } }
 #client-feedback .quotes-cta{ margin:32px 0 0; text-align:center; font-size:15px; color:#4A5470; }
 #client-feedback .quotes-cta a{ color:#06113A; font-weight:600; text-decoration:underline; text-underline-offset:3px; margin-left:6px; }
 [data-page="careers"] .hero-split{ display:grid; grid-template-columns:1.1fr .9fr; gap:40px; align-items:center; }
-[data-page="careers"] .careers-art{ margin:0; }
-[data-page="careers"] .careers-art img{ display:block; width:100%; height:auto; border-radius:0!important; filter:drop-shadow(0 24px 30px rgba(0,0,0,.35)); }
-@media (max-width:900px){ [data-page="careers"] .hero-split{ grid-template-columns:1fr; gap:24px; } [data-page="careers"] .careers-art{ max-width:420px; } }
+[data-page="careers"] .careers-art{ margin:0; justify-self:end; width:100%; max-width:500px; padding:26px 30px 18px; border-radius:20px; background:radial-gradient(120% 90% at 50% 35%, #FFFFFF 0%, #F3F6FB 58%, #E6ECF6 100%); border:1px solid rgba(231,201,135,.45); box-shadow:0 30px 60px -28px rgba(0,0,0,.55), inset 0 1px 0 rgba(255,255,255,.9); }
+[data-page="careers"] .careers-art img{ display:block; width:100%; height:auto; border-radius:0!important; filter:none!important; }
+@media (max-width:900px){ [data-page="careers"] .hero-split{ grid-template-columns:1fr; gap:24px; } [data-page="careers"] .careers-art{ max-width:420px; justify-self:start; } }
 @media (max-width:640px){ [data-page="careers"] .careers-art{ display:none; } }
 [data-page="feedback"] .form-card form{ display:grid; gap:18px; }
 [data-page="feedback"] .fb-grid{ display:flex!important; flex-wrap:wrap; gap:10px; }
@@ -2179,11 +2175,10 @@ html body .cookie-banner .btn:focus-visible{ outline:2px solid #C99B3F!important
               <li><span class="why-n" aria-hidden="true">03</span><h3>Multi-currency coordination</h3><p>Multi-currency accounts and cross-border payments across SWIFT, SEPA, and selected local rails, all coordinated in one place.</p></li>
               <li><span class="why-n" aria-hidden="true">04</span><h3>Compliance-focused onboarding</h3><p>Structured KYC and ongoing monitoring built into onboarding, as an FSC-regulated provider in Mauritius (Licence GB25205028).</p></li>
             </ol>
-            <div class="why-practice"><span>In practice</span><p>Questions about a payment, a document or your account? Call <a href="tel:+2304686497">+230&nbsp;468&nbsp;6497</a> or email <a href="mailto:customercare@ariefinance.com">customercare@ariefinance.com</a> and speak with our team in Mauritius.</p></div>
             </div>
             <div class="why-right">
-              <figure class="why-photo"><img loading="lazy" decoding="async" src="/assets/about-team-photo.webp" alt="The ARIE Finance team" width="1600" height="1067"><figcaption>The ARIE Finance team</figcaption></figure>
-              <a class="btn why-btn" href="#home" data-jump="client-feedback">What our clients say about us <span aria-hidden="true">&rarr;</span></a>
+              <figure class="why-photo"><img loading="lazy" decoding="async" src="/assets/why-team-photo.webp" alt="The ARIE Finance team" width="1840" height="1226"><figcaption>The ARIE Finance team</figcaption></figure>
+              <a class="btn why-btn" href="#contact" data-route="contact">Speak with our team <span aria-hidden="true">&rarr;</span></a>
             </div>
           </div>
         </div>
@@ -2273,7 +2268,7 @@ html body .cookie-banner .btn:focus-visible{ outline:2px solid #C99B3F!important
     <!-- ============================= ABOUT ============================= -->
     <section class="page" data-page="about" hidden="">
       <div class="page-hero"><div class="container about-hero-grid"><div class="about-hero-copy"><p class="eyebrow">About ARIE Finance</p><h1>Who we are</h1><p class="lead" style="margin-top:16px;">Operating from Mauritius, ARIE Finance is a boutique international payment platform specializing in cross-border transactions, with a particular focus on traditionally underserved and rapidly-growing markets.</p><p class="ah-body">We are an FSC-licensed payment intermediary, serving internationally active businesses with cross-border payment infrastructure and relationship-led service.</p><p class="ah-body">Under the expert guidance of financial industry veterans both in Mauritius and the UK, the company offers a broad range of global payment and financial advisory services to cater to the evolving needs of small and medium-sized international businesses.</p></div><figure class="hq-fig"><img src="/assets/about-arie-mauritius.webp" alt="The ARIE mark in navy and gold, wrapped in a ribbon in the colours of the Mauritius flag" width="1120" height="727" decoding="async"><span class="hq-glow hq-g1" aria-hidden="true"></span><span class="hq-glow hq-g2" aria-hidden="true"></span><span class="hq-glow hq-g3" aria-hidden="true"></span><span class="hq-glow hq-g4" aria-hidden="true"></span></figure></div></div>
-      <section class="section section--ivory"><div class="container about-team-cta"><figure class="atc-photo"><img decoding="async" src="/assets/about-team-photo.webp" alt="The ARIE Finance team" loading="lazy" width="2000" height="1334"></figure><div class="atc-copy"><h2 class="section-title" style="margin-bottom:16px;">Meet the Team</h2><p class="lead" style="margin-bottom:24px;">ARIE combines Mauritius-based regulatory, onboarding, and payment operations experience with senior financial services leadership.</p><a class="btn btn-primary" href="#team" data-route="team">Meet the Team <span aria-hidden="true">→</span></a></div></div></section>
+      <section class="section section--ivory"><div class="container about-team-cta"><figure class="atc-photo"><img decoding="async" src="/assets/why-team-photo.webp" alt="The ARIE Finance team" loading="lazy" width="1840" height="1226"></figure><div class="atc-copy"><h2 class="section-title" style="margin-bottom:16px;">Meet the Team</h2><p class="lead" style="margin-bottom:24px;">ARIE combines Mauritius-based regulatory, onboarding, and payment operations experience with senior financial services leadership.</p><a class="btn btn-primary" href="#team" data-route="team">Meet the Team <span aria-hidden="true">→</span></a></div></div></section>
     </section>
 
     <!-- ============================= SERVICES ============================= -->

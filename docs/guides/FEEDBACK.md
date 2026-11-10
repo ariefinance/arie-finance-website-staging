@@ -11,12 +11,12 @@
 - **Storage:** there is no separate database or storage service. The customer-care mailbox is the record, as it is for Contact enquiries.
 
 ## Entry points
+- Contact dropdown in the main navigation ("Leave Feedback", between Get in Touch and Careers)
 - Footer (Company list)
 - Contact page side card
-- The line under the homepage client quotes
 - The signed-out portal page's "Tell us more" link
 
-There is no top-level navigation item.
+There is no top-level navigation item. The line under the homepage client quotes was removed in favour of the Contact dropdown link.
 
 ## Possible later stage
 A dedicated feedback-management system, with references, a separate record store and complaint routing, can be added later as a separate decision.
@@ -39,3 +39,19 @@ A dedicated feedback-management system, with references, a separate record store
 - **Feedback email test:** one TEST ONLY submission was sent from the live form at 05:04:23 UTC: name "ARIE Website Test", email website-test@example.com, type Suggestion. The site confirmed it, and the handler returned `ok:true`, so SMTP accepted the message.
   - **Inbox receipt: unverified.** The verifying account has no access to the customer-care mailbox.
   - A customer-care mailbox holder should confirm receipt of `ARIE Finance Feedback (Suggestion) — ARIE Website Test` and record the result here.
+
+### Follow-up release: PR #58
+- **Released:** 10 November 2026 (merge commit `b90797f`; approved head `370d3f2`).
+- **What went live:**
+  - Why ARIE: the "In practice" box removed; the button under the team photo is now the gold **Speak with our team**, opening Contact.
+  - Team photo: a cropped version (`assets/why-team-photo.webp`) without the wall edge on the right, used in Why ARIE and About Us.
+  - Careers: the boardroom illustration sits on a light framed panel (still hidden on phones).
+  - This release record for PR #57.
+- **Live checks (desktop and mobile):** 21 of 21 passed. They covered:
+  - Why ARIE wording and its four points
+  - The button's style and link to Contact
+  - Testimonials and the Leave Your Feedback line
+  - The cropped photo on both pages
+  - The Careers panel (and that it is hidden on phones)
+  - No horizontal overflow and no page errors
+- **No change to the feedback form or its email handling.** Inbox receipt of the PR #57 test email is still unverified (see above).

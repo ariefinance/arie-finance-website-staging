@@ -1,17 +1,24 @@
 # WhatsApp — Enquiries & Onboarding
 
-**Where:** Contact page, "Prefer to contact us directly?" card, after Phone. **Source:** `index.html` (`#wa-contact-block` template and the `WA_ENABLED` switch near the end of the file). **Status:** built, **switched off** until launch is approved.
+**Where:** a floating button on the marketing pages, plus a compact entry in the Contact page's "Prefer to contact us directly?" card. **Source:** `index.html` (the `#wa-contact-block` and `#wa-float-button` templates, and the `WA_ENABLED` switch near the end of the file). **Status:** built, **switched off** until launch is approved.
+
+**Business hours** (Monday–Friday, 9:00 AM–5:00 PM, Mauritius Time) appear as their own Contact entry. They are not part of the switch, so they show whether or not WhatsApp is on.
 
 ## What it is
 - A click-to-chat link to ARIE's WhatsApp Business number, **+230 5919 4957** (`https://wa.me/23059194957`).
 - It is for **general business enquiries and onboarding guidance**, Monday–Friday, 9:00 AM–5:00 PM, Mauritius Time (UTC+4).
 - It uses no scripts, API, chatbot, CRM or tracking. The link opens WhatsApp in a new tab with no prefilled message, so no visitor data is passed.
-- The card shows a short security notice. WhatsApp is not used for payment instructions, authentication, passwords or OTPs, identity documents, confidential account data, or approving payments or beneficiary changes.
+- **Floating button:** a navy pill labelled "Enquiries & Onboarding" on desktop, and a 52px white circle on mobile.
+  - On desktop, hover or keyboard focus shows "Real people. Thoughtful responses. Handled by our team, never an AI chatbot." The note is extra information, not essential.
+  - The button is hidden on Contact, Careers and Feedback, and on phones while the cookie notice is showing.
+  - It sits below the mobile menu.
+- **Contact entry:** the number, "Real people. Thoughtful responses.", the human-led sentence, and one security line.
+- **Not used for:** payment instructions, authentication, passwords or OTPs, identity documents, confidential account data, or approving payments or beneficiary changes.
 
 ## Switching it on (or off)
 1. Confirm the launch dependencies below.
 2. In `index.html`, change `var WA_ENABLED = false;` to `true`, then go through the normal PR, preview and merge process.
-3. To withdraw it, set the switch back to `false`. While it is off, nothing is shown on the page.
+3. To withdraw it, set the switch back to `false`. While it is off, no WhatsApp element is shown.
 
 ## Launch dependencies
 - **Number:** +230 5919 4957 is company-owned (not a personal account), registered on WhatsApp Business, and opens correctly from the website link.
@@ -33,11 +40,23 @@
 | Hours | Monday–Friday, 9:00–17:00 (Mauritius) |
 
 ## Automatic messages
+Both messages are automatic. Neither claims that someone has already read the message, and neither promises a reply time.
+
 **Greeting:**
-> Welcome to ARIE Finance. A member of our Mauritius team will reply to you personally during business hours (Monday–Friday, 9:00 AM–5:00 PM Mauritius Time). This channel is for general enquiries and onboarding guidance. Please don't send passwords, OTPs, ID documents or payment instructions here. For account or payment matters, please contact your Relationship Manager.
+> Thank you for contacting ARIE Finance.
+>
+> Messages here are handled by our team, not an AI chatbot. We'll review your enquiry and, where needed, gather the relevant information before we reply.
+>
+> Our business hours are Monday–Friday, 9:00 AM–5:00 PM (Mauritius Time).
+>
+> For your security, please don't share passwords, OTPs, identification documents or payment instructions on WhatsApp. Existing clients: account and payment matters remain with your Relationship Manager.
 
 **Away (outside hours):**
-> Thank you for contacting ARIE Finance. Our team is available Monday–Friday, 9:00 AM–5:00 PM (Mauritius Time) and will reply when we're back. For account or payment matters, please contact your Relationship Manager.
+> Thank you for contacting ARIE Finance.
+>
+> Our team is currently outside business hours (Monday–Friday, 9:00 AM–5:00 PM, Mauritius Time). A member of our team will review your message when we're back.
+>
+> Please don't share passwords, OTPs, identification documents or payment instructions on WhatsApp.
 
 ## Quick replies
 | Shortcut | Message |

@@ -29,6 +29,11 @@
 - **Removed:** demo bar, example-case controls, reviewer diagnostics, policy and rules version strings, and demo statements ("Only used to personalise this demonstration", "No information is transmitted or saved", "through this prototype").
   - "No information is transmitted or saved" is replaced by "Your answers are not saved unless you choose to contact ARIE". Answers are sent to the server to be evaluated, but not stored.
 
+## Navigation
+- The questionnaire has a "← Back to introduction" control at the top; browser Back from the questionnaire does the same.
+- Returning to the introduction, leaving the checker, or opening it again from any CTA or `/eligibility` starts from the introduction with a blank questionnaire. Answers are kept only within one assessment, never between visits.
+- Browser Forward from the introduction opens a fresh questionnaire. No confirmation dialogs are added; v0.9's "Start a new check" confirmation is unchanged.
+
 ## Further Review email
 
 - `form:'eligibility_review'` goes to `/api/website-form`, and on to `FORM_TO_EMAIL` (customercare@).

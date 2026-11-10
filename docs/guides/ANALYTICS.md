@@ -18,7 +18,7 @@ Check event mapping, consent handling, and absence of personal information in th
 **Primary source: Vercel Web Analytics.** It uses no cookies and sets no identifiers, so it counts every visitor regardless of the cookie banner. **Supplementary: GA4 via GTM**, which only receives data from visitors who choose "Accept analytics".
 
 ### Event inventory
-Each event is sent to both `window.va` (Vercel) and `dataLayer` (GTM/GA4). Every event fires **at most once per page load** (except `elig_share`), so going back, re-rendering or editing answers cannot double-count. **No event carries answers, eligibility outcomes, countries, activities, company, names, emails or any other personal or screening data.**
+Each event is sent to both `window.va` (Vercel) and `dataLayer` (GTM/GA4). Every event fires **at most once per assessment** (except `elig_share`), so re-rendering, editing answers or browser navigation cannot double-count. A new assessment begins only when the visitor starts the questionnaire again from the introduction; returning to the introduction (the "← Back to introduction" control, browser Back, leaving the checker) sends no event, so `elig_start` always means a fresh start. **No event carries answers, eligibility outcomes, countries, activities, company, names, emails or any other personal or screening data.**
 
 | Event | Fires when | Properties |
 |---|---|---|

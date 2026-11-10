@@ -39,6 +39,25 @@ test('valid feedback is emailed to the existing inbox, then confirmed', async ()
   assert.match(sent[0].text, /Assess any expression of dissatisfaction against the ARIE Complaints Procedure/);
 });
 
+test('testimonial consent: unticked (field absent) is recorded as No and still submits', async () => {
+  sent.length = 0;
+  const r = await post({ ...valid, message: 'Fictional test: consent not given, distinct message one.' });
+  assert.equal(r.body.ok, true);
+  assert.match(sent[0].text, /Testimonial consent: No — do not use as a testimonial\./);
+  assert.match(sent[0].html, /Testimonial consent/);
+});
+test('testimonial consent: ticked is recorded as Yes for this submission only', async () => {
+  sent.length = 0;
+  const r = await post({ ...valid, type: 'Compliment', message: 'Fictional test: consent given, distinct message two.', testimonial_consent: 'yes' });
+  assert.equal(r.body.ok, true);
+  assert.match(sent[0].text, /Testimonial consent: Yes — may be published on the website as a testimonial/);
+  assert.match(sent[0].text, /Applies to this submission only\./);
+});
+test('testimonial consent: any other value is treated as No', async () => {
+  sent.length = 0;
+  await post({ ...valid, message: 'Fictional test: odd consent value, distinct message three.', testimonial_consent: 'maybe' });
+  assert.match(sent[0].text, /Testimonial consent: No/);
+});
 test('no confirmation when delivery fails (retryable)', async () => {
   sent.length = 0; failNext = true;
   const r = await post({ ...valid, message: 'Fictional test: delivery failure path for feedback.' });

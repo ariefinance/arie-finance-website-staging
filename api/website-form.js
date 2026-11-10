@@ -521,6 +521,8 @@ module.exports = async function handler(req, res) {
     const email = validEmail(fields.email);
     const fbType = clean(fields.type);
     const message = cleanMultiline(fields.message);
+    // Optional testimonial consent (unchecked checkboxes are not sent). Applies to this submission only.
+    const testimonialConsent = fields.testimonial_consent === 'yes' || fields.testimonial_consent === true;
 
     if (!lenOk(fullname, 'fullname')) return res.status(400).json({ ok: false, error: 'invalid_name' });
     if (!email) return res.status(400).json({ ok: false, error: 'invalid_email' });
@@ -536,6 +538,9 @@ module.exports = async function handler(req, res) {
       ['Name', fullname],
       ['Email', email],
       ['Message', message],
+      ['Testimonial consent', testimonialConsent
+        ? 'Yes — may be published on the website as a testimonial, as submitted (minor spelling/formatting corrections only), with name and company if provided. Applies to this submission only.'
+        : 'No — do not use as a testimonial.'],
       ['Submitted', ts],
       ['Source URL', url || '—'],
       ['Triage', 'Assess any expression of dissatisfaction against the ARIE Complaints Procedure, whatever feedback type was chosen.'],

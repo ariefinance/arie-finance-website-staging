@@ -18,7 +18,7 @@ Check event mapping, consent handling, and absence of personal information in th
 **Primary source: Vercel Web Analytics.** It uses no cookies and sets no identifiers, so it counts every visitor regardless of the cookie banner. **Supplementary: GA4 via GTM**, which only receives data from visitors who choose "Accept analytics".
 
 ### Event inventory
-Each event is sent to both `window.va` (Vercel) and `dataLayer` (GTM/GA4). Every event fires **at most once per page load** (except `elig_share`), so going back, re-rendering or editing answers cannot double-count. **No event carries answers, eligibility outcomes, countries, activities, company, names, emails or any other personal or screening data.**
+Each event is sent to both `window.va` (Vercel) and `dataLayer` (GTM/GA4). Every event fires **at most once per assessment** (except `elig_share`), so re-rendering, editing answers or browser navigation cannot double-count. A new assessment begins only when the visitor starts the questionnaire again from the introduction; returning to the introduction (the "← Back to introduction" control, browser Back, leaving the checker) sends no event, so `elig_start` always means a fresh start. **No event carries answers, eligibility outcomes, countries, activities, company, names, emails or any other personal or screening data.**
 
 | Event | Fires when | Properties |
 |---|---|---|
@@ -32,7 +32,7 @@ Each event is sent to both `window.va` (Vercel) and `dataLayer` (GTM/GA4). Every
 | `elig_review_submit` | A Further Review request is successfully sent | — |
 | `elig_share` | The share action is used | `share_method`: `native` / `copy` / `whatsapp` / `email` |
 
-Recipient visits are identified by the share link's `utm_source=share` (or an introducer's own source), not by an event.
+Shared links are the clean `https://www.ariefinance.com/eligibility` with no tracking parameters, so `elig_share` counts shares by method, but visits arriving from a share are not separately attributed (they appear as direct or under the referring app). Introducer visits are attributed by the dedicated introducer link's `utm_source=introducer` and `utm_campaign`.
 
 ### Funnel report (Vercel → Analytics → Events, production, same date range)
 | Step | Metric |

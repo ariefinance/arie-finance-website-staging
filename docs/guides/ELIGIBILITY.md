@@ -29,6 +29,11 @@
 - **Removed:** demo bar, example-case controls, reviewer diagnostics, policy and rules version strings, and demo statements ("Only used to personalise this demonstration", "No information is transmitted or saved", "through this prototype").
   - "No information is transmitted or saved" is replaced by "Your answers are not saved unless you choose to contact ARIE". Answers are sent to the server to be evaluated, but not stored.
 
+## Navigation
+- The questionnaire has a "← Back to introduction" control at the top; browser Back from the questionnaire does the same.
+- Returning to the introduction, leaving the checker, or opening it again from any CTA or `/eligibility` starts from the introduction with a blank questionnaire. Answers are kept only within one assessment, never between visits.
+- Browser Forward from the introduction opens a fresh questionnaire. No confirmation dialogs are added; v0.9's "Start a new check" confirmation is unchanged.
+
 ## Further Review email
 
 - `form:'eligibility_review'` goes to `/api/website-form`, and on to `FORM_TO_EMAIL` (customercare@).
@@ -64,7 +69,7 @@ On Vercel **preview** deployments only (`VERCEL_ENV=preview`), the form APIs als
 - **Share action** on the intro screen:
   - Uses the device's native share sheet where available.
   - Otherwise shows a small menu: Copy link, WhatsApp and Email.
-  - Shared links carry `utm_source=share` and `utm_medium=<method>`. Only when the visitor arrived through an introducer link (`utm_source=introducer`) is that source and its campaign code (letters, digits, `-`, `_`, max 40) kept. No other incoming source (Instagram, Google, email campaigns…) is ever carried forward.
+  - Every method (native, Copy link, WhatsApp, Email) shares the clean URL `https://www.ariefinance.com/eligibility`, with no tracking parameters. Shares are measured by the `elig_share` event (`share_method`).
 - **Introducer links:** `https://www.ariefinance.com/eligibility?utm_source=introducer&utm_campaign=<introducer code>`.
   - Never put client names, answers or other personal details in links.
 - **Funnel events and reporting:** see [ANALYTICS.md](ANALYTICS.md#check-your-eligibility-funnel-added-november-2026). No eligibility outcome or screening data is ever sent to analytics.

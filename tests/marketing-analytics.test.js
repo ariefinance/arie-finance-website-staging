@@ -6,6 +6,11 @@ const path = require('node:path');
 const vm = require('node:vm');
 
 const script = fs.readFileSync(path.join(__dirname, '..', 'assets', 'analytics.v1.js'), 'utf8');
+const siteHtml = fs.readFileSync(path.join(__dirname, '..', 'index.html'), 'utf8');
+
+test('marketing analytics script uses a versioned URL to avoid stale immutable caching', () => {
+  assert.match(siteHtml, /src="\/assets\/analytics\.v1\.js\?v=20261110"/);
+});
 
 function createHarness() {
   const vercel = [];

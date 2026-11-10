@@ -13,6 +13,12 @@ Check event mapping, consent handling, and absence of personal information in th
 
 **Unverified:** external analytics settings, live measurement delivery, exact consent configuration.
 
+## Form conversion and WhatsApp reporting (10 November 2026)
+
+Vercel custom events now record **`contact_form_start`, `contact_form_submit`, `careers_form_start`, `careers_form_submit`, `feedback_form_start`, `feedback_form_submit`** and **`whatsapp_enquiry_click`**. These use only controlled non-personal event names and slugs; no submission content, testimonial consent, identity details or free-text feedback goes to Vercel. The contact/careers/feedback **submit** events fire only after the existing form's successful server response (the honeypot-only fake success is excluded). WhatsApp enquiry clicks track the official ARIE number only, not WhatsApp's eligibility Share action.
+
+The same marketing form events continue to be pushed to `dataLayer` for consenting visitors; GA4 reports each only when its GTM container actually forwards that event. The Share action and eligibility funnel retain their existing tracking. For fortnightly reporting, distinguish starts and click intentions from confirmed submissions, keep Careers separate from commercial enquiries, and never add Vercel and GA4 totals together. Production verification of the new Vercel events requires legitimate subsequent user activity; do not send synthetic client forms solely to generate counts.
+
 ## Check Your Eligibility funnel (added November 2026)
 
 **Primary source: Vercel Web Analytics.** It uses no cookies and sets no identifiers, so it counts every visitor regardless of the cookie banner. **Supplementary: GA4 via GTM**, which only receives data from visitors who choose "Accept analytics".

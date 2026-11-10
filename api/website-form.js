@@ -1,7 +1,7 @@
 // ============================================================================
 //  ARIE Finance — website form handler   (Vercel serverless function)
 //  Route:  POST /api/website-form
-//  Delivers Contact and Careers submissions to customercare@ariefinance.com
+//  Delivers Contact, Careers and Feedback submissions to customercare@ariefinance.com
 //  via SMTP (Nodemailer). No credentials are ever exposed to the browser.
 // ----------------------------------------------------------------------------
 //  REQUIRED ENVIRONMENT VARIABLES (set in Vercel → Project → Settings → Env):
@@ -57,6 +57,7 @@ const CONTACT_TOPICS = new Set([
   'Existing client / onboarding support',
   'Complaint / other enquiry',
 ]);
+const FEEDBACK_TYPES = new Set(['Suggestion', 'Service experience', 'Compliment']);
 
 const ALLOWED_EXT  = ['.pdf', '.doc', '.docx'];
 const ALLOWED_MIME = [
@@ -459,7 +460,7 @@ module.exports = async function handler(req, res) {
 
   // --- form type allow-list ---
   const formType = clean(body.form);
-  if (formType !== 'contact' && formType !== 'careers') {
+  if (formType !== 'contact' && formType !== 'careers' && formType !== 'feedback') {
     return res.status(400).json({ ok: false, error: 'invalid_form_type' });
   }
 
@@ -504,6 +505,33 @@ module.exports = async function handler(req, res) {
       ['Submitted', ts],
       ['Source URL', url || '—'],
       ['Referrer', referrer || '—'],
+    ];
+    textBody = pairs.map((p) => p[0] + ': ' + p[1]).join('\n');
+    htmlRows = pairs.map((p) => '<tr><td style="padding:6px 12px;font-weight:600;vertical-align:top;white-space:nowrap;">' + escapeHtml(p[0]) + '</td><td style="padding:6px 12px;">' + escapeHtml(p[1]).replace(/\n/g, '<br>') + '</td></tr>').join('');
+
+  } else if (formType === 'feedback') {
+    const fullname = clean(fields.name);
+    const email = validEmail(fields.email);
+    const fbType = clean(fields.type);
+    const message = cleanMultiline(fields.message);
+
+    if (!lenOk(fullname, 'fullname')) return res.status(400).json({ ok: false, error: 'invalid_name' });
+    if (!email) return res.status(400).json({ ok: false, error: 'invalid_email' });
+    if (!FEEDBACK_TYPES.has(fbType)) return res.status(400).json({ ok: false, error: 'invalid_feedback_type' });
+    if (!lenOk(message, 'message')) return res.status(400).json({ ok: false, error: 'invalid_message' });
+
+    replyTo = email;
+    subject = 'ARIE Finance Feedback (' + headerSafe(fbType) + ') — ' + headerSafe(fullname);
+    dedupeSeed = ip + '|feedback|' + email + '|' + cheapHash(fbType + message);
+    const pairs = [
+      ['Form type', 'Website feedback'],
+      ['Feedback type', fbType],
+      ['Name', fullname],
+      ['Email', email],
+      ['Message', message],
+      ['Submitted', ts],
+      ['Source URL', url || '—'],
+      ['Triage', 'Assess any expression of dissatisfaction against the ARIE Complaints Procedure, whatever feedback type was chosen.'],
     ];
     textBody = pairs.map((p) => p[0] + ': ' + p[1]).join('\n');
     htmlRows = pairs.map((p) => '<tr><td style="padding:6px 12px;font-weight:600;vertical-align:top;white-space:nowrap;">' + escapeHtml(p[0]) + '</td><td style="padding:6px 12px;">' + escapeHtml(p[1]).replace(/\n/g, '<br>') + '</td></tr>').join('');

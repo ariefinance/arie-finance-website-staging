@@ -1,0 +1,3 @@
+# Not part of the deployed site
+tests/
+node_modules/

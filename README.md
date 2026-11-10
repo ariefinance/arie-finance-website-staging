@@ -11,6 +11,7 @@
 | Homepage and services | Public company, services and audience information | `/`, `/#services`, `/#direct-clients`, `/#introducers` | [Public website](docs/guides/PUBLIC-SITE.md) |
 | About, team and compliance | Company and disclosure information | `/#about`, `/#team`, `/#compliance` | [Public website](docs/guides/PUBLIC-SITE.md) |
 | Contact and application enquiry | Client enquiry forms with email delivery | `/#contact` | [Public website](docs/guides/PUBLIC-SITE.md) |
+| WhatsApp contact (switched off until launch approval) | Click-to-chat link for general enquiries and onboarding guidance | `/#contact` | [WhatsApp](docs/guides/WHATSAPP.md) |
 | Careers and CV | Job enquiry and supported attachment submission | `/#careers` | [Public website](docs/guides/PUBLIC-SITE.md) |
 | Onboarding requirements | Customer information and requirements interface | `/onboarding-requirements/` | [Client resources guide](docs/guides/CLIENT-RESOURCES.md) · [Source](onboarding-requirements/) |
 | Corporate onboarding pack | Downloadable corporate pack | `/documents/ARIE_Finance_Corporate_Onboarding_Pack.pdf` | [Document](documents/ARIE_Finance_Corporate_Onboarding_Pack.pdf) |

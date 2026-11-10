@@ -191,12 +191,15 @@
   document.querySelectorAll('[data-success]').forEach(function (success) {
     var name = success.getAttribute('data-success'); // "contact" | "careers" | "feedback"
     if (!name) return;
+    var recorded = false;
     try {
       var mo = new MutationObserver(function () {
+        if (recorded) return;
         if (success.classList.contains('is-visible')) {
           // Genuine server-success branch sets tabindex=-1; the honeypot
           // shortcut shows the same success element but never sets tabindex.
           if (success.getAttribute('tabindex') !== '-1') { mo.disconnect(); return; }
+          recorded = true;
           var params = { form_name: name };
           if (name === 'contact') {
             var topic = currentContactTopic();

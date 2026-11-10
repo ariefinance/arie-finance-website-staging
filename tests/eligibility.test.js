@@ -76,6 +76,16 @@ test('/api/eligibility adds only the v0.9 restricted-country wording flag on hol
   assert.deepEqual(c.body, { ok: true, route: 'continue_review' });
 });
 test('/api/eligibility enforces origin', async () => { assert.equal((await call(evaluateApi, { answers: base }, 'https://evil.test')).code, 403); });
+test('preview deployments accept only their own URL; production does not', async () => {
+  const saved = { e: process.env.VERCEL_ENV, b: process.env.VERCEL_BRANCH_URL };
+  process.env.VERCEL_BRANCH_URL = 'site-git-branch.vercel.app';
+  process.env.VERCEL_ENV = 'preview';
+  assert.equal((await call(evaluateApi, { answers: base }, 'https://site-git-branch.vercel.app')).code, 200);
+  assert.equal((await call(evaluateApi, { answers: base }, 'https://other-git-x.vercel.app')).code, 403);
+  process.env.VERCEL_ENV = 'production';
+  assert.equal((await call(evaluateApi, { answers: base }, 'https://site-git-branch.vercel.app')).code, 403);
+  process.env.VERCEL_ENV = saved.e || ''; if (!saved.e) delete process.env.VERCEL_ENV; if (saved.b) process.env.VERCEL_BRANCH_URL = saved.b; else delete process.env.VERCEL_BRANCH_URL;
+});
 
 const contact = { name: 'Test Person', email: 'test.person@example.test', phone: '', note: 'Fictional test.', tcs: true };
 test('Further Review email reaches the inbox with answers, contact details and the server-computed route', async () => {

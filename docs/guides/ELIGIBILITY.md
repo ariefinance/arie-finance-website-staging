@@ -14,7 +14,7 @@
    - `standard`: "You may proceed to document preparation".
    - `continue_review`: "You may continue — further review required".
    - `hold`: "Please contact ARIE for further assessment".
-4. **Permitted results**: indicative pricing (when enabled), then **directly to `/onboarding-requirements`**.
+4. **Permitted results**: indicative pricing (when enabled), then **directly to https://www.ariefinance.com/onboarding-requirements**.
 5. **On hold**: the "Contact ARIE Finance" button opens a short contact form. Answers and contact details are sent securely to ARIE for human review. Nothing else is available until ARIE responds.
 
 ## Deliberate differences from v0.9
@@ -51,3 +51,7 @@
 ## Before go-live
 
 - Run one labelled, fictional Further Review submission from the preview, and confirm it actually arrives in the customercare@ inbox with the full answers.
+
+## Preview testing
+
+On Vercel **preview** deployments only (`VERCEL_ENV=preview`), the form APIs also accept requests whose `Origin` is the deployment's own URL (`VERCEL_URL` / `VERCEL_BRANCH_URL`, set by Vercel). This lets branch previews be tested end to end. Production still accepts only `ALLOWED_ORIGIN`.

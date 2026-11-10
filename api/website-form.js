@@ -164,6 +164,12 @@ function originAllowed(req) {
   const origin = req.headers.origin || '';
   if (allow.length && allow.indexOf(origin) !== -1) return true;
   if (String(process.env.ALLOW_LOCAL_ORIGINS).toLowerCase() === 'true' && /^https?:\/\/localhost(:\d+)?$/.test(origin)) return true;
+  // Vercel preview deployments only: also accept the deployment's own URLs (system env vars set by Vercel),
+  // so branch previews can be tested end-to-end. Never applies in production.
+  if (process.env.VERCEL_ENV === 'preview' && origin) {
+    const own = [process.env.VERCEL_URL, process.env.VERCEL_BRANCH_URL].filter(Boolean).map((h) => 'https://' + h);
+    if (own.indexOf(origin) !== -1) return true;
+  }
   // Same-origin requests from the browser may omit Origin on some navigations;
   // if no origin header at all AND no allow-list configured, fall through as blocked.
   return false;

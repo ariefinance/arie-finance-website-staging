@@ -152,3 +152,17 @@ test('/eligibility serves the site with eligibility social-preview metadata and 
   assert.ok(b.includes('id="elig-root"'));
   assert.ok(!/og-image\.png/.test(b), 'homepage preview image must not remain');
 });
+
+// ---------- Share button: clean URL for every method ----------
+test('share button uses the clean /eligibility URL for every method, whatever the visitor arrived with', () => {
+  const html = require('fs').readFileSync(require('path').join(__dirname, '..', 'index.html'), 'utf8');
+  const base = html.match(/var SHARE_BASE='([^']+)';/)[1];
+  const fn = html.match(/function shareUrl\([^)]*\)\{[\s\S]*?\}/)[0];
+  assert.equal(base, 'https://www.ariefinance.com/eligibility');
+  for (const search of ['', '?utm_source=introducer&utm_campaign=ABC12', '?utm_source=instagram&utm_medium=social', '?utm_source=share&utm_medium=copy']) {
+    const shareUrl = new Function('location', 'SHARE_BASE', fn + '; return shareUrl;')({ search }, base);
+    for (const m of ['native', 'copy', 'whatsapp', 'email']) assert.equal(shareUrl(m), base);
+  }
+  // Sharing is still measured, once per method.
+  for (const m of ['native', 'copy']) assert.ok(html.includes("track('elig_share',{share_method:'" + m + "'})"), m);
+});

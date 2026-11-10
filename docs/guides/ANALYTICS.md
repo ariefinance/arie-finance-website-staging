@@ -32,7 +32,7 @@ Each event is sent to both `window.va` (Vercel) and `dataLayer` (GTM/GA4). Every
 | `elig_review_submit` | A Further Review request is successfully sent | — |
 | `elig_share` | The share action is used | `share_method`: `native` / `copy` / `whatsapp` / `email` |
 
-Recipient visits are identified by the share link's `utm_source=share` (or an introducer's own source), not by an event.
+Shared links are the clean `https://www.ariefinance.com/eligibility` with no tracking parameters, so `elig_share` counts shares by method, but visits arriving from a share are not separately attributed (they appear as direct or under the referring app). Introducer visits are attributed by the dedicated introducer link's `utm_source=introducer` and `utm_campaign`.
 
 ### Funnel report (Vercel → Analytics → Events, production, same date range)
 | Step | Metric |

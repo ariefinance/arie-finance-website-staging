@@ -64,7 +64,7 @@ On Vercel **preview** deployments only (`VERCEL_ENV=preview`), the form APIs als
 - **Share action** on the intro screen:
   - Uses the device's native share sheet where available.
   - Otherwise shows a small menu: Copy link, WhatsApp and Email.
-  - Shared links carry `utm_source=share` and `utm_medium=<method>`. Only when the visitor arrived through an introducer link (`utm_source=introducer`) is that source and its campaign code (letters, digits, `-`, `_`, max 40) kept. No other incoming source (Instagram, Google, email campaigns…) is ever carried forward.
+  - Every method (native, Copy link, WhatsApp, Email) shares the clean URL `https://www.ariefinance.com/eligibility`, with no tracking parameters. Shares are measured by the `elig_share` event (`share_method`).
 - **Introducer links:** `https://www.ariefinance.com/eligibility?utm_source=introducer&utm_campaign=<introducer code>`.
   - Never put client names, answers or other personal details in links.
 - **Funnel events and reporting:** see [ANALYTICS.md](ANALYTICS.md#check-your-eligibility-funnel-added-november-2026). No eligibility outcome or screening data is ever sent to analytics.

@@ -3390,14 +3390,9 @@ function modeQuestion(key,label,choices){choices=choices||[['no','No'],['yes','Y
 var SHARE_BASE='https://www.ariefinance.com/eligibility';
 var SHARE_TITLE='ARIE Finance — Check Your Eligibility';
 var SHARE_TEXT='Check whether your business may be suitable for ARIE Finance: a short preliminary eligibility check, indicative pricing and the next steps towards onboarding.';
-function shareUrl(method){var inq=new URLSearchParams(location.search),p=new URLSearchParams();
- /* Only an intentional introducer referral is carried forward (source + a plain campaign code).
-    Every other share is "share": unrelated sources (instagram, google, email campaigns...) are never copied. */
- var code=(inq.get('utm_campaign')||'').trim();
- if((inq.get('utm_source')||'').toLowerCase()==='introducer'){p.set('utm_source','introducer');if(/^[A-Za-z0-9_-]{1,40}$/.test(code))p.set('utm_campaign',code);}
- else p.set('utm_source','share');
- p.set('utm_medium',method);
- return SHARE_BASE+'?'+p.toString();}
+/* Standard shares use the clean URL for every method (no tracking parameters); sharing is measured by elig_share.
+   Introducer attribution comes only from the dedicated introducer links ARIE hands out. */
+function shareUrl(){return SHARE_BASE;}
 function shareControl(){return '<div class="el-share"><button type="button" class="el-share-btn" data-act="share" aria-haspopup="true" aria-expanded="false" aria-controls="el-share-menu"><svg aria-hidden="true" viewBox="0 0 24 24" width="16" height="16"><path d="M15 8a3 3 0 1 0-2.83-4H12a3 3 0 0 0 .1.77L8.7 6.9a3 3 0 1 0 0 4.2l3.4 2.13A3 3 0 0 0 12 14a3 3 0 1 0 .7-1.94L9.3 9.94a3 3 0 0 0 0-1.88l3.4-2.13A3 3 0 0 0 15 8z" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/></svg>Share this eligibility check</button>'+
  '<div class="el-share-menu" id="el-share-menu" role="menu" hidden><button type="button" role="menuitem" data-act="share-copy">Copy link</button><a role="menuitem" data-share="whatsapp" target="_blank" rel="noopener noreferrer" href="#">WhatsApp</a><a role="menuitem" data-share="email" href="#">Email</a></div><span class="el-share-status" role="status" aria-live="polite"></span></div>';}
 var TRACKED={};

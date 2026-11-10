@@ -20,3 +20,22 @@ There is no top-level navigation item.
 
 ## Possible later stage
 A dedicated feedback-management system, with references, a separate record store and complaint routing, can be added later as a separate decision.
+
+## Release record
+- **Released:** 10 November 2026, via PR #57 (merge commit `b10638c`; approved head `815f885`).
+- **What went live:**
+  - Why ARIE human-led section with the team photo and "What our clients say about us" button
+  - Contact dropdown (Get in Touch / Careers)
+  - Boardroom illustration in the Careers header, with honest alt text (hidden on phones)
+  - Leave Your Feedback page and its four entry points, emailing the customer-care inbox through `api/website-form.js`
+- **Live checks (10 November 2026, desktop and mobile):** all passed. They covered:
+  - Why ARIE and the Contact dropdown
+  - Careers and the hidden phone illustration
+  - Feedback page, its fields and entry links
+  - Contact form validation (nothing sent)
+  - Cookie consent and the onboarding links
+  - No MUR claim
+  - No horizontal overflow and no page errors
+- **Feedback email test:** one TEST ONLY submission was sent from the live form at 05:04:23 UTC: name "ARIE Website Test", email website-test@example.com, type Suggestion. The site confirmed it, and the handler returned `ok:true`, so SMTP accepted the message.
+  - **Inbox receipt: unverified.** The verifying account has no access to the customer-care mailbox.
+  - A customer-care mailbox holder should confirm receipt of `ARIE Finance Feedback (Suggestion) — ARIE Website Test` and record the result here.

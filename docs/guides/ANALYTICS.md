@@ -1,6 +1,6 @@
 # Marketing analytics and website report
 
-**Event script:** `assets/analytics.v1.js`. **Report path:** `/managementreport/website-analytics/`. **Reviewed:** 26 October 2026 (code and guide).
+**Event script:** `assets/analytics.v1.js` (loaded with `?v=20261110` to avoid stale immutable asset caching). **Report path:** `/managementreport/website-analytics/`. **Reviewed:** 26 October 2026 (code and guide).
 
 ## Features
 Marketing-page hash section tracking, application/contact interactions, selected CTA and contact-link clicks, consent-aware GA4/GTM data layer, and a two-page monthly website analytics report.
@@ -12,6 +12,12 @@ Collect the approved 28-day comparison periods from Vercel Analytics, GA4 and Go
 Check event mapping, consent handling, and absence of personal information in the data layer. The marketing analytics script does not automatically cover other utility pages. The repo currently contains a tracked `data.json`, while the older guide says it is untracked; review classification before changing it.
 
 **Unverified:** external analytics settings, live measurement delivery, exact consent configuration.
+
+## Form conversion and WhatsApp reporting (10 November 2026)
+
+Vercel custom events now record **`contact_form_start`, `contact_form_submit`, `careers_form_start`, `careers_form_submit`, `feedback_form_start`, `feedback_form_submit`** and **`whatsapp_enquiry_click`**. These use only controlled non-personal event names and slugs; no submission content, testimonial consent, identity details or free-text feedback goes to Vercel. The contact/careers/feedback **submit** events fire only after the existing form's successful server response (the honeypot-only fake success is excluded). WhatsApp enquiry clicks track the official ARIE number only, not WhatsApp's eligibility Share action.
+
+The same marketing form events continue to be pushed to `dataLayer` for consenting visitors; GA4 reports each only when its GTM container actually forwards that event. The Share action and eligibility funnel retain their existing tracking. For fortnightly reporting, distinguish starts and click intentions from confirmed submissions, keep Careers separate from commercial enquiries, and never add Vercel and GA4 totals together. Production verification of the new Vercel events requires legitimate subsequent user activity; do not send synthetic client forms solely to generate counts.
 
 ## Check Your Eligibility funnel (added November 2026)
 

@@ -1,13 +1,12 @@
 /*
- * ARIE Finance — GA4 / GTM event layer (dataLayer only).
+ * ARIE Finance — consent-aware GA4/GTM dataLayer and cookieless Vercel form events.
  *
  * Loads only on the marketing single-page site (index.html); utility
  * routes (/salestracker, /managementreport, /internal/*, /logout) do
  * not include this file, so no analytics is pushed from those pages.
  *
- * Consent Mode: Advanced. Before explicit acceptance analytics_storage
- * is denied and Google may send cookieless pings; the site's cookie
- * banner handles the explicit accept / essential-only flip.
+ * Consent Mode: Basic. Google Tag Manager loads only after analytics consent;
+ * Vercel Web Analytics runs without cookies for aggregate website metrics.
  * Advertising storage/consent is never granted.
  *
  * PII policy: we never push name, email, phone, company, message body,
@@ -29,6 +28,16 @@
       }
       dl.push(obj);
     } catch (e) { /* never break the site for analytics */ }
+  }
+
+  // Vercel is the primary aggregate source for conversions across all consent choices.
+  // Only controlled, non-personal event names and category slugs are sent.
+  function recordVercel(name, data) {
+    try {
+      if (typeof window.va === 'function') {
+        window.va('event', data ? { name: name, data: data } : { name: name });
+      }
+    } catch (e) { /* analytics must never block customer actions */ }
   }
 
   // ---------- section_view (single-page hash routes) ----------
@@ -93,6 +102,13 @@
 
     var href = link.getAttribute ? link.getAttribute('href') : null;
     if (href) {
+      // Only ARIE's enquiries WhatsApp number; do not count generic wa.me
+      // sharing links from the eligibility checker as contact enquiries.
+      if (/^https:\/\/wa\.me\/23059194957(?:[/?#]|$)/i.test(href)) {
+        push('whatsapp_enquiry_click', { channel: 'whatsapp' });
+        recordVercel('whatsapp_enquiry_click', { channel: 'whatsapp' });
+        return;
+      }
       if (href.indexOf('mailto:') === 0) {
         push('email_click', { link_url: href, link_text: textOf(link) });
         return;
@@ -154,33 +170,43 @@
   // form_start on first user interaction with each form, once.
   // form_submit when the site's existing success element gets
   // .is-visible (set by the confirmed-success branch in the site's
-  // contact/careers submit handler, after /api/website-form returns
-  // {ok:true}). For the contact form, contact_topic is attached from
+  // contact/careers/feedback submit handler, after /api/website-form returns
+  // {ok:true}. Honeypot-only fake confirmations are excluded.
+  // For the contact form, contact_topic is attached from
   // whichever intent radio is checked at that moment.
   document.querySelectorAll('form[data-form]').forEach(function (form) {
-    var name = form.dataset.form; // "contact" | "careers"
+    var name = form.dataset.form; // "contact" | "careers" | "feedback"
     var started = false;
     function start() {
       if (started) return;
       started = true;
-      push(name + '_form_start', { form_name: name });
+      var params = { form_name: name };
+      push(name + '_form_start', params);
+      recordVercel(name + '_form_start', params);
     }
     form.addEventListener('input', start, true);
     form.addEventListener('change', start, true);
   });
 
   document.querySelectorAll('[data-success]').forEach(function (success) {
-    var name = success.getAttribute('data-success'); // "contact" | "careers"
+    var name = success.getAttribute('data-success'); // "contact" | "careers" | "feedback"
     if (!name) return;
+    var recorded = false;
     try {
       var mo = new MutationObserver(function () {
+        if (recorded) return;
         if (success.classList.contains('is-visible')) {
+          // Genuine server-success branch sets tabindex=-1; the honeypot
+          // shortcut shows the same success element but never sets tabindex.
+          if (success.getAttribute('tabindex') !== '-1') { mo.disconnect(); return; }
+          recorded = true;
           var params = { form_name: name };
           if (name === 'contact') {
             var topic = currentContactTopic();
             if (topic) params.contact_topic = topic;
           }
           push(name + '_form_submit', params);
+          recordVercel(name + '_form_submit', params);
           mo.disconnect();
         }
       });

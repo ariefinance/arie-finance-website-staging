@@ -1971,7 +1971,8 @@ html body .cookie-banner .btn:focus-visible{ outline:2px solid #C99B3F!important
 .wa-float:hover .wa-tip,.wa-float:focus-visible .wa-tip{ opacity:1; visibility:visible; }
 body:has(section.page.is-active[data-page="contact"]) .wa-float,
 body:has(section.page.is-active[data-page="careers"]) .wa-float,
-body:has(section.page.is-active[data-page="feedback"]) .wa-float{ display:none; }
+body:has(section.page.is-active[data-page="feedback"]) .wa-float,
+body:has(section.page.is-active[data-page="eligibility"]) .wa-float{ display:none; }
 @media (max-width:760px){
   .wa-float{ right:16px; bottom:16px; width:52px; height:52px; padding:0; gap:0; justify-content:center; background:#fff; border:1px solid rgba(201,155,63,.5); box-shadow:0 10px 24px -10px rgba(6,17,58,.45), 0 2px 6px rgba(6,17,58,.12); }
   .wa-float:hover{ border-color:#C99B3F; }
@@ -1984,6 +1985,102 @@ body:has(section.page.is-active[data-page="feedback"]) .wa-float{ display:none; 
 }
 @media (hover:none){ .wa-float .wa-tip{ display:none; } }
 @media (prefers-reduced-motion:reduce){ .wa-float .wa-tip{ transition:none; } }
+[data-page="eligibility"] .page-hero{ padding-bottom:46px; }
+[data-page="eligibility"] .contact-section{ background:#ECF1F8; border-top:1px solid var(--border-soft); padding:58px 0 66px; }
+[data-page="eligibility"] .form-layout{ gap:40px; align-items:start; }
+[data-page="eligibility"] .form-card{ border:1px solid var(--border-soft); border-radius:20px; padding:34px 36px; box-shadow:0 1px 2px rgba(6,17,58,.04), 0 16px 40px -28px rgba(6,17,58,.18); }
+[data-page="eligibility"] .form-card form{ gap:20px; }
+[data-page="eligibility"] .intent-fieldset legend{ margin-bottom:13px; }
+[data-page="eligibility"] .intent-grid{ display:grid; grid-template-columns:1fr 1fr; gap:12px; }
+[data-page="eligibility"] .intent-chip span{ display:flex; align-items:center; gap:12px; width:100%; justify-content:flex-start; text-align:left; min-height:58px; padding:15px 17px; border-radius:12px; border:1px solid var(--border); background:var(--surface); font-size:14.5px; font-weight:500; color:var(--text); letter-spacing:0; text-transform:none; box-shadow:0 1px 1px rgba(6,17,58,.03); transition:border-color .18s ease, background .18s ease, box-shadow .18s ease, transform .18s ease; }
+[data-page="eligibility"] .intent-chip span::before{ width:16px; height:16px; border-radius:50%; border:1.5px solid var(--border); background:#fff; box-shadow:none; flex:0 0 auto; }
+[data-page="eligibility"] .intent-chip span:hover{ border-color:var(--indigo); background:#fff; box-shadow:0 1px 3px -1px rgba(6,17,58,.12); }
+[data-page="eligibility"] .intent-chip input:checked + span{ border-color:var(--indigo); background:var(--indigo-soft); box-shadow:inset 0 0 0 1px var(--indigo); }
+[data-page="eligibility"] .intent-chip input:checked + span::before{ border-color:var(--gold); background:var(--gold); box-shadow:inset 0 0 0 3px #fff; }
+[data-page="eligibility"] .intent-chip input:focus-visible + span{ border-color:var(--indigo); box-shadow:0 0 0 3px rgba(46,42,140,.20); }
+[data-page="eligibility"] .form-section-head{ display:flex; align-items:center; gap:12px; margin-top:4px; padding-top:22px; border-top:1px solid var(--border-soft); }
+[data-page="eligibility"] .form-section-head::before{ content:''; height:2px; width:26px; border-radius:2px; background:var(--grad-gold); flex:0 0 auto; }
+[data-page="eligibility"] .form-section-head span{ color:var(--muted); font-size:11px; letter-spacing:.15em; text-transform:uppercase; font-weight:700; }
+[data-page="eligibility"] .form-card label{ margin-bottom:8px; }
+[data-page="eligibility"] .form-card input, [data-page="eligibility"] .form-card textarea{ min-height:48px; border:1px solid var(--border); background:#fff; border-radius:10px; padding:13px 14px; font-size:15px; }
+[data-page="eligibility"] .form-card input::placeholder, [data-page="eligibility"] .form-card textarea::placeholder{ color:#9aa4b6; }
+[data-page="eligibility"] .form-card input:focus, [data-page="eligibility"] .form-card textarea:focus{ border-color:var(--indigo); box-shadow:0 0 0 3px rgba(46,42,140,.13); }
+[data-page="eligibility"] .form-card .form-grid{ gap:18px; }
+[data-page="eligibility"] aside.contact-stack.info-card{ padding:0; overflow:hidden; border:1px solid var(--border-soft); border-radius:20px; box-shadow:0 1px 2px rgba(6,17,58,.05), 0 22px 52px -32px rgba(6,17,58,.28); align-self:start; }
+[data-page="eligibility"] .contact-head{ background:linear-gradient(180deg,#0B1748,#06113A); border-bottom:2px solid var(--gold); padding:18px 24px; }
+[data-page="eligibility"] .contact-head span{ color:#fff; font-family:var(--display); font-weight:600; font-size:15.5px; letter-spacing:.01em; }
+[data-page="eligibility"] .contact-body{ padding:6px 24px 20px; }
+[data-page="eligibility"] .contact-body .contact-block{ border-top:1px solid var(--border); padding:16px 0; }
+[data-page="eligibility"] .contact-body .contact-block:first-child{ border-top:0; }
+  [data-page="eligibility"] .intent-grid{ grid-template-columns:1fr; gap:8px; }
+  [data-page="eligibility"] .intent-chip span{ min-height:50px; padding:11px 15px; }
+  [data-page="eligibility"] .form-card{ padding:22px 18px; }
+  [data-page="eligibility"] .contact-section{ background:var(--canvas); padding:40px 0 48px; }
+  [data-page="eligibility"] .intent-chip span{ font-size:13.5px; padding:11px 14px; gap:10px; }
+@media (min-width:1061px){ [data-page="eligibility"] .contact-stack{ position:sticky; top:96px; align-self:start; } }
+/* Eligibility check (/#eligibility) — reuses the Contact page styles above */
+[data-page="eligibility"] #el-form .form-section-head:first-of-type{ border-top:0; padding-top:0; margin-top:0; }
+[data-page="eligibility"] select{ width:100%; min-height:48px; border:1px solid var(--border); background:#fff; border-radius:10px; padding:0 14px; font:inherit; font-size:15px; color:var(--text); }
+[data-page="eligibility"] select:focus{ border-color:var(--indigo); box-shadow:0 0 0 3px rgba(46,42,140,.13); outline:none; }
+[data-page="eligibility"] .form-card form{ display:grid; gap:20px; }
+[data-page="eligibility"] .btn-primary[type="submit"]{ min-height:54px; }
+.el-ticks{ list-style:none; margin:22px 0 0; padding:0; display:flex; flex-wrap:wrap; gap:10px 24px; color:rgba(226,232,245,.9); font-size:14.5px; }
+.el-ticks li{ display:inline-flex; align-items:center; gap:8px; }
+.el-ticks li::before{ content:"\2713"; width:18px; height:18px; border-radius:50%; background:rgba(226,191,115,.18); color:#E7C987; display:inline-grid; place-items:center; font-size:11px; font-weight:700; }
+.el-q{ border:0; margin:0; padding:0; min-width:0; display:grid; gap:10px; }
+.el-q legend{ padding:0; margin-bottom:10px; color:var(--text); font-weight:600; font-size:14.5px; }
+.el-choices{ display:flex; flex-wrap:wrap; gap:10px; }
+[data-page="eligibility"] .el-choices .intent-chip span{ min-height:46px; padding:11px 15px; }
+.el-opt{ letter-spacing:0; text-transform:none; font-weight:400; }
+.el-help{ margin:6px 0 0; font-size:12.8px; color:var(--muted); line-height:1.5; }
+.el-tags{ display:grid; gap:8px; min-width:0; }
+.el-chips{ list-style:none; margin:0; padding:0; display:flex; flex-wrap:wrap; gap:8px; }
+.el-chips:empty{ display:none; }
+.el-chips li{ display:inline-flex; align-items:center; gap:4px; padding:4px 4px 4px 12px; border-radius:999px; background:#F3F6FB; border:1px solid #DCE3EF; font-size:13.5px; color:#06113A; }
+.el-chips button{ border:0; background:transparent; width:28px; height:28px; border-radius:50%; cursor:pointer; font-size:17px; line-height:1; color:#5D6787; }
+.el-chips button:hover,.el-chips button:focus-visible{ background:#E3E8F2; color:#06113A; }
+.el-unsure{ display:inline-flex; align-items:center; gap:8px; font-size:13.5px; color:var(--text); text-transform:none!important; letter-spacing:0!important; font-weight:500!important; cursor:pointer; width:max-content; }
+.el-tags.is-unknown input[list]{ opacity:.55; }
+.el-activities{ display:grid; gap:8px; border:1px solid var(--border); border-radius:12px; padding:12px; background:#FBFCFE; }
+.el-activity-list{ display:grid; gap:2px; max-height:300px; overflow-y:auto; }
+.el-activity{ display:flex; gap:10px; align-items:flex-start; padding:8px 6px; border-radius:8px; font-size:14px; color:var(--text); text-transform:none!important; letter-spacing:0!important; font-weight:400!important; cursor:pointer; line-height:1.45; }
+.el-activity:hover{ background:#F1F4FA; }
+.el-activity input{ margin-top:3px; width:16px; height:16px; min-height:0; flex:none; accent-color:var(--gold); }
+.el-errors{ padding:14px 16px; border-radius:12px; background:#FDF1EF; border:1px solid #F0C9C2; color:#7A2A20; font-size:14px; }
+.el-errors ul{ margin:6px 0 0; padding-left:18px; }
+.el-hp{ position:absolute; width:1px; height:1px; overflow:hidden; left:-9999px; top:-9999px; }
+.el-steps{ list-style:none; margin:0; padding:0; }
+.el-steps li{ display:grid; grid-template-columns:30px 1fr; gap:12px; padding:14px 0; border-top:1px solid var(--border); }
+.el-steps li:first-child{ border-top:0; }
+.el-steps b{ width:30px; height:30px; border-radius:50%; display:grid; place-items:center; font-size:13px; background:#F3F6FB; color:#06113A; border:1px solid var(--border); }
+.el-steps li.is-now b{ background:#06113A; color:#E7C987; border-color:#06113A; }
+.el-steps strong{ display:block; color:#06113A; font-size:14.5px; }
+.el-steps span{ display:block; color:var(--muted); font-size:13px; line-height:1.5; margin-top:2px; }
+.el-aside-note{ font-size:12.5px; color:var(--muted); line-height:1.5; padding-top:14px; margin:4px 0 0; border-top:1px solid var(--border); }
+.el-result{ display:grid; gap:16px; }
+.el-result .eyebrow{ margin:0; }
+.el-result h2{ margin:0; font-size:clamp(23px,2.4vw,30px); line-height:1.2; color:#06113A; }
+.el-result h2:focus{ outline:none; }
+.el-lead{ margin:0; color:#4A5470; font-size:16px; line-height:1.6; max-width:62ch; }
+.el-mark{ width:52px; height:52px; border-radius:50%; display:grid; place-items:center; font-size:24px; font-weight:700; }
+.el-mark.ok{ background:#E8F3EC; color:#1E7B4E; }
+.el-mark.rv{ background:#FBF2DF; color:#9A6400; }
+.el-callout{ border:1px solid rgba(201,155,63,.4); background:#FFFBF2; border-radius:12px; padding:14px 16px; font-size:14px; color:#3B4563; line-height:1.55; }
+.el-callout strong{ color:#06113A; }
+.el-actions{ display:flex; flex-wrap:wrap; gap:14px 20px; align-items:center; }
+.el-link{ background:none; border:0; padding:6px 0; color:#06113A; font:inherit; font-weight:600; font-size:14.5px; text-decoration:underline; text-underline-offset:3px; cursor:pointer; min-height:44px; display:inline-flex; align-items:center; }
+.el-fine{ margin:0; font-size:12.8px; color:var(--muted); line-height:1.5; }
+.el-status{ margin:0; font-size:13.5px; color:var(--muted); min-height:1em; }
+#el-review{ display:grid; gap:18px; }
+.el-fees{ display:grid; grid-template-columns:repeat(auto-fit,minmax(230px,1fr)); gap:14px; }
+.el-fee{ border:1px solid var(--border); border-radius:14px; padding:18px 20px; background:#fff; }
+.el-fee h3{ margin:0 0 8px; font-size:17px; color:#06113A; }
+.el-fee-row{ display:grid; grid-template-columns:1fr auto; gap:2px 10px; padding:10px 0; border-top:1px solid #E7EBF3; }
+.el-fee-row span{ color:#4A5470; font-size:14px; } .el-fee-row b{ color:#06113A; } .el-fee-row small{ grid-column:1/-1; color:#8A93AD; font-size:12px; }
+.el-sum{ display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:10px 22px; margin:0; border:1px solid var(--border); border-radius:12px; padding:16px 18px; background:#fff; }
+.el-sum dt{ font-size:11px; letter-spacing:.14em; text-transform:uppercase; color:var(--muted); font-weight:600; }
+.el-sum dd{ margin:2px 0 0; font-size:14.5px; color:#06113A; font-weight:600; }
+@media (max-width:640px){ .el-sum{ grid-template-columns:1fr; } .el-actions .btn{ width:100%; justify-content:center; } [data-page="eligibility"] .el-choices .intent-chip{ flex:1 1 100%; } }
 </style></head>
 <body>
 <!-- GTM noscript fallback removed: without JavaScript a visitor cannot give consent. -->
@@ -2037,10 +2134,10 @@ body:has(section.page.is-active[data-page="feedback"]) .wa-float{ display:none; 
         </nav>
         <div class="nav-actions">
           <a class="text-link" href="https://online.ariefinance.com/online-banking" target="_blank" rel="noopener noreferrer">Log in</a>
-          <a class="btn btn-primary" href="#contact" data-route="contact" data-topic-preset="account">Start Your Application</a>
+          <a class="btn btn-primary" href="#eligibility" data-route="eligibility">Check Your Eligibility</a>
         </div>
       </div>
-      <a class="btn btn-primary mobile-cta" href="#contact" data-route="contact" data-topic-preset="account"><span class="mobile-cta-full">Start Your Application</span><span class="mobile-cta-short">Apply</span></a>
+      <a class="btn btn-primary mobile-cta" href="#eligibility" data-route="eligibility"><span class="mobile-cta-full">Check Your Eligibility</span><span class="mobile-cta-short">Eligibility</span></a>
       <button class="menu-toggle" type="button" aria-label="Open menu" aria-expanded="false" data-menu-toggle=""><span></span><span></span><span></span></button>
     </div>
   </header>
@@ -2061,7 +2158,7 @@ body:has(section.page.is-active[data-page="feedback"]) .wa-float{ display:none; 
             <h1 class="display" id="home-title" aria-label="The international payment platform for global businesses">The international payment platform for <span class="hero-accent">global businesses</span></h1>
             <p class="lead">Your next-generation payment service provider.</p>
             <div class="hero-actions" aria-label="Primary actions">
-              <a class="btn btn-primary" href="#contact" data-route="contact" data-topic-preset="account">Start Your Application <span aria-hidden="true">→</span></a>
+              <a class="btn btn-primary" href="#eligibility" data-route="eligibility">Check Your Eligibility <span aria-hidden="true">→</span></a>
               <a class="btn btn-secondary" href="#home-services">View Services</a>
             </div>
             <ul class="trust-line" aria-label="Why ARIE"><li>Fast onboarding</li><li>Multi-currency accounts</li><li>Dedicated Relationship Manager</li></ul>
@@ -2223,7 +2320,7 @@ body:has(section.page.is-active[data-page="feedback"]) .wa-float{ display:none; 
             <p class="eyebrow">Who we serve</p>
             <h2 class="section-title" id="clients-title" style="margin-bottom:16px;">Built for internationally active businesses</h2>
             <p class="lead" style="margin-bottom:24px;">We work with clients that have a clear transactional purpose, documented ownership, and a need for accountable, relationship-led support.</p>
-            <a href="#contact" data-route="contact" data-topic-preset="account" class="btn btn-link">Start Your Application <span aria-hidden="true">→</span></a>
+            <a href="#eligibility" data-route="eligibility" class="btn btn-link">Check Your Eligibility <span aria-hidden="true">→</span></a>
           </div>
           <div class="client-grid">
             <article class="client-card"><span class="ic-tile" aria-hidden="true"><svg viewBox="0 0 24 24"><circle class="ic-stroke" cx="12" cy="12" r="9"></circle><path class="ic-stroke" d="M3 12h18M12 3c2.5 2.6 2.5 15.4 0 18M12 3c-2.5 2.6-2.5 15.4 0 18"></path><circle class="ic-gold-fill" cx="17.5" cy="7" r="1.4"></circle></svg></span><span class="tag">International SMEs</span><h3>Cross-border businesses</h3><p>Internationally active SMEs paying suppliers, contractors, and counterparties across currencies and supported corridors.</p></article>
@@ -2290,7 +2387,7 @@ body:has(section.page.is-active[data-page="feedback"]) .wa-float{ display:none; 
       <section class="closing-cta">
         <div class="container cta-row">
           <div><h2>Ready to discuss your international payment setup?</h2><p>Speak to our team about onboarding, multi-currency accounts, and the payment corridors your business uses.</p></div>
-          <div class="hero-actions" style="margin:0;"><a class="btn btn-primary" href="#contact" data-route="contact" data-topic-preset="account">Start Your Application <span aria-hidden="true">→</span></a><a class="btn btn-ghost" href="#contact" data-route="contact">Speak to our team</a></div>
+          <div class="hero-actions" style="margin:0;"><a class="btn btn-primary" href="#eligibility" data-route="eligibility">Check Your Eligibility <span aria-hidden="true">→</span></a><a class="btn btn-ghost" href="#contact" data-route="contact">Speak to our team</a></div>
         </div>
       </section>
     </section>
@@ -2310,13 +2407,13 @@ body:has(section.page.is-active[data-page="feedback"]) .wa-float{ display:none; 
         <article class="service-row"><div><span class="ic-tile" aria-hidden="true"><svg viewBox="0 0 24 24"><path class="ic-stroke" d="M4 19V5M4 19h16"></path><path class="ic-stroke" d="M8 16v-4M12 16V8"></path><path class="ic-gold" d="M16 16v-5"></path></svg></span><span class="service-number">03</span><h2>Corporate Payment Desk</h2><span class="tag-list"><span>Relationship-led</span></span></div><div><p>A dedicated support model for payment operations, cashflow and liquidity visibility, surplus liquidity coordination, and board-level reporting, delivered by a named ARIE relationship contact who understands the client's operating context.</p><div class="tag-list"><span>Payment Operations</span><span>Treasury &amp; Cashflow Coordination</span><span>Fixed Deposit Coordination</span><span>Reporting</span><span>Compliance Support</span></div><ul class="plain-checks" style="margin-bottom:20px;"><li>Payment request tracking: pending, processed, delayed, or rejected</li><li>Beneficiary coordination and documentation support</li><li>Cashflow and liquidity visibility</li><li>Fixed deposit and surplus liquidity coordination, with maturity tracking*</li><li>Treasury reporting for management, directors and authorized signatories</li><li>A Dedicated Relationship Manager</li></ul><h3 style="font-family:var(--display);font-weight:600;margin:0 0 14px;">Scope agreed after review</h3><div class="table-wrap"><table><thead><tr><th>Focus area</th><th>What it supports</th><th>Client benefit</th></tr></thead><tbody><tr><td data-label="Focus area">Payment operations</td><td data-label="What it supports">Payment request tracking, beneficiary coordination and approvals</td><td data-label="Client benefit">Clear operating cadence and status visibility</td></tr><tr><td data-label="Focus area">Liquidity coordination</td><td data-label="What it supports">Cashflow visibility, expected outflows and surplus liquidity</td><td data-label="Client benefit">Better planning discipline</td></tr><tr><td data-label="Focus area">Fixed deposit coordination</td><td data-label="What it supports">Indicative fixed deposit options and maturity tracking, coordinated with banking partners</td><td data-label="Client benefit">Organized use of surplus balances</td></tr><tr><td data-label="Focus area">Management reporting</td><td data-label="What it supports">Periodic summaries aligned to client governance needs</td><td data-label="Client benefit">Board-ready visibility</td></tr></tbody></table></div><p class="note">*Treasury Desk scope is confirmed after onboarding, compliance review, and agreement of the client's operating requirements. Fixed deposit placements are subject to client instruction, compliance approval, banking partner requirements, and contractual documentation. This is covered under the Investment Banking licence held by ARIE’s holdCo.</p></div></article>
         <article class="service-row"><div><span class="ic-tile" aria-hidden="true"><svg viewBox="0 0 24 24"><path class="ic-stroke" d="M12 3l9 5-9 5-9-5z"></path><path class="ic-gold" d="M3 13l9 5 9-5"></path></svg></span><span class="service-number">04</span><h2>Embedded Payments</h2></div><div><p>Technology platform capabilities for multi-currency payments and multi-entity management, built for international business operations.</p><ul class="plain-checks"><li>Multi-currency account access</li><li>Multi-entity management under one account</li><li>Payments that scale with your business</li></ul></div></article>
       </div></section>
-      <section class="closing-cta"><div class="container cta-row"><div><h2>Discuss the right payment setup for your business</h2><p>Speak to our team about payment accounts, international payments, and onboarding.</p></div><div class="hero-actions" style="margin:0;"><a class="btn btn-primary" href="#contact" data-route="contact" data-topic-preset="account">Start Your Application <span aria-hidden="true">→</span></a><a class="btn btn-ghost" href="#contact" data-route="contact">Speak to our team</a></div></div></section>
+      <section class="closing-cta"><div class="container cta-row"><div><h2>Discuss the right payment setup for your business</h2><p>Speak to our team about payment accounts, international payments, and onboarding.</p></div><div class="hero-actions" style="margin:0;"><a class="btn btn-primary" href="#eligibility" data-route="eligibility">Check Your Eligibility <span aria-hidden="true">→</span></a><a class="btn btn-ghost" href="#contact" data-route="contact">Speak to our team</a></div></div></section>
     </section>
 
     <!-- ============================= DIRECT CLIENTS ============================= -->
     <section class="page" data-page="direct-clients" hidden="">
       <div class="page-hero"><div class="container"><p class="eyebrow">For direct clients</p><h1>For Small and <span class="nowrap">Medium-Sized</span> International Businesses</h1><p class="lead" style="margin-top:16px;max-width:680px;">Cross-border payment infrastructure for internationally active SMEs, family offices, and management companies.</p></div></div>
-      <section class="section section--canvas"><div class="container"><div class="prose" style="max-width:820px;margin-bottom:28px;"><p class="intro">Since 2020, more than 100 clients — including investment funds, family offices and management companies — have trusted the ARIE Group, working alongside established banking partners, with close to $1 billion in transactions.</p><p>With the launch of our new technology platform under our Payment Intermediary Services ("PIS") licence, ARIE Finance is set to elevate this experience further. We have partnered with an established UK-based fintech to provide a secure, modern technology platform for conducting controlled, efficient transactions.</p></div><div class="feature-grid"><article class="feature"><span>01</span><h3>Count the days, not months for onboarding</h3></article><article class="feature"><span>02</span><h3>Multi-entity management, one multi-currency account</h3></article><article class="feature"><span>03</span><h3>Secure and efficient technology platform</h3></article><article class="feature"><span>04</span><h3>From KYC to UYC ("Understanding Your Clients")</h3></article><article class="feature"><span>05</span><h3>A Dedicated Relationship Manager</h3></article><article class="feature"><span>06</span><h3>No onboarding fees for selected clients</h3></article></div><div style="margin-top:32px;text-align:center;"><a class="btn btn-primary" href="#contact" data-route="contact" data-topic-preset="account">Start Your Application <span aria-hidden="true">→</span></a></div></div></section>
+      <section class="section section--canvas"><div class="container"><div class="prose" style="max-width:820px;margin-bottom:28px;"><p class="intro">Since 2020, more than 100 clients — including investment funds, family offices and management companies — have trusted the ARIE Group, working alongside established banking partners, with close to $1 billion in transactions.</p><p>With the launch of our new technology platform under our Payment Intermediary Services ("PIS") licence, ARIE Finance is set to elevate this experience further. We have partnered with an established UK-based fintech to provide a secure, modern technology platform for conducting controlled, efficient transactions.</p></div><div class="feature-grid"><article class="feature"><span>01</span><h3>Count the days, not months for onboarding</h3></article><article class="feature"><span>02</span><h3>Multi-entity management, one multi-currency account</h3></article><article class="feature"><span>03</span><h3>Secure and efficient technology platform</h3></article><article class="feature"><span>04</span><h3>From KYC to UYC ("Understanding Your Clients")</h3></article><article class="feature"><span>05</span><h3>A Dedicated Relationship Manager</h3></article><article class="feature"><span>06</span><h3>No onboarding fees for selected clients</h3></article></div><div style="margin-top:32px;text-align:center;"><a class="btn btn-primary" href="#eligibility" data-route="eligibility">Check Your Eligibility <span aria-hidden="true">→</span></a></div></div></section>
     </section>
 
     <!-- ============================= INTRODUCERS ============================= -->
@@ -2339,7 +2436,7 @@ body:has(section.page.is-active[data-page="feedback"]) .wa-float{ display:none; 
       <section class="closing-cta">
         <div class="container cta-row">
           <div><h2>Ready to discuss your international payment setup?</h2><p>Speak to our team about onboarding, multi-currency accounts, and the payment corridors your business uses.</p></div>
-          <div class="hero-actions" style="margin:0;"><a class="btn btn-primary" href="#contact" data-route="contact" data-topic-preset="account">Start Your Application <span aria-hidden="true">→</span></a><a class="btn btn-ghost" href="#contact" data-route="contact">Speak to our team</a></div>
+          <div class="hero-actions" style="margin:0;"><a class="btn btn-primary" href="#eligibility" data-route="eligibility">Check Your Eligibility <span aria-hidden="true">→</span></a><a class="btn btn-ghost" href="#contact" data-route="contact">Speak to our team</a></div>
         </div>
       </section>
     </section>
@@ -2357,6 +2454,42 @@ body:has(section.page.is-active[data-page="feedback"]) .wa-float{ display:none; 
       <section class="section section--canvas contact-section"><div class="container form-layout"><div><div class="form-card"><form data-form="contact" novalidate=""><div aria-hidden="true" style="position:absolute;width:1px;height:1px;overflow:hidden;left:-9999px;top:-9999px;"><label>Leave this field blank<input type="text" name="hp_url" tabindex="-1" autocomplete="off"></label></div><fieldset class="intent-fieldset"><legend>What are you contacting us about?</legend><div class="intent-grid"><label class="intent-chip"><input type="radio" name="topic" value="Open an account" data-topic="account" required=""><span>Open an account</span></label><label class="intent-chip"><input type="radio" name="topic" value="International payments" data-topic="payments"><span>International payments</span></label><label class="intent-chip"><input type="radio" name="topic" value="Introducer / partnership" data-topic="introducer"><span>Introducer / partnership</span></label><label class="intent-chip"><input type="radio" name="topic" value="Client referral" data-topic="referral"><span>Client referral</span></label><label class="intent-chip"><input type="radio" name="topic" value="Existing client / onboarding support" data-topic="support"><span>Existing client / onboarding support</span></label><label class="intent-chip"><input type="radio" name="topic" value="Complaint / other enquiry" data-topic="other"><span>Complaint / other enquiry</span></label></div></fieldset><div class="account-note" data-account-note hidden><strong>Planning to open an account?</strong><p>ARIE Finance services are subject to compliance review, documentation checks, internal risk assessment, jurisdictional considerations and banking partner requirements. Submission of an enquiry or application does not guarantee onboarding or service approval.</p></div><div class="form-section-head"><span>Your details</span></div><div><label for="contact-name">Full name</label><input id="contact-name" name="fullname" required="" placeholder="Your full name"></div><div><label for="contact-company">Company</label><input id="contact-company" name="company" placeholder="Your company"></div><div class="form-grid"><div><label for="contact-email">Business email</label><input id="contact-email" name="email" type="email" required="" placeholder="you@company.com"></div><div><label for="contact-phone">Phone <span style="letter-spacing:0;text-transform:none;font-weight:400;">(optional)</span></label><input id="contact-phone" name="phone" type="tel" placeholder="+230 5XXX XXXX"></div></div><div><label for="contact-requirement">Tell us briefly what you would like to discuss</label><textarea id="contact-requirement" name="requirement" required="" placeholder="A sentence or two about what you need"></textarea></div><div class="checkbox-row"><input id="contact-tcs" name="tcs" type="checkbox" required=""><label for="contact-tcs">I have read and accepted the <a href="#" data-policy-open="terms-and-conditions" style="color:inherit;text-decoration:underline;">Terms &amp; Conditions</a> and <a href="#" data-policy-open="privacy-policy" style="color:inherit;text-decoration:underline;">Privacy Policy</a>.</label></div><button class="btn btn-primary" type="submit">Send enquiry <span aria-hidden="true">&#8594;</span></button><p class="note" style="margin-top:4px;">A member of our team will review your enquiry and contact you to discuss your requirements and the next steps.</p></form><div class="success" data-success="contact"><strong>Thank you &#8212; your enquiry has been received.</strong><span>A member of our team will review it and contact you shortly.</span></div></div></div><aside class="contact-stack info-card"><div class="contact-head"><span>Prefer to contact us directly?</span></div><div class="contact-body"><div class="contact-block"><span>Email</span><a href="mailto:customercare@ariefinance.com">customercare@ariefinance.com</a></div><div class="contact-block"><span>Phone</span><a href="tel:+2304686497">+230 468 6497</a></div><template id="wa-contact-block"><div class="contact-block wa-row"><span>WhatsApp — Enquiries &amp; Onboarding</span><a class="wa-num" href="https://wa.me/23059194957" target="_blank" rel="noopener noreferrer" aria-label="WhatsApp +230 5919 4957 (opens WhatsApp in a new tab)"><svg class="wa-glyph" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path fill="#25D366" d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413Z"/></svg>+230 5919 4957</a><p class="wa-hl">Real people. Thoughtful responses.</p><p class="wa-txt">Your message is handled by our team, never an AI chatbot. We take the time to understand your enquiry and gather the right information before we reply.</p><p class="wa-sec">Not for payment instructions, account details, passwords or OTPs.</p></div></template><div class="contact-block"><span>Business hours</span><p>Monday–Friday, 9:00 AM–5:00 PM<br>(Mauritius Time)</p></div><div class="contact-block"><span>LinkedIn</span><a class="linkedin-link" href="https://www.linkedin.com/company/arie-finance/" target="_blank" rel="noopener noreferrer"><svg viewBox="0 0 24 24" aria-hidden="true" xmlns="http://www.w3.org/2000/svg"><path d="M20.45 20.45h-3.56v-5.57c0-1.33-.02-3.04-1.85-3.04-1.85 0-2.14 1.45-2.14 2.94v5.67H9.35V9h3.42v1.56h.05c.48-.9 1.64-1.85 3.37-1.85 3.6 0 4.27 2.37 4.27 5.46v6.28zM5.34 7.43a2.06 2.06 0 1 1 0-4.13 2.06 2.06 0 0 1 0 4.13zM7.12 20.45H3.56V9h3.56v11.45zM22.22 0H1.77C.8 0 0 .78 0 1.74v20.51C0 23.22.8 24 1.77 24h20.45c.98 0 1.78-.78 1.78-1.75V1.74C24 .78 23.2 0 22.22 0z"/></svg>LinkedIn</a></div><div class="contact-block"><span>Head Office</span><p>3rd Floor, KPMG Centre<br>Ebene, Mauritius</p></div><div class="contact-block"><span>Feedback</span><p><a href="#feedback" data-route="feedback">Leave Your Feedback <span aria-hidden="true">&rarr;</span></a></p></div></div></aside></div></section>
     </section>
 
+
+    <!-- ============================= ELIGIBILITY ============================= -->
+    <section class="page" data-page="eligibility" hidden="">
+      <div class="page-hero"><div class="container"><p class="eyebrow">Start your application</p><h1>Check your eligibility</h1><p class="lead" style="margin-top:16px;max-width:720px;">See whether your business may be suitable for onboarding with ARIE Finance before you gather corporate documents. Where your profile needs a closer look, our team reviews it personally.</p><ul class="el-ticks"><li>About 3 minutes</li><li>No documents required</li><li>Preliminary assessment only</li></ul></div></div>
+      <section class="section section--canvas contact-section"><div class="container form-layout"><div><div class="form-card" id="el-card">
+        <form id="el-form" novalidate="">
+          <div class="el-errors" id="el-errors" role="alert" tabindex="-1" hidden=""></div>
+          <div class="form-section-head"><span>1 · Your company</span></div>
+          <div><label for="el-company">Company name</label><input id="el-company" name="company" maxlength="150" autocomplete="organization" placeholder="e.g. Example Holdings Ltd"></div>
+          <div><label for="el-incorp">Country of incorporation</label><select id="el-incorp" name="incorp"><option value="">Select a country</option></select></div>
+          <fieldset class="el-q"><legend>Does the company operate in other countries?</legend><div class="el-choices" data-mode="opsMode"><label class="intent-chip"><input type="radio" name="opsMode" value="no"><span>No other countries</span></label><label class="intent-chip"><input type="radio" name="opsMode" value="yes"><span>Yes</span></label><label class="intent-chip"><input type="radio" name="opsMode" value="unsure"><span>Not sure</span></label></div>
+            <div class="el-tags" data-tags="operations" hidden=""><label for="el-operations-input">Countries of operation</label><ul class="el-chips" aria-live="polite"></ul><input id="el-operations-input" list="el-country-list" autocomplete="off" placeholder="Type a country and press Enter"></div></fieldset>
+
+          <div class="form-section-head"><span>2 · What your business does</span></div>
+          <div><label for="el-sector">Principal business sector</label><select id="el-sector" name="sector"><option value="">Select the principal sector</option></select></div>
+          <div><label for="el-description">Brief description of goods or services <span class="el-opt">(optional)</span></label><textarea id="el-description" name="description" maxlength="350" placeholder="What does the business sell or provide?"></textarea></div>
+          <fieldset class="el-q"><legend>Does the business undertake any of the activities on ARIE’s list?</legend><div class="el-choices"><label class="intent-chip"><input type="radio" name="activityMode" value="no"><span>None of these</span></label><label class="intent-chip"><input type="radio" name="activityMode" value="yes"><span>Yes — select activities</span></label><label class="intent-chip"><input type="radio" name="activityMode" value="unsure"><span>Not sure</span></label></div>
+            <div class="el-activities" id="el-activities" hidden=""><label for="el-activity-search">Search the list</label><input id="el-activity-search" type="search" autocomplete="off" placeholder="Try crypto, cars, NGO, betting, metals…"><div class="el-activity-list" id="el-activity-list" role="group" aria-label="Activities"></div><p class="el-help" id="el-activity-empty" hidden="">No exact match. If unsure, choose “Not sure” rather than assuming the activity is not listed.</p></div>
+            <p class="el-help">If you are unsure whether an activity applies, choose “Not sure”. Our team will discuss it with you.</p></fieldset>
+
+          <div class="form-section-head"><span>3 · Countries and payments</span></div>
+          <div class="el-tags" data-tags="owners"><label for="el-owners-input">Nationalities of the ultimate beneficial owners</label><ul class="el-chips" aria-live="polite"></ul><input id="el-owners-input" list="el-country-list" autocomplete="off" placeholder="Type a country and press Enter"><label class="el-unsure"><input type="checkbox" data-unknown="ownerUnknown"> Not sure</label><p class="el-help">Nationalities only. No names or identity documents are needed.</p></div>
+          <div class="el-tags" data-tags="incoming"><label for="el-incoming-input">Countries you expect to receive payments from</label><ul class="el-chips" aria-live="polite"></ul><input id="el-incoming-input" list="el-country-list" autocomplete="off" placeholder="Type a country and press Enter"><label class="el-unsure"><input type="checkbox" data-unknown="incomingUnknown"> Not sure</label></div>
+          <div class="el-tags" data-tags="outgoing"><label for="el-outgoing-input">Countries you expect to send payments to</label><ul class="el-chips" aria-live="polite"></ul><input id="el-outgoing-input" list="el-country-list" autocomplete="off" placeholder="Type a country and press Enter"><label class="el-unsure"><input type="checkbox" data-unknown="outgoingUnknown"> Not sure</label></div>
+          <div id="el-followups" hidden=""></div>
+
+          <div class="checkbox-row"><input id="el-attest" type="checkbox"><label for="el-attest">I confirm these answers are accurate to the best of my knowledge and understand this is <strong>not an account-opening application, acceptance or compliance clearance</strong>.</label></div>
+          <button class="btn btn-primary" type="submit" id="el-submit">View preliminary result <span aria-hidden="true">&rarr;</span></button>
+          <p class="note" style="margin-top:4px;">No documents are required and nothing is sent to ARIE at this stage.</p>
+          <datalist id="el-country-list"></datalist>
+        </form>
+        <div id="el-view" hidden=""></div>
+      </div></div>
+      <aside class="contact-stack info-card"><div class="contact-head"><span>How it works</span></div><div class="contact-body"><ol class="el-steps" id="el-steps"><li data-step="1"><b>1</b><div><strong>Check your eligibility</strong><span>One page about your business, countries and payments.</span></div></li><li data-step="2"><b>2</b><div><strong>Preliminary result</strong><span>Whether to continue, or to speak with our team first.</span></div></li><li data-step="3"><b>3</b><div><strong>Indicative pricing</strong><span>A non-binding guide. Final pricing is confirmed by ARIE.</span></div></li><li data-step="4"><b>4</b><div><strong>Prepare your documents</strong><span>Using ARIE’s onboarding requirements and checklist.</span></div></li></ol><p class="el-aside-note">A preliminary result is not account approval or an application. ARIE confirms eligibility and pricing after its own review.</p></div></aside>
+      </div></section>
+    </section>
 
     <!-- ============================= FEEDBACK ============================= -->
     <section class="page" data-page="feedback" hidden="">
@@ -2497,6 +2630,7 @@ body:has(section.page.is-active[data-page="feedback"]) .wa-float{ display:none; 
     careers:'Careers — ARIE Finance',
     contact:'Contact — ARIE Finance',
     feedback:'Leave Your Feedback — ARIE Finance',
+    eligibility:'Check Your Eligibility — ARIE Finance',
     compliance:'Compliance & Legal Information — ARIE Finance'
   };
 
@@ -3113,6 +3247,209 @@ body:has(section.page.is-active[data-page="feedback"]) .wa-float{ display:none; 
     var tpl = document.getElementById(id);
     if (tpl && tpl.content) tpl.parentNode.replaceChild(tpl.content.cloneNode(true), tpl);
   });
+})();
+</script>
+<script>
+/* Eligibility check (/#eligibility). The browser holds only public lists (country names,
+   activity names, sectors). Routes are decided server-side by /api/eligibility; risk lists,
+   reasons and hold conditions never reach the page. See docs/guides/ELIGIBILITY.md. */
+(function(){
+  var doc = document, form = doc.getElementById('el-form'); if(!form) return;
+  var REQUIREMENTS_URL = 'https://www.ariefinance.com/onboarding-requirements';
+  /* Indicative pricing: keep null until management approves the figures for public display.
+     When approved, set e.g. { profiles:[{title:'Standard profile', onboarding:'From USD …', monthly:'USD …', transaction:'USD …'}, …] } */
+  var ELIGIBILITY_PRICING = null;
+  var COUNTRIES = [["AF", "Afghanistan"], ["AL", "Albania"], ["DZ", "Algeria"], ["AS", "American Samoa"], ["AD", "Andorra"], ["AO", "Angola"], ["AI", "Anguilla"], ["AQ", "Antarctica"], ["AG", "Antigua and Barbuda"], ["AR", "Argentina"], ["AM", "Armenia"], ["AW", "Aruba"], ["AU", "Australia"], ["AT", "Austria"], ["AZ", "Azerbaijan"], ["BS", "Bahamas"], ["BH", "Bahrain"], ["XB", "Balkans (regional exposure — needs clarification)"], ["BD", "Bangladesh"], ["BB", "Barbados"], ["BY", "Belarus"], ["BE", "Belgium"], ["BZ", "Belize"], ["BJ", "Benin"], ["BM", "Bermuda"], ["BT", "Bhutan"], ["BO", "Bolivia"], ["BQ", "Bonaire, Sint Eustatius and Saba"], ["BA", "Bosnia and Herzegovina"], ["BW", "Botswana"], ["BV", "Bouvet Island"], ["BR", "Brazil"], ["IO", "British Indian Ocean Territory"], ["BN", "Brunei"], ["BG", "Bulgaria"], ["BF", "Burkina Faso"], ["BI", "Burundi"], ["CV", "Cabo Verde"], ["KH", "Cambodia"], ["CM", "Cameroon"], ["CA", "Canada"], ["KY", "Cayman Islands"], ["CF", "Central African Republic"], ["TD", "Chad"], ["CL", "Chile"], ["CN", "China"], ["CX", "Christmas Island"], ["CC", "Cocos (Keeling) Islands"], ["CO", "Colombia"], ["KM", "Comoros"], ["CK", "Cook Islands"], ["CR", "Costa Rica"], ["HR", "Croatia"], ["CU", "Cuba"], ["CW", "Curaçao"], ["CY", "Cyprus"], ["CZ", "Czechia"], ["CI", "Côte d’Ivoire"], ["CD", "Democratic Republic of the Congo"], ["DK", "Denmark"], ["DJ", "Djibouti"], ["DM", "Dominica"], ["DO", "Dominican Republic"], ["EC", "Ecuador"], ["EG", "Egypt"], ["SV", "El Salvador"], ["GQ", "Equatorial Guinea"], ["ER", "Eritrea"], ["EE", "Estonia"], ["SZ", "Eswatini"], ["ET", "Ethiopia"], ["FK", "Falkland Islands (Malvinas)"], ["FO", "Faroe Islands"], ["FJ", "Fiji"], ["FI", "Finland"], ["FR", "France"], ["GF", "French Guiana"], ["PF", "French Polynesia"], ["TF", "French Southern Territories"], ["GA", "Gabon"], ["GM", "Gambia"], ["GE", "Georgia"], ["DE", "Germany"], ["GH", "Ghana"], ["GI", "Gibraltar"], ["GR", "Greece"], ["GL", "Greenland"], ["GD", "Grenada"], ["GP", "Guadeloupe"], ["GU", "Guam"], ["GT", "Guatemala"], ["GG", "Guernsey"], ["GN", "Guinea"], ["GW", "Guinea-Bissau"], ["GY", "Guyana"], ["HT", "Haiti"], ["HM", "Heard Island and McDonald Islands"], ["HN", "Honduras"], ["HK", "Hong Kong"], ["HU", "Hungary"], ["IS", "Iceland"], ["IN", "India"], ["ID", "Indonesia"], ["IR", "Iran"], ["IQ", "Iraq"], ["IE", "Ireland"], ["IM", "Isle of Man"], ["IL", "Israel"], ["IT", "Italy"], ["JM", "Jamaica"], ["JP", "Japan"], ["JE", "Jersey"], ["JO", "Jordan"], ["KZ", "Kazakhstan"], ["KE", "Kenya"], ["KI", "Kiribati"], ["XK", "Kosovo"], ["KW", "Kuwait"], ["KG", "Kyrgyzstan"], ["LA", "Laos"], ["LV", "Latvia"], ["LB", "Lebanon"], ["LS", "Lesotho"], ["LR", "Liberia"], ["LY", "Libya"], ["LI", "Liechtenstein"], ["LT", "Lithuania"], ["LU", "Luxembourg"], ["MO", "Macao"], ["MG", "Madagascar"], ["MW", "Malawi"], ["MY", "Malaysia"], ["MV", "Maldives"], ["ML", "Mali"], ["MT", "Malta"], ["MH", "Marshall Islands"], ["MQ", "Martinique"], ["MR", "Mauritania"], ["MU", "Mauritius"], ["YT", "Mayotte"], ["MX", "Mexico"], ["FM", "Micronesia"], ["MD", "Moldova"], ["MC", "Monaco"], ["MN", "Mongolia"], ["ME", "Montenegro"], ["MS", "Montserrat"], ["MA", "Morocco"], ["MZ", "Mozambique"], ["MM", "Myanmar"], ["NA", "Namibia"], ["NR", "Nauru"], ["NP", "Nepal"], ["NL", "Netherlands"], ["NC", "New Caledonia"], ["NZ", "New Zealand"], ["NI", "Nicaragua"], ["NE", "Niger"], ["NG", "Nigeria"], ["NU", "Niue"], ["NF", "Norfolk Island"], ["KP", "North Korea"], ["MK", "North Macedonia"], ["MP", "Northern Mariana Islands"], ["NO", "Norway"], ["OM", "Oman"], ["PK", "Pakistan"], ["PW", "Palau"], ["PS", "Palestine"], ["PA", "Panama"], ["PG", "Papua New Guinea"], ["PY", "Paraguay"], ["PE", "Peru"], ["PH", "Philippines"], ["PN", "Pitcairn"], ["PL", "Poland"], ["PT", "Portugal"], ["PR", "Puerto Rico"], ["QA", "Qatar"], ["CG", "Republic of the Congo"], ["RO", "Romania"], ["RU", "Russia"], ["RW", "Rwanda"], ["RE", "Réunion"], ["BL", "Saint Barthélemy"], ["SH", "Saint Helena, Ascension and Tristan da Cunha"], ["KN", "Saint Kitts and Nevis"], ["LC", "Saint Lucia"], ["MF", "Saint Martin (French part)"], ["PM", "Saint Pierre and Miquelon"], ["VC", "Saint Vincent and the Grenadines"], ["WS", "Samoa"], ["SM", "San Marino"], ["ST", "Sao Tome and Principe"], ["SA", "Saudi Arabia"], ["SN", "Senegal"], ["RS", "Serbia"], ["SC", "Seychelles"], ["SL", "Sierra Leone"], ["SG", "Singapore"], ["SX", "Sint Maarten (Dutch part)"], ["SK", "Slovakia"], ["SI", "Slovenia"], ["SB", "Solomon Islands"], ["SO", "Somalia"], ["ZA", "South Africa"], ["GS", "South Georgia and the South Sandwich Islands"], ["KR", "South Korea"], ["SS", "South Sudan"], ["ES", "Spain"], ["LK", "Sri Lanka"], ["SD", "Sudan"], ["SR", "Suriname"], ["SJ", "Svalbard and Jan Mayen"], ["SE", "Sweden"], ["CH", "Switzerland"], ["SY", "Syria"], ["TW", "Taiwan"], ["TJ", "Tajikistan"], ["TZ", "Tanzania"], ["TH", "Thailand"], ["TL", "Timor-Leste"], ["TG", "Togo"], ["TK", "Tokelau"], ["TO", "Tonga"], ["TT", "Trinidad and Tobago"], ["TN", "Tunisia"], ["TR", "Turkey"], ["TM", "Turkmenistan"], ["TC", "Turks and Caicos Islands"], ["TV", "Tuvalu"], ["UG", "Uganda"], ["UA", "Ukraine"], ["AE", "United Arab Emirates"], ["GB", "United Kingdom"], ["US", "United States"], ["UM", "United States Minor Outlying Islands"], ["UY", "Uruguay"], ["UZ", "Uzbekistan"], ["VU", "Vanuatu"], ["VA", "Vatican City"], ["VE", "Venezuela"], ["VN", "Vietnam"], ["VG", "Virgin Islands, British"], ["VI", "Virgin Islands, U.S."], ["WF", "Wallis and Futuna"], ["EH", "Western Sahara"], ["YE", "Yemen"], ["ZM", "Zambia"], ["ZW", "Zimbabwe"], ["AX", "Åland Islands"]];
+  var ACTIVITIES = [["R01", "Anonymous, numbered or special-named accounts where the owner cannot be identified"], ["R02", "Arms/munitions or nuclear, chemical, biological, radiological weapons and explosives dealing/manufacture"], ["R03", "Art or antiques dealing and auctioneering"], ["R04", "Companies with bearer shares"], ["R05", "Conflict or blood diamond trading"], ["R06", "Activities involving incitement to violence or racial hatred"], ["R07", "Unauthorised public fundraising"], ["R08", "Online or interactive gambling, including supporting services or infrastructure"], ["R09", "Carbon credits or carbon offset schemes"], ["R10", "Extremist groups or cults promoting violence"], ["R11", "Foreign charities, clubs or associations"], ["R12", "Foreign casino or gambling businesses"], ["R13", "Foreign money service businesses or informal/unregistered value transfers"], ["R14", "Foreign animal testing, live exports or fur trading"], ["R15", "Unregulated foreign online forex trading"], ["R16", "Unlicensed bet-related services in Mauritius"], ["R17", "Illegal investment or Ponzi schemes"], ["R18", "Illegal or unlicensed wildlife trading"], ["R19", "Activities involving human rights abuses or child labour"], ["R20", "Military-type security services or defence sector"], ["R21", "Pornography business"], ["R22", "Unlicensed banks or shell banks"], ["R23", "Unlicensed trade in Iraqi or Syrian cultural heritage"], ["H01", "Designated non-financial businesses and professions (DNFBPs)"], ["H02", "Automobile dealing"], ["H03", "Regulated foreign online forex trading"], ["H04", "Non-profit organisations funded through public/non-member contributions"], ["H05", "Investment dealing"], ["H06", "Payment intermediary services"], ["H07", "Virtual asset service providers (VASPs)"]];
+  var SECTORS = [["professional", "Professional and advisory services"], ["technology", "Technology and software"], ["wholesale", "Wholesale and trading"], ["manufacturing", "Manufacturing and logistics"], ["hospitality", "Hospitality and tourism"], ["property", "Property and real estate"], ["health", "Healthcare and education"], ["financial", "Financial or regulated services"], ["nonprofit", "Charity or non-profit"], ["other", "Other / not sure how to classify"]];
+  var KEYWORDS = {R02:'nuclear chemical biological radiological wmd munitions arms',R03:'auction collectibles antique art',R05:'blood diamond',R08:'online betting casino gambling gaming sportsbook',R09:'carbon credits offset',R11:'foreign charity charities ngo clubs association non profit nonprofit',R12:'foreign casino gambling',R13:'money services remittance foreign msb',R14:'fur animal testing live export',R15:'unregulated foreign exchange forex',R16:'betting wager gambling',R21:'adult explicit pornography',H01:'lawyer accountant real estate property trust service provider dnfbp',H02:'car cars vehicle vehicles motor automotive auto',H03:'regulated forex foreign exchange trading',H04:'charity charitable ngo nonprofit non-profit donations',H05:'investment dealer securities broker',H06:'payments payment intermediary service',H07:'crypto bitcoin blockchain token virtual assets virtual asset digital assets vasp'};
+  var NAME = {}; COUNTRIES.forEach(function(c){ NAME[c[0]] = c[1]; });
+  var BY_NAME = {}; COUNTRIES.forEach(function(c){ BY_NAME[c[1].toLowerCase()] = c[0]; });
+  var S = { operations:[], owners:[], incoming:[], outgoing:[], activities:[], ownerUnknown:false, incomingUnknown:false, outgoingUnknown:false, government:null, precious:null, oilgas:null, followUps:[], route:null };
+  var view = doc.getElementById('el-view'), errBox = doc.getElementById('el-errors');
+  function esc(s){ return String(s == null ? '' : s).replace(/[&<>"']/g, function(c){ return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]; }); }
+  function $(id){ return doc.getElementById(id); }
+
+  /* ---------- populate selects / lists ---------- */
+  var incorp = $('el-incorp'), dl = $('el-country-list'), sector = $('el-sector');
+  COUNTRIES.forEach(function(c){ var o = doc.createElement('option'); o.value = c[0]; o.textContent = c[1]; incorp.appendChild(o); var d = doc.createElement('option'); d.value = c[1]; dl.appendChild(d); });
+  SECTORS.forEach(function(s){ var o = doc.createElement('option'); o.value = s[0]; o.textContent = s[1]; sector.appendChild(o); });
+  var list = $('el-activity-list');
+  ACTIVITIES.forEach(function(a){ var l = doc.createElement('label'); l.className = 'el-activity'; l.setAttribute('data-search', (a[1] + ' ' + (KEYWORDS[a[0]] || '')).toLowerCase()); l.innerHTML = '<input type="checkbox" value="' + a[0] + '"> <span>' + esc(a[1]) + '</span>'; list.appendChild(l); });
+
+  /* ---------- country tag inputs ---------- */
+  function renderTags(box){
+    var key = box.getAttribute('data-tags'), ul = box.querySelector('.el-chips');
+    ul.innerHTML = S[key].map(function(code){ return '<li><span>' + esc(NAME[code]) + '</span><button type="button" data-remove="' + code + '" aria-label="Remove ' + esc(NAME[code]) + '">&times;</button></li>'; }).join('');
+  }
+  function addFrom(input){
+    var box = input.closest('.el-tags'), key = box.getAttribute('data-tags');
+    var code = BY_NAME[input.value.trim().toLowerCase()];
+    if(code && S[key].indexOf(code) < 0){ S[key].push(code); renderTags(box); input.value = ''; return true; }
+    return false;
+  }
+  doc.querySelectorAll('#el-form .el-tags').forEach(function(box){
+    var input = box.querySelector('input[list]');
+    input.addEventListener('keydown', function(e){ if(e.key === 'Enter'){ e.preventDefault(); addFrom(input); } });
+    input.addEventListener('change', function(){ addFrom(input); });
+    input.addEventListener('blur', function(){ addFrom(input); });
+    box.addEventListener('click', function(e){ var b = e.target.closest('[data-remove]'); if(!b) return; var key = box.getAttribute('data-tags'); S[key] = S[key].filter(function(c){ return c !== b.getAttribute('data-remove'); }); renderTags(box); input.focus(); });
+    var unk = box.querySelector('[data-unknown]');
+    if(unk) unk.addEventListener('change', function(){ S[unk.getAttribute('data-unknown')] = unk.checked; input.disabled = unk.checked; box.classList.toggle('is-unknown', unk.checked); });
+  });
+
+  /* ---------- reveal dependent questions ---------- */
+  form.addEventListener('change', function(e){
+    var t = e.target;
+    if(t.name === 'opsMode') form.querySelector('[data-tags="operations"]').hidden = t.value !== 'yes';
+    if(t.name === 'activityMode') $('el-activities').hidden = t.value !== 'yes';
+    if(t.closest && t.closest('#el-activity-list')) S.activities = Array.prototype.map.call(list.querySelectorAll('input:checked'), function(i){ return i.value; });
+    if(t.name && /^el-fu-/.test(t.name)) S[t.name.slice(6)] = t.value;
+  });
+  $('el-activity-search').addEventListener('input', function(){
+    var q = this.value.trim().toLowerCase(), shown = 0;
+    list.querySelectorAll('.el-activity').forEach(function(l){ var ok = !q || l.getAttribute('data-search').indexOf(q) > -1; l.hidden = !ok; if(ok) shown++; });
+    $('el-activity-empty').hidden = shown > 0;
+  });
+
+  function radio(name){ var r = form.querySelector('input[name="' + name + '"]:checked'); return r ? r.value : null; }
+  function answers(){
+    return { company: $('el-company').value.trim(), incorp: incorp.value, opsMode: radio('opsMode'), operations: S.operations.slice(),
+      sector: sector.value, description: $('el-description').value.trim(), activityMode: radio('activityMode'), activities: S.activities.slice(),
+      owners: S.owners.slice(), ownerUnknown: S.ownerUnknown, incoming: S.incoming.slice(), incomingUnknown: S.incomingUnknown,
+      outgoing: S.outgoing.slice(), outgoingUnknown: S.outgoingUnknown, government: S.government, precious: S.precious, oilgas: S.oilgas };
+  }
+  function validate(a){
+    var e = [];
+    if(a.company.length < 2) e.push(['el-company','Enter the company name.']);
+    if(!a.incorp) e.push(['el-incorp','Select the country of incorporation.']);
+    if(!a.opsMode) e.push(['opsMode','Say whether the company operates in other countries.']);
+    else if(a.opsMode === 'yes' && !a.operations.length) e.push(['el-operations-input','Add at least one country of operation.']);
+    if(!a.sector) e.push(['el-sector','Select the principal business sector.']);
+    if(!a.activityMode) e.push(['activityMode','Answer the activities question.']);
+    else if(a.activityMode === 'yes' && !a.activities.length) e.push(['el-activity-search','Select at least one activity, or choose “Not sure”.']);
+    if(!a.ownerUnknown && !a.owners.length) e.push(['el-owners-input','Add beneficial-owner nationalities, or tick “Not sure”.']);
+    if(!a.incomingUnknown && !a.incoming.length) e.push(['el-incoming-input','Add incoming payment countries, or tick “Not sure”.']);
+    if(!a.outgoingUnknown && !a.outgoing.length) e.push(['el-outgoing-input','Add outgoing payment countries, or tick “Not sure”.']);
+    S.followUps.forEach(function(f){ if(!a[f.type]) e.push(['el-fu-' + f.type, 'Answer the additional country question.']); });
+    if(!$('el-attest').checked) e.push(['el-attest','Confirm the declaration.']);
+    return e;
+  }
+  function showErrors(list){
+    form.querySelectorAll('[aria-invalid]').forEach(function(n){ n.removeAttribute('aria-invalid'); });
+    if(!list.length){ errBox.hidden = true; return; }
+    errBox.innerHTML = '<strong>Please check the following:</strong><ul>' + list.map(function(x){ return '<li>' + esc(x[1]) + '</li>'; }).join('') + '</ul>';
+    errBox.hidden = false;
+    list.forEach(function(x){ var n = $(x[0]) || form.querySelector('[name="' + x[0] + '"]'); if(n) n.setAttribute('aria-invalid','true'); });
+    errBox.focus();
+  }
+  var FU_TEXT = { government:'Will your business deal with government entities in: ', precious:'Will your business deal in precious stones, metals or related products involving: ', oilgas:'Will your business deal in oil or gas related activities involving: ' };
+  function renderFollowUps(){
+    var box = $('el-followups');
+    if(!S.followUps.length){ box.hidden = true; box.innerHTML = ''; return; }
+    box.innerHTML = '<div class="form-section-head"><span>A few country-specific questions</span></div>' + S.followUps.map(function(f){
+      var names = f.countries.map(function(c){ return NAME[c] || c; }).join(', ');
+      return '<fieldset class="el-q"><legend>' + esc(FU_TEXT[f.type] + names + '?') + '</legend><div class="el-choices">' + [['no','No'],['yes','Yes'],['unsure','Not sure']].map(function(o){
+        return '<label class="intent-chip"><input type="radio" id="' + (o[0]==='no' ? 'el-fu-' + f.type : '') + '" name="el-fu-' + f.type + '" value="' + o[0] + '"' + (S[f.type]===o[0] ? ' checked' : '') + '><span>' + o[1] + '</span></label>'; }).join('') + '</div></fieldset>';
+    }).join('');
+    box.hidden = false;
+  }
+
+  /* ---------- views ---------- */
+  function setStep(n){ doc.querySelectorAll('#el-steps li').forEach(function(li){ li.classList.toggle('is-now', +li.getAttribute('data-step') === n); }); }
+  function show(html, step){
+    form.hidden = true; view.innerHTML = html; view.hidden = false; setStep(step);
+    var h = view.querySelector('h2'); if(h){ h.setAttribute('tabindex','-1'); }
+    var top = $('el-card').getBoundingClientRect().top + window.pageYOffset - 96; window.scrollTo({ top: Math.max(0, top), behavior: 'auto' });
+    if(h) h.focus({ preventScroll: true });
+  }
+  function backToForm(){ view.hidden = true; view.innerHTML = ''; form.hidden = false; setStep(1); S.route = null; }
+  var NOT_APPROVAL = 'This is not account approval or an application. Preparing documents does not submit anything to ARIE.';
+  function resultView(route){
+    if(route === 'hold') return holdView();
+    var std = route === 'standard';
+    return '<div class="el-result"><div class="el-mark ' + (std ? 'ok' : 'rv') + '" aria-hidden="true">' + (std ? '&#10003;' : '!') + '</div><p class="eyebrow">Your preliminary result</p>'
+      + (std ? '<h2>You may proceed to document preparation</h2><p class="el-lead">Based on your answers, this preliminary check has not identified a factor that needs further review before you prepare your documents.</p>'
+             : '<h2>You may continue — further review required</h2><p class="el-lead">Your answers include factors that require additional Compliance review. You can continue to indicative pricing and document preparation, and ARIE will review your application before any onboarding decision.</p>')
+      + '<div class="el-callout"><strong>What happens next?</strong> ' + (std ? 'Review the indicative pricing, then prepare your onboarding documents. ARIE will confirm your eligibility and pricing after its own review.' : 'Review the indicative pricing and prepare your documents. ARIE may request additional information during its review.') + '</div>'
+      + '<div class="el-actions"><button class="btn btn-primary" type="button" data-act="pricing">View indicative pricing <span aria-hidden="true">&rarr;</span></button><button class="el-link" type="button" data-act="edit">Edit my answers</button></div>'
+      + '<p class="el-fine">' + (std ? NOT_APPROVAL : 'No approval has been given. This is not an application, and preparing documents does not submit anything to ARIE.') + '</p></div>';
+  }
+  function pricingView(){
+    var body;
+    if(ELIGIBILITY_PRICING && ELIGIBILITY_PRICING.profiles){
+      body = '<p class="el-lead">These fees are a non-binding guide. Your final pricing depends on your business profile, onboarding assessment and service requirements, and is confirmed by ARIE.</p><div class="el-fees">'
+        + ELIGIBILITY_PRICING.profiles.map(function(p){ return '<article class="el-fee"><h3>' + esc(p.title) + '</h3>' + [['Onboarding fee', p.onboarding, 'One-time'],['Monthly service fee', p.monthly, 'Per account per month'],['Payment transaction fee', p.transaction, 'Per outgoing payment']].map(function(r){ return '<div class="el-fee-row"><span>' + r[0] + '</span><b>' + esc(r[1]) + '</b><small>' + r[2] + '</small></div>'; }).join('') + '</article>'; }).join('')
+        + '</div><p class="el-fine">Third-party, correspondent-bank, SWIFT and foreign-exchange charges may apply.' + (S.route === 'continue_review' ? ' Further review does not automatically place you in a higher pricing profile.' : '') + '</p>';
+    } else {
+      body = '<p class="el-lead">Our indicative fee schedule is being finalised. ARIE will confirm your pricing, which depends on your business profile, onboarding assessment and service requirements.</p>';
+    }
+    return '<div class="el-result"><p class="eyebrow">Indicative pricing</p><h2>Understand our indicative pricing</h2>' + body
+      + '<div class="el-actions"><a class="btn btn-primary" href="' + REQUIREMENTS_URL + '">Continue to onboarding requirements <span aria-hidden="true">&rarr;</span></a><button class="el-link" type="button" data-act="result">Back to my result</button></div>'
+      + '<p class="el-fine">The requirements page offers the full requirements, a personalised checklist and the Corporate Onboarding Pack. Preparing documents does not submit an application or mean your account is approved.</p></div>';
+  }
+  function holdView(){
+    return '<div class="el-result"><div class="el-mark rv" aria-hidden="true">i</div><p class="eyebrow">Your preliminary result</p><h2>Your business requires further review</h2>'
+      + '<p class="el-lead">Certain business activities, jurisdictions or circumstances require additional assessment by our team.</p>'
+      + '<div class="el-callout"><strong>This does not automatically mean your business is ineligible.</strong> Contact ARIE Finance so we can better understand your requirements and guide you through the next steps. Your answers are included, so you won’t need to repeat them.</div>'
+      + '<form id="el-review" novalidate><div aria-hidden="true" class="el-hp"><label>Leave this field blank<input type="text" name="hp_url" tabindex="-1" autocomplete="off"></label></div>'
+      + '<div class="el-errors" id="el-review-errors" role="alert" tabindex="-1" hidden></div>'
+      + '<div class="form-section-head"><span>Your contact details</span></div>'
+      + '<div class="form-grid"><div><label for="el-r-name">Full name</label><input id="el-r-name" name="name" autocomplete="name" maxlength="150"></div><div><label for="el-r-email">Business email</label><input id="el-r-email" name="email" type="email" autocomplete="email" maxlength="254"></div></div>'
+      + '<div class="form-grid"><div><label for="el-r-phone">Phone <span class="el-opt">(optional)</span></label><input id="el-r-phone" name="phone" type="tel" autocomplete="tel" maxlength="50"></div><div><label for="el-r-note">Anything else we should know? <span class="el-opt">(optional)</span></label><input id="el-r-note" name="note" maxlength="2000" placeholder="For example, licences held"></div></div>'
+      + '<div class="checkbox-row"><input id="el-r-tcs" name="tcs" type="checkbox"><label for="el-r-tcs">I agree that ARIE Finance may use my answers and details to review my enquiry and contact me, as described in the <a href="#" data-policy-open="privacy-policy" style="color:inherit;text-decoration:underline;">Privacy Policy</a>.</label></div>'
+      + '<div class="el-actions"><button class="btn btn-primary" type="submit">Contact ARIE for Further Review <span aria-hidden="true">&rarr;</span></button><button class="el-link" type="button" data-act="edit">Edit my answers</button></div>'
+      + '<p class="el-status" data-status role="status" aria-live="polite"></p></form>'
+      + '<p class="el-fine">This is a preliminary indication, not a decision. Our team assesses every request individually and will tell you whether you can continue.</p></div>';
+  }
+  function sentView(name, a){
+    return '<div class="el-result"><div class="el-mark ok" aria-hidden="true">&#10003;</div><p class="eyebrow">Request sent</p><h2>Thank you' + (name ? ', ' + esc(name.split(' ')[0]) : '') + '. Your request has been sent to our team.</h2>'
+      + '<p class="el-lead">A member of our team will review your answers and contact you by email to understand your requirements. If you can continue, we’ll guide you through pricing and document preparation.</p>'
+      + '<dl class="el-sum"><div><dt>Company</dt><dd>' + esc(a.company) + '</dd></div><div><dt>Incorporated in</dt><dd>' + esc(NAME[a.incorp] || a.incorp) + '</dd></div><div><dt>Sector</dt><dd>' + esc((SECTORS.filter(function(s){ return s[0] === a.sector; })[0] || ['', a.sector])[1]) + '</dd></div><div><dt>Contact</dt><dd>' + esc(name) + '</dd></div></dl>'
+      + '<p class="el-fine">Please don’t send documents, passwords or payment instructions by email or WhatsApp. If documents are needed, we’ll tell you how to provide them securely.</p>'
+      + '<div class="el-actions"><a class="el-link" href="#home" data-route="home">Return to the homepage</a></div></div>';
+  }
+
+  /* ---------- server calls ---------- */
+  var busy = false;
+  function post(path, payload){ return fetch(path, { method:'POST', headers:{ 'Content-Type':'application/json' }, body: JSON.stringify(payload) }).then(function(r){ return r.json().catch(function(){ return { ok:false }; }).then(function(j){ j.status = r.status; return j; }); }); }
+  form.addEventListener('submit', function(e){
+    e.preventDefault(); if(busy) return;
+    var a = answers(), errs = validate(a); showErrors(errs); if(errs.length) return;
+    busy = true; var btn = $('el-submit'); btn.disabled = true;
+    post('/api/eligibility', { answers: a }).then(function(j){
+      busy = false; btn.disabled = false;
+      if(j.ok && j.followUps){ S.followUps = j.followUps; renderFollowUps(); var f = $('el-followups'); f.scrollIntoView({ block:'center' }); var first = f.querySelector('input'); if(first) first.focus(); return; }
+      if(j.ok && j.route){ S.route = j.route; S.answers = a; show(resultView(j.route), 2); return; }
+      showErrors([['el-submit', j.status === 429 ? 'Too many checks in a short time. Please wait a minute and try again.' : 'We couldn’t check your answers just now. Please try again, or contact us at customercare@ariefinance.com.']]);
+    }).catch(function(){ busy = false; btn.disabled = false; showErrors([['el-submit','We couldn’t check your answers just now. Please check your connection and try again.']]); });
+  });
+  view.addEventListener('click', function(e){
+    var b = e.target.closest('[data-act]'); if(!b) return;
+    var act = b.getAttribute('data-act');
+    if(act === 'edit') backToForm();
+    else if(act === 'pricing' && S.route && S.route !== 'hold') show(pricingView(), 3);
+    else if(act === 'result' && S.route) show(resultView(S.route), 2);
+  });
+  view.addEventListener('submit', function(e){
+    if(e.target.id !== 'el-review') return; e.preventDefault(); if(busy) return;
+    var f = e.target, box = $('el-review-errors'), status = f.querySelector('[data-status]');
+    var name = f.name.value.trim(), email = f.email.value.trim(), errs = [];
+    if(name.length < 2) errs.push(['el-r-name','Enter your full name.']);
+    if(!/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(email)) errs.push(['el-r-email','Enter a valid business email.']);
+    if(!f.tcs.checked) errs.push(['el-r-tcs','Agree to the use of your answers to continue.']);
+    f.querySelectorAll('[aria-invalid]').forEach(function(n){ n.removeAttribute('aria-invalid'); });
+    if(errs.length){ box.innerHTML = '<strong>Please check the following:</strong><ul>' + errs.map(function(x){ return '<li>' + esc(x[1]) + '</li>'; }).join('') + '</ul>'; box.hidden = false; errs.forEach(function(x){ var n = $(x[0]); if(n) n.setAttribute('aria-invalid','true'); }); box.focus(); return; }
+    box.hidden = true; busy = true; var btn = f.querySelector('button[type="submit"]'); btn.disabled = true; status.textContent = 'Sending…';
+    post('/api/website-form', { form:'eligibility_review', url: location.href, referrer: doc.referrer || '', fields:{ name:name, email:email, phone:f.phone.value.trim(), note:f.note.value.trim(), tcs:true, hp_url:f.hp_url.value }, answers: S.answers }).then(function(j){
+      busy = false; btn.disabled = false;
+      if(j.ok){ show(sentView(name, S.answers), 2); return; }
+      status.textContent = '';
+      box.innerHTML = j.status === 429 ? 'Too many requests in a short time. Please wait a minute and try again.' : 'We could not send your request. Please try again, or email customercare@ariefinance.com. Your answers have not been lost.';
+      box.hidden = false; box.focus();
+    }).catch(function(){ busy = false; btn.disabled = false; status.textContent = ''; box.innerHTML = 'We could not send your request. Please check your connection and try again, or email customercare@ariefinance.com.'; box.hidden = false; box.focus(); });
+  });
+  setStep(1);
 })();
 </script>
 </body></html>

@@ -34,6 +34,7 @@
 const nodemailer = require('nodemailer');
 const yauzl = require('yauzl');
 const { SaxesParser } = require('saxes');
+const eligibility = require('./_lib/eligibility-rules');
 
 // ---- limits -----------------------------------------------------------------
 const MAX_BODY_BYTES = 5 * 1024 * 1024;   // whole JSON request
@@ -460,7 +461,7 @@ module.exports = async function handler(req, res) {
 
   // --- form type allow-list ---
   const formType = clean(body.form);
-  if (formType !== 'contact' && formType !== 'careers' && formType !== 'feedback') {
+  if (formType !== 'contact' && formType !== 'careers' && formType !== 'feedback' && formType !== 'eligibility_review') {
     return res.status(400).json({ ok: false, error: 'invalid_form_type' });
   }
 
@@ -532,6 +533,55 @@ module.exports = async function handler(req, res) {
       ['Submitted', ts],
       ['Source URL', url || '—'],
       ['Triage', 'Assess any expression of dissatisfaction against the ARIE Complaints Procedure, whatever feedback type was chosen.'],
+    ];
+    textBody = pairs.map((p) => p[0] + ': ' + p[1]).join('\n');
+    htmlRows = pairs.map((p) => '<tr><td style="padding:6px 12px;font-weight:600;vertical-align:top;white-space:nowrap;">' + escapeHtml(p[0]) + '</td><td style="padding:6px 12px;">' + escapeHtml(p[1]).replace(/\n/g, '<br>') + '</td></tr>').join('');
+
+  } else if (formType === 'eligibility_review') {
+    // Further-review request from the website eligibility check (/#eligibility).
+    // The preliminary route is RE-COMPUTED here from the answers; the browser's view is never trusted.
+    const fullname = clean(fields.name);
+    const email = validEmail(fields.email);
+    const phone = clean(fields.phone);
+    const note = cleanMultiline(fields.note);
+    const consent = fields.tcs === true || fields.tcs === 'true' || fields.tcs === 'on';
+    if (!lenOk(fullname, 'fullname')) return res.status(400).json({ ok: false, error: 'invalid_name' });
+    if (!email) return res.status(400).json({ ok: false, error: 'invalid_email' });
+    if (phone.length > LIMITS.phone[1]) return res.status(400).json({ ok: false, error: 'invalid_phone' });
+    if (note.length > 2000) return res.status(400).json({ ok: false, error: 'invalid_note' });
+    if (!consent) return res.status(400).json({ ok: false, error: 'consent_required' });
+    const ev = eligibility.evaluate(body.answers);
+    if (ev.error) return res.status(400).json({ ok: false, error: ev.error });
+    if (ev.followUps) return res.status(400).json({ ok: false, error: 'follow_up_required' });
+    const n = ev.answers;
+    const list = (arr, unknown) => unknown ? 'Not sure' : (arr.length ? arr.join(', ') : '—');
+    const ROUTE_LABEL = { standard: 'Standard (may proceed)', continue_review: 'May continue — further Compliance review', hold: 'ON HOLD — further review required' };
+    replyTo = email;
+    subject = 'ARIE Eligibility — Further Review — ' + headerSafe(n.company) + ' — ' + headerSafe(fullname);
+    dedupeSeed = ip + '|eligibility|' + email + '|' + cheapHash(JSON.stringify(n) + note);
+    const pairs = [
+      ['Form type', 'Website eligibility check — Contact ARIE for Further Review'],
+      ['Preliminary route (server)', ROUTE_LABEL[ev.route] || ev.route],
+      ['Internal flags', ev.internal.reasons.length ? ev.internal.reasons.join('\n') : 'None'],
+      ['Contact name', fullname],
+      ['Email', email],
+      ['Phone', phone || '—'],
+      ['Applicant note', note || '—'],
+      ['Company', n.company],
+      ['Country of incorporation', n.incorp],
+      ['Other countries of operation', n.opsMode === 'unsure' ? 'Not sure' : list(n.operations)],
+      ['Principal sector', n.sector],
+      ['Description', n.description || '—'],
+      ['Listed activities', n.activityMode === 'unsure' ? 'Not sure' : (n.activities.length ? n.activities.map((id) => id + ' — ' + eligibility.ACTIVITY_BY_ID[id].name).join('\n') : 'None declared')],
+      ['Beneficial-owner nationalities', list(n.owners, n.ownerUnknown)],
+      ['Incoming payment countries', list(n.incoming, n.incomingUnknown)],
+      ['Outgoing payment countries', list(n.outgoing, n.outgoingUnknown)],
+      ['Country-specific answers', 'Government: ' + (n.government || 'n/a') + ' · Precious stones/metals: ' + (n.precious || 'n/a') + ' · Oil/gas: ' + (n.oilgas || 'n/a')],
+      ['Consent', 'Yes — agreed to use of answers to review the enquiry (Privacy Policy)'],
+      ['Policy / rules', ev.internal.policy + ' · ' + ev.internal.rules],
+      ['Submitted', ts],
+      ['Source URL', url || '—'],
+      ['Triage', 'Preliminary website screening only — not an application or compliance decision. Assess under ARIE onboarding and compliance procedures (mandatory prohibitions apply) and tell the applicant whether they can continue.'],
     ];
     textBody = pairs.map((p) => p[0] + ': ' + p[1]).join('\n');
     htmlRows = pairs.map((p) => '<tr><td style="padding:6px 12px;font-weight:600;vertical-align:top;white-space:nowrap;">' + escapeHtml(p[0]) + '</td><td style="padding:6px 12px;">' + escapeHtml(p[1]).replace(/\n/g, '<br>') + '</td></tr>').join('');
@@ -657,4 +707,5 @@ module.exports = async function handler(req, res) {
   }
 };
 
+module.exports.__shared = { originAllowed, getIp, readBody };
 module.exports.__test = { validateDocx, decodeBase64Strict, validateDocxXmlParts, claimSubmission, markDelivered, releaseSubmission };

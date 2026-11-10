@@ -81,6 +81,9 @@
   }
 
   var START_APP_RE = /start\s+your\s+application/i;
+  // Since the eligibility journey: the application CTAs read "Check Your Eligibility"
+  // (mobile short label "Eligibility") and open data-route="eligibility".
+  var ELIGIBILITY_RE = /check\s+your\s+eligibility/i;
   var SPEAK_RE = /^(speak to our team|speak to the team|contact arie finance)$/i;
 
   // ---------- click delegation ----------
@@ -111,6 +114,12 @@
     // Matched text: "Start Your Application" or the exact mobile short
     // label "Apply" that lives inside the same data-route="contact"
     // anchor as "Start Your Application" (verified in the repo).
+    if (link.matches && link.matches('a[data-route="eligibility"]')) {
+      if (ELIGIBILITY_RE.test(t) || t === 'Eligibility') {
+        push('start_application', { cta_text: t, cta_location: ctaLocation(link) });
+        return;
+      }
+    }
     if (link.matches && link.matches('a[data-route="contact"]')) {
       if (START_APP_RE.test(t) || t === 'Apply') {
         push('start_application', { cta_text: t, cta_location: ctaLocation(link) });

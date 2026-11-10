@@ -11,6 +11,7 @@
 | Homepage and services | Public company, services and audience information | `/`, `/#services`, `/#direct-clients`, `/#introducers` | [Public website](docs/guides/PUBLIC-SITE.md) |
 | About, team and compliance | Company and disclosure information | `/#about`, `/#team`, `/#compliance` | [Public website](docs/guides/PUBLIC-SITE.md) |
 | Contact and application enquiry | Client enquiry forms with email delivery | `/#contact` | [Public website](docs/guides/PUBLIC-SITE.md) |
+| Check Your Eligibility | Preliminary eligibility check, indicative pricing, Further Review requests | `/#eligibility` | [Eligibility](docs/guides/ELIGIBILITY.md) |
 | WhatsApp contact (live) | Floating click-to-chat button and Contact entry for general enquiries and onboarding guidance | `/`, `/#contact` | [WhatsApp](docs/guides/WHATSAPP.md) |
 | Careers and CV | Job enquiry and supported attachment submission | `/#careers` | [Public website](docs/guides/PUBLIC-SITE.md) |
 | Onboarding requirements | Customer information and requirements interface | `/onboarding-requirements/` | [Client resources guide](docs/guides/CLIENT-RESOURCES.md) · [Source](onboarding-requirements/) |
@@ -35,7 +36,8 @@
 
 | Feature | Location | Documentation |
 |---|---|---|
-| Contact, Careers and Feedback API | [api/website-form.js](api/website-form.js) | [Public website](docs/guides/PUBLIC-SITE.md) |
+| Contact, Careers, Feedback and Further Review API | [api/website-form.js](api/website-form.js) | [Public website](docs/guides/PUBLIC-SITE.md) |
+| Eligibility check (server-only rules) | [api/eligibility.js](api/eligibility.js), [api/_lib/eligibility-rules.js](api/_lib/eligibility-rules.js) | [Eligibility](docs/guides/ELIGIBILITY.md) |
 | Leave Your Feedback (via the Contact form handler) | [api/website-form.js](api/website-form.js) | [Feedback](docs/guides/FEEDBACK.md) |
 | Sales persistence/API | [api/salestracker.js](api/salestracker.js) | [Sales](docs/guides/SALES-TRACKER.md) |
 | Management report sessions/API | [api/managementreport.js](api/managementreport.js) | [Management reporting](docs/guides/MANAGEMENT-REPORT.md) |

@@ -1987,6 +1987,16 @@ body:has(section.page.is-active[data-page="eligibility"]) .wa-float{ display:non
 @media (hover:none){ .wa-float .wa-tip{ display:none; } }
 @media (prefers-reduced-motion:reduce){ .wa-float .wa-tip{ transition:none; } }
 /* Check Your Eligibility (/#eligibility) — prototype v0.9 styles, scoped to #elig-root */
+#elig-root .el-share{position:relative;margin-top:22px;display:flex;align-items:center;gap:12px;flex-wrap:wrap}
+#elig-root .el-share-btn{display:inline-flex;align-items:center;gap:8px;min-height:40px;padding:8px 14px;border:1px solid #E6CB86;border-radius:999px;background:#fffdf8;color:#06113A;font:600 12.5px/1.2 "Hanken Grotesk","Segoe UI",Arial,sans-serif;cursor:pointer}
+#elig-root .el-share-btn svg{color:#7E6120}
+#elig-root .el-share-btn:hover{background:#F7F0E4;border-color:#C99B3F}
+#elig-root .el-share-btn:focus-visible,#elig-root .el-share-menu [role="menuitem"]:focus-visible{outline:2px solid #06113A;outline-offset:3px}
+#elig-root .el-share-menu{position:absolute;bottom:calc(100% + 6px);left:0;z-index:20;min-width:180px;padding:6px;background:#fff;border:1px solid #E6E0CE;border-radius:12px;box-shadow:0 14px 34px rgba(6,17,58,.14);display:grid;gap:2px}
+#elig-root .el-share-menu[hidden]{display:none}
+#elig-root .el-share-menu [role="menuitem"]{display:block;text-align:left;width:100%;padding:10px 12px;border:0;border-radius:8px;background:none;color:#06113A;font:600 13px/1.2 "Hanken Grotesk","Segoe UI",Arial,sans-serif;text-decoration:none;cursor:pointer}
+#elig-root .el-share-menu [role="menuitem"]:hover{background:#F7F0E4}
+#elig-root .el-share-status{font-size:12px;color:#176b50;font-weight:600}
 /* Neutralise site-wide element styles inside the eligibility page so the v0.9 rules below render as designed */
 #elig-root label{display:block;color:inherit;font-size:inherit;letter-spacing:normal;text-transform:none;font-weight:inherit;margin:0}
 #elig-root button{min-height:0}
@@ -3262,9 +3272,9 @@ body:has(section.page.is-active[data-page="eligibility"]) .wa-float{ display:non
 
 ;
 
-(function(){var last=null;function f(){try{if(window.va){var s=((location.hash||'#home').replace('#','')||'home').split('?')[0];if(s&&s!==last){last=s;window.va('event',{name:'section_view',section:s});}}}catch(e){}}setInterval(f,700);})();
+(function(){var last=null;function f(){try{if(window.va){var s=((location.hash||'#home').replace('#','')||'home').split('?')[0];if(s&&s!==last){last=s;window.va('event',{name:'section_view',data:{section:s}});}}}catch(e){}}setInterval(f,700);})();
 </script>
-<script defer src="/_vercel/insights/script.js"></script><script>window.si=window.si||function(){(window.siq=window.siq||[]).push(arguments);};</script><script defer src="/_vercel/speed-insights/script.js"></script><script defer src="/assets/analytics.v1.js"></script><script>(function(){var radios=[].slice.call(document.querySelectorAll('input[name="topic"]'));if(!radios.length)return;var note=document.querySelector('[data-account-note]');function upd(){var sel=null;for(var i=0;i<radios.length;i++){if(radios[i].checked){sel=radios[i];break;}}if(note){note.hidden=!(sel&&sel.getAttribute('data-topic')==='account');}}radios.forEach(function(r){r.addEventListener('change',upd);});var m=/[?&]topic=([^&#]+)/.exec(location.search)||/[?&]topic=([^&#]+)/.exec(location.hash);if(m){var slug=decodeURIComponent(m[1]).trim().toLowerCase();for(var j=0;j<radios.length;j++){if(radios[j].getAttribute('data-topic')===slug){radios[j].checked=true;break;}}}upd();})();</script><script>(function(){var banner=document.getElementById('cookie-banner');if(!banner)return;var root=document.documentElement;function visible(){return !banner.classList.contains('is-hidden')&&!banner.hidden&&getComputedStyle(banner).display!=='none'&&banner.offsetHeight>0;}function update(){root.style.setProperty('--cookie-space',visible()?(banner.offsetHeight+16)+'px':'0px');}try{var mo=new MutationObserver(update);mo.observe(banner,{attributes:true,attributeFilter:['class','hidden','style']});}catch(e){}if('ResizeObserver' in window){try{new ResizeObserver(update).observe(banner);}catch(e){}}window.addEventListener('resize',update);setTimeout(update,0);setTimeout(update,400);})();</script><script>
+<script>window.va=window.va||function(){(window.vaq=window.vaq||[]).push(arguments);};</script><script defer src="/_vercel/insights/script.js"></script><script>window.si=window.si||function(){(window.siq=window.siq||[]).push(arguments);};</script><script defer src="/_vercel/speed-insights/script.js"></script><script defer src="/assets/analytics.v1.js"></script><script>(function(){var radios=[].slice.call(document.querySelectorAll('input[name="topic"]'));if(!radios.length)return;var note=document.querySelector('[data-account-note]');function upd(){var sel=null;for(var i=0;i<radios.length;i++){if(radios[i].checked){sel=radios[i];break;}}if(note){note.hidden=!(sel&&sel.getAttribute('data-topic')==='account');}}radios.forEach(function(r){r.addEventListener('change',upd);});var m=/[?&]topic=([^&#]+)/.exec(location.search)||/[?&]topic=([^&#]+)/.exec(location.hash);if(m){var slug=decodeURIComponent(m[1]).trim().toLowerCase();for(var j=0;j<radios.length;j++){if(radios[j].getAttribute('data-topic')===slug){radios[j].checked=true;break;}}}upd();})();</script><script>(function(){var banner=document.getElementById('cookie-banner');if(!banner)return;var root=document.documentElement;function visible(){return !banner.classList.contains('is-hidden')&&!banner.hidden&&getComputedStyle(banner).display!=='none'&&banner.offsetHeight>0;}function update(){root.style.setProperty('--cookie-space',visible()?(banner.offsetHeight+16)+'px':'0px');}try{var mo=new MutationObserver(update);mo.observe(banner,{attributes:true,attributeFilter:['class','hidden','style']});}catch(e){}if('ResizeObserver' in window){try{new ResizeObserver(update).observe(banner);}catch(e){}}window.addEventListener('resize',update);setTimeout(update,0);setTimeout(update,400);})();</script><script>
 /* 2026-11 polish: application CTAs pre-select the enquiry topic; contact card reuses existing team portraits */
 (function(){
   function preset(slug){
@@ -3376,7 +3386,35 @@ function errBanner(){return errors.length?'<div class="alert error" role="alert"
 function countryOptions(sel){return COUNTRIES.map(function(c){return '<option value="'+c.id+'"'+(sel===c.id?' selected':'')+'>'+e(c.name)+'</option>';}).join('');}
 function countrySelect(field,label,help){return '<div class="field country-group"><div class="multi-label"><label for="c_'+field+'">'+label+'</label></div><div class="country-picker"><select id="c_'+field+'" aria-label="'+e(label.replace(/<[^>]+>/g,'').trim())+'"><option value="">Select a country...</option>'+countryOptions('')+'</select><button type="button" data-act="addcountry" data-field="'+field+'">Add</button></div><div class="chips" aria-label="Selected countries">'+(S[field].length?S[field].map(function(id){return '<span class="chip">'+e(name(id))+' <button type="button" data-act="removecountry" data-field="'+field+'" data-id="'+id+'" aria-label="Remove '+e(name(id))+'">×</button></span>';}).join(''):'<span class="empty-chip">No countries added</span>')+'</div>'+(help?'<div class="help">'+help+'</div>':'')+'</div>';}
 function modeQuestion(key,label,choices){choices=choices||[['no','No'],['yes','Yes'],['unsure','Not sure']];return '<div class="field"><div class="field-label">'+label+'</div><div class="mode-row">'+choices.map(function(c){return '<button type="button" class="choice '+(S[key]===c[0]?'selected':'')+'" data-act="mode" data-field="'+key+'" data-value="'+c[0]+'" aria-pressed="'+(S[key]===c[0])+'"><span class="radio-dot"></span>'+c[1]+'</button>';}).join('')+'</div></div>';}
-function intro(){return '<section class="hero"><div class="hero-content"><div class="eyebrow">The first step in getting started</div><h1 class="title-serif">A clearer path to your onboarding.</h1><p class="hero-lead">Check whether your business may be suitable for onboarding with ARIE Finance—before you spend time gathering corporate documents.</p><button class="cta" data-act="start">Check your eligibility <span class="arrow">→</span></button><div class="checkpoint-list"><span><i class="small-check">✓</i> About 3 minutes</span><span><i class="small-check">✓</i> No documents required</span><span><i class="small-check">✓</i> Preliminary assessment only</span></div></div><div class="hero-illustration"><img class="hero-image" src="'+HERO_IMAGE+'" width="1492" height="840" alt="ARIE Finance global payments illustration with a globe, payment card, security shield and brand symbol" decoding="async"></div></section><div class="after-hero"><div class="info-tile"><span class="num">01 / SCREEN</span><h3>Understand your business</h3><p>One page covering your activity, locations and expected payments.</p></div><div class="info-tile"><span class="num">02 / REVIEW</span><h3>Receive preliminary guidance</h3><p>Your result will indicate whether to prepare documents or contact ARIE.</p></div><div class="info-tile"><span class="num">03 / NEXT STEP</span>'+(SHOW_FEES?'<h3>Indicative fees, then documents</h3><p>Review indicative fees before proceeding to onboarding requirements.</p>':'<h3>Prepare your documents</h3><p>Proceed to onboarding requirements to prepare your documents.</p>')+'</div></div>';}
+/* Sharing + funnel analytics (added after the v0.9 release; no questionnaire data is ever sent). */
+var SHARE_BASE='https://www.ariefinance.com/eligibility';
+var SHARE_TITLE='ARIE Finance — Check Your Eligibility';
+var SHARE_TEXT='Check whether your business may be suitable for ARIE Finance: a short preliminary eligibility check, indicative pricing and the next steps towards onboarding.';
+function shareUrl(method){var inq=new URLSearchParams(location.search),p=new URLSearchParams();
+ /* Only an intentional introducer referral is carried forward (source + a plain campaign code).
+    Every other share is "share": unrelated sources (instagram, google, email campaigns...) are never copied. */
+ var code=(inq.get('utm_campaign')||'').trim();
+ if((inq.get('utm_source')||'').toLowerCase()==='introducer'){p.set('utm_source','introducer');if(/^[A-Za-z0-9_-]{1,40}$/.test(code))p.set('utm_campaign',code);}
+ else p.set('utm_source','share');
+ p.set('utm_medium',method);
+ return SHARE_BASE+'?'+p.toString();}
+function shareControl(){return '<div class="el-share"><button type="button" class="el-share-btn" data-act="share" aria-haspopup="true" aria-expanded="false" aria-controls="el-share-menu"><svg aria-hidden="true" viewBox="0 0 24 24" width="16" height="16"><path d="M15 8a3 3 0 1 0-2.83-4H12a3 3 0 0 0 .1.77L8.7 6.9a3 3 0 1 0 0 4.2l3.4 2.13A3 3 0 0 0 12 14a3 3 0 1 0 .7-1.94L9.3 9.94a3 3 0 0 0 0-1.88l3.4-2.13A3 3 0 0 0 15 8z" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/></svg>Share this eligibility check</button>'+
+ '<div class="el-share-menu" id="el-share-menu" role="menu" hidden><button type="button" role="menuitem" data-act="share-copy">Copy link</button><a role="menuitem" data-share="whatsapp" target="_blank" rel="noopener noreferrer" href="#">WhatsApp</a><a role="menuitem" data-share="email" href="#">Email</a></div><span class="el-share-status" role="status" aria-live="polite"></span></div>';}
+var TRACKED={};
+function track(name,data){ /* once per page load (share excepted); never includes answers, outcomes or personal data */
+ if(name!=='elig_share'){if(TRACKED[name])return;TRACKED[name]=1;}
+ try{var o={event:name};if(data)for(var k in data)o[k]=data[k];(window.dataLayer=window.dataLayer||[]).push(o);}catch(x){}
+ try{if(window.va)window.va('event',data?{name:name,data:data}:{name:name});}catch(x){}}
+function closeShare(){var m=document.getElementById('el-share-menu'),b=app.querySelector('[data-act="share"]');if(m)m.hidden=true;if(b)b.setAttribute('aria-expanded','false');}
+function shareStatus(t){var s=app.querySelector('.el-share-status');if(s){s.textContent=t;clearTimeout(shareStatus._t);shareStatus._t=setTimeout(function(){s.textContent='';},2500);}}
+function copyText(t){if(navigator.clipboard&&window.isSecureContext)return navigator.clipboard.writeText(t);return new Promise(function(res,rej){var a=document.createElement('textarea');a.value=t;a.setAttribute('readonly','');a.style.position='fixed';a.style.opacity='0';document.body.appendChild(a);a.select();try{document.execCommand('copy')?res():rej();}catch(x){rej(x);}a.remove();});}
+function openShare(btn){
+ if(navigator.share){navigator.share({title:SHARE_TITLE,text:SHARE_TEXT,url:shareUrl('native')}).then(function(){track('elig_share',{share_method:'native'});}).catch(function(){});return;}
+ var m=document.getElementById('el-share-menu');if(!m)return;var open=m.hidden;
+ if(open){m.querySelector('[data-share="whatsapp"]').href='https://wa.me/?text='+encodeURIComponent(SHARE_TEXT+' '+shareUrl('whatsapp'));
+  m.querySelector('[data-share="email"]').href='mailto:?subject='+encodeURIComponent(SHARE_TITLE)+'&body='+encodeURIComponent(SHARE_TEXT+'\n\n'+shareUrl('email'));}
+ m.hidden=!open;btn.setAttribute('aria-expanded',String(open));if(open)m.querySelector('[role="menuitem"]').focus();}
+function intro(){return '<section class="hero"><div class="hero-content"><div class="eyebrow">The first step in getting started</div><h1 class="title-serif">A clearer path to your onboarding.</h1><p class="hero-lead">Find out whether your business may be suitable for ARIE Finance, explore indicative pricing and understand the next steps towards onboarding — before you gather corporate documents.</p><button class="cta" data-act="start">Check your eligibility <span class="arrow">→</span></button><div class="checkpoint-list"><span><i class="small-check">✓</i> About 3 minutes</span><span><i class="small-check">✓</i> No documents required</span><span><i class="small-check">✓</i> Preliminary assessment only</span></div>'+shareControl()+'</div><div class="hero-illustration"><img class="hero-image" src="'+HERO_IMAGE+'" width="1492" height="840" alt="ARIE Finance global payments illustration with a globe, payment card, security shield and brand symbol" decoding="async"></div></section><div class="after-hero"><div class="info-tile"><span class="num">01 / SCREEN</span><h3>Understand your business</h3><p>One page covering your activity, locations and expected payments.</p></div><div class="info-tile"><span class="num">02 / REVIEW</span><h3>Receive preliminary guidance</h3><p>Your result will indicate whether to prepare documents or contact ARIE.</p></div><div class="info-tile"><span class="num">03 / NEXT STEP</span>'+(SHOW_FEES?'<h3>Indicative fees, then documents</h3><p>Review indicative fees before proceeding to onboarding requirements.</p>':'<h3>Prepare your documents</h3><p>Proceed to onboarding requirements to prepare your documents.</p>')+'</div></div>';}
 function uncertainGroup(field,unknownKey,title,help){return '<div class="question-block"><h3>'+title+'</h3><p>'+help+'</p><div class="mode-row"><button type="button" class="choice '+(!S[unknownKey]?'selected':'')+'" data-act="unknown" data-field="'+unknownKey+'" data-value="false"><span class="radio-dot"></span>I can specify</button><button type="button" class="choice '+(S[unknownKey]?'selected':'')+'" data-act="unknown" data-field="'+unknownKey+'" data-value="true"><span class="radio-dot"></span>Not sure</button></div>'+(!S[unknownKey]?countrySelect(field,field==='owners'?'Nationalities <span class="required-star">*</span>':'Countries <span class="required-star">*</span>'):'<div class="help">This answer will be referred for further review.</div>')+'</div>';}
 function targeted(){var parts=[];
  [['government','Will your business deal with government entities in: '],['precious','Will your business deal in precious stones, metals or related products involving: '],['oilgas','Will your business deal in oil or gas related activities involving: ']].forEach(function(g){var countries=exposure(g[0]);if(countries.length)parts.push(modeQuestion(g[0],e(g[1]+countries.map(name).join(', ')+'?')));});
@@ -3500,7 +3538,7 @@ function check(){
  if(busy)return;if(!validate()){render(true);return;}
  busy=true;render(false,'[data-act="next"]');
  post('/api/eligibility',{answers:answers()}).then(function(j){busy=false;
-  if(j.ok&&j.route){S.route=j.route;S.notice=j.notice||null;S.step=5;errors=[];render(true);return;}
+  if(j.ok&&j.route){S.route=j.route;S.notice=j.notice||null;S.step=5;errors=[];track('elig_complete');render(true);return;}
   errors=[j.status===429?'Too many checks in a short time. Please wait a minute and try again.':j.ok&&j.followUps?'Answer the additional country-specific questions':GENERIC];render(true);
  }).catch(function(){busy=false;errors=[GENERIC];render(true);});
 }
@@ -3514,13 +3552,13 @@ function sendReview(f){
  if(errors.length){render(true);keep();return;}
  busy=true;var hp=f.hp_url.value;render(false);keep();
  post('/api/website-form',{form:'eligibility_review',url:location.href,referrer:document.referrer||'',fields:{name:nm,email:em,phone:ph,note:nt,tcs:true,hp_url:hp},answers:answers()}).then(function(j){busy=false;
-  if(j.ok){S.sentName=nm.split(' ')[0];S.step=9;errors=[];render(true);return;}
+  if(j.ok){track('elig_review_submit');S.sentName=nm.split(' ')[0];S.step=9;errors=[];render(true);return;}
   errors=[j.status===429?'Too many requests in a short time. Please wait a minute and try again.':'We could not send your request. Please try again, or email customercare@ariefinance.com. Your answers have not been lost.'];render(true);keep();
  }).catch(function(){busy=false;errors=['We could not send your request. Please check your connection and try again, or email customercare@ariefinance.com.'];render(true);keep();});
 }
 function action(el){var a=el.getAttribute('data-act');if(!a)return;
  var field=el.getAttribute('data-field'),currentMode=el.getAttribute('data-value');
- if(a==='start'){S.step=1;errors=[];render(true);return;}
+ if(a==='start'){track('elig_start');S.step=1;errors=[];render(true);return;}
  if(a==='reset'){if(S.step>0&&S.step!==9&&!window.confirm('Start a new check? Your current answers will be cleared.'))return;S=blank();errors=[];render(true);return;}
  if(a==='mode'){sync();var before=exposureSignature();S.route=null;S.attested=false;S[field]=currentMode;if(field==='activityMode'&&S.activityMode!=='yes')S.activities=[];if(field==='opsMode'&&S.opsMode!=='yes')S.operations=[];clearChangedQuestions(before);errors=[];render(false,'[data-act="mode"][data-field="'+field+'"][data-value="'+currentMode+'"]');return;}
  if(a==='unknown'){sync();var b2=exposureSignature();S.route=null;S.attested=false;S[field]=currentMode==='true';var list={ownerUnknown:'owners',incomingUnknown:'incoming',outgoingUnknown:'outgoing'}[field];if(S[field])S[list]=[];clearChangedQuestions(b2);errors=[];render(false,'[data-act="unknown"][data-field="'+field+'"][data-value="'+currentMode+'"]');return;}
@@ -3528,11 +3566,19 @@ function action(el){var a=el.getAttribute('data-act');if(!a)return;
  if(a==='removecountry'){sync();var b4=exposureSignature();S.route=null;S.attested=false;var rid=el.getAttribute('data-id');S[field]=S[field].filter(function(c){return c!==rid;});clearChangedQuestions(b4);errors=[];render(false,'#c_'+field);return;}
  if(a==='next'){check();return;}
  if(a==='edit'){S.step=1;S.route=null;S.attested=false;errors=[];render(true);return;}
- if(a==='pricing'&&canProceed()&&SHOW_FEES){S.step=7;render(true);return;}
- if(a==='contact'&&S.route==='hold'){S.step=8;errors=[];render(true);return;}
+ if(a==='pricing'&&canProceed()&&SHOW_FEES){track('elig_pricing_view');S.step=7;render(true);return;}
+ if(a==='contact'&&S.route==='hold'){track('elig_review_open');S.step=8;errors=[];render(true);return;}
  if(a==='result'&&S.route){S.step=5;errors=[];render(true);return;}
+ if(a==='share'){openShare(el);return;}
+ if(a==='share-copy'){var u=shareUrl('copy');copyText(u).then(function(){track('elig_share',{share_method:'copy'});shareStatus('Link copied');},function(){shareStatus(u);});closeShare();return;}
 }
-app.addEventListener('click',function(ev){var t=ev.target.closest('[data-act]');if(t&&app.contains(t)){ev.preventDefault();action(t);}});
+app.addEventListener('click',function(ev){
+ var sh=ev.target.closest('[data-share]');if(sh&&app.contains(sh)){track('elig_share',{share_method:sh.getAttribute('data-share')});closeShare();return;}
+ var rq=ev.target.closest('a[href="'+REQUIREMENTS_URL+'"]');
+ if(rq&&app.contains(rq)){track('elig_requirements_click');if(!ev.metaKey&&!ev.ctrlKey&&!ev.shiftKey&&ev.button===0){ev.preventDefault();setTimeout(function(){location.href=REQUIREMENTS_URL;},150);}return;}
+ var t=ev.target.closest('[data-act]');if(t&&app.contains(t)){ev.preventDefault();action(t);}});
+document.addEventListener('click',function(ev){var m=document.getElementById('el-share-menu');if(m&&!m.hidden&&!ev.target.closest('.el-share'))closeShare();});
+document.addEventListener('keydown',function(ev){var m=document.getElementById('el-share-menu');if(ev.key==='Escape'&&m&&!m.hidden){closeShare();var b=app.querySelector('[data-act="share"]');if(b)b.focus();}});
 app.addEventListener('submit',function(ev){if(ev.target.id==='el-review'){ev.preventDefault();sendReview(ev.target);}});
 app.addEventListener('change',function(ev){var t=ev.target;
  if(t.hasAttribute('data-activity')){S.route=null;S.attested=false;var id=t.getAttribute('data-activity');if(t.checked&&S.activities.indexOf(id)<0)S.activities.push(id);if(!t.checked)S.activities=S.activities.filter(function(x){return x!==id;});S.activityMode=S.activities.length?'yes':null;var ack=document.getElementById('attested');if(ack)ack.checked=false;var count=document.getElementById('activity-count');if(count)count.textContent=S.activities.length+' selected';app.querySelectorAll('[data-act="mode"][data-field="activityMode"]').forEach(function(b){b.classList.remove('selected');b.setAttribute('aria-pressed','false');});var note=document.getElementById('activity-decision-note');if(note)note.textContent=S.activities.length?S.activities.length+' selected — you can continue to the next section.':'Please review the list, then choose an option if nothing applies.';}

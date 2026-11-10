@@ -132,3 +132,23 @@ test('rate limit: Redis failure falls back to the in-memory limit (never unlimit
   redisDown = false;
   assert.equal(codes[8], 429);
 });
+
+// ---------- /eligibility shareable page (api/eligibility-page.js) ----------
+const pageApi = require('../api/eligibility-page.js');
+test('/eligibility serves the site with eligibility social-preview metadata and opens the checker', async () => {
+  const html = await new Promise((resolve) => {
+    const res = { headers: {}, setHeader(k, v) { this.headers[k] = v; }, status(c) { this.code = c; return this; }, send(b) { resolve({ code: this.code, body: b, headers: this.headers }); } };
+    pageApi({ url: '/eligibility?utm_source=introducer' }, res);
+  });
+  assert.equal(html.code, 200);
+  const b = html.body;
+  assert.match(b, /<title>ARIE Finance — Check Your Eligibility<\/title>/);
+  assert.match(b, /<meta property="og:title" content="ARIE Finance — Check Your Eligibility">/);
+  assert.match(b, /<meta property="og:description" content="Complete a preliminary business eligibility check, explore indicative pricing and understand the next steps.">/);
+  assert.match(b, /<meta property="og:url" content="https:\/\/www.ariefinance.com\/eligibility">/);
+  assert.match(b, /<meta property="og:image" content="https:\/\/www.ariefinance.com\/assets\/og-eligibility.jpg">/);
+  assert.match(b, /<link rel="canonical" href="https:\/\/www.ariefinance.com\/eligibility">/);
+  assert.match(b, /history.replaceState\(null,"",location.pathname\+location.search\+"#eligibility"\)/);
+  assert.ok(b.includes('id="elig-root"'));
+  assert.ok(!/og-image\.png/.test(b), 'homepage preview image must not remain');
+});

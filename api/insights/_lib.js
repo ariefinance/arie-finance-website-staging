@@ -47,7 +47,7 @@ const MARK = {
 // Entries under insights/ that are NOT articles.
 const RESERVED = new Set([
   '_template', '_email-template.html', '_email-helper.html', 'admin', 'assets',
-  'index.html', 'insights.css', 'PUBLISHING.md', 'ADMIN.md', '_articles.json',
+  'index.html', 'insights.css', 'PUBLISHING.md', 'ADMIN.md', '_articles.json', '_publication-receipts.json',
 ]);
 
 // ---------------------------------------------------------------------------
@@ -172,11 +172,17 @@ function uniqueSlug(title, taken) {
   if (!validSlug(base)) base = 'article';
   if (!taken.has(base)) return base;
   let n = 2;
-  while (taken.has(base + '-' + n)) n++;
-  return base + '-' + n;
+  let candidate;
+  do { candidate = base.slice(0, 80 - String(n).length - 1).replace(/-+$/, '') + '-' + n++; }
+  while (taken.has(candidate));
+  return candidate;
 }
 function validSlug(s) { return typeof s === 'string' && /^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(s) && s.length <= 80; }
-function validDate(s) { return typeof s === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(s) && !Number.isNaN(Date.parse(s + 'T00:00:00Z')); }
+function validDate(s) {
+  if (typeof s !== 'string' || !/^\d{4}-\d{2}-\d{2}$/.test(s)) return false;
+  const d = new Date(s + 'T00:00:00Z');
+  return !Number.isNaN(d.getTime()) && d.toISOString().slice(0, 10) === s;
+}
 // Calendar date in Mauritius (UTC+4), as YYYY-MM-DD. ARIE operates in Mauritius,
 // so publication/review dates use the local date, not the UTC date. `date` is
 // injectable for tests; normal callers pass nothing.
@@ -198,7 +204,13 @@ function formatDate(iso) {
 // sanitisation: allow ONLY the approved article elements
 // ---------------------------------------------------------------------------
 function sanitizeBody(html) {
-  const clean = sanitizeHtml(String(html || ''), {
+  // Remove only our own previously emitted table wrapper before sanitising.
+  // Otherwise a second pass turns that div into a paragraph and changes an
+  // already approved body. The table itself still passes the full allowlist.
+  const source = String(html || '').replace(
+    /<div class="ins-article__tablewrap">(\s*<table>[\s\S]*?<\/table>\s*)<\/div>/g, '$1'
+  );
+  const clean = sanitizeHtml(source, {
     allowedTags: ['p', 'h2', 'h3', 'ul', 'ol', 'li', 'strong', 'em', 'a', 'blockquote', 'br',
       'table', 'thead', 'tbody', 'tr', 'th', 'td'],
     allowedAttributes: { a: ['href', 'title', 'rel'] },
@@ -283,10 +295,37 @@ async function commitAll(branch, head, message, entries) {
 // manifest (insights/_articles.json) — ordered index, source-of-truth in git
 // ---------------------------------------------------------------------------
 async function readManifest(branch) {
-  const txt = await getFile('insights/_articles.json', branch);
-  if (!txt) return [];
-  try { const j = JSON.parse(txt); return Array.isArray(j.articles) ? j.articles : (Array.isArray(j) ? j : []); }
-  catch { return []; }
+  // Resolve moving branches once; all reads for one operation use this SHA.
+  const head = /^[a-f0-9]{40}$/.test(branch) ? { commitSha: branch } : await getHead(branch);
+  const txt = await getFile('insights/_articles.json', head.commitSha);
+  const P = require('./_publisher'); // lazy to avoid a module-initialisation cycle
+  if (txt !== null) return P.parseManifest(txt);
+  return P.readSnapshotManifest(await getPublicationSnapshot(head));
+}
+
+// Read-only snapshot for both the staff API and the connected-tool publisher.
+// A recursive tree proves whether a missing manifest is a genuine first use.
+async function getPublicationSnapshot(head, articleSlugs = []) {
+  if (!head || !/^[a-f0-9]{40}$/.test(head.commitSha)) throw new Error('invalid_head');
+  const paths = ['insights/index.html', 'index.html', 'sitemap.xml',
+    'insights/_articles.json', 'insights/_publication-receipts.json'];
+  for (const slug of articleSlugs) {
+    if (!validSlug(slug) || RESERVED.has(slug)) throw new Error('bad_slug');
+    paths.push(`insights/${slug}/index.html`);
+  }
+  const uniquePaths = Array.from(new Set(paths));
+  const [values, tree] = await Promise.all([
+    Promise.all(uniquePaths.map((path) => getFile(path, head.commitSha))),
+    gh(`/repos/${OWNER}/${REPO}/git/trees/${head.treeSha || head.commitSha}?recursive=1`),
+  ]);
+  if (!tree.ok || !tree.json || tree.json.truncated !== false || !Array.isArray(tree.json.tree)) {
+    throw new Error('incomplete_tree');
+  }
+  const articlePaths = tree.json.tree.filter((entry) => {
+    const m = entry.type === 'blob' && /^insights\/([a-z0-9]+(?:-[a-z0-9]+)*)\/index\.html$/.exec(entry.path);
+    return m && !RESERVED.has(m[1]);
+  }).map((entry) => entry.path).sort();
+  return { baseSha: head.commitSha, files: Object.fromEntries(uniquePaths.map((path, i) => [path, values[i]])), articlePaths };
 }
 function sortArticles(list) {
   return list.slice().sort((a, b) => {
@@ -530,7 +569,7 @@ function renderSitemapRegion(articles) {
 // ---------------------------------------------------------------------------
 function replaceRegion(content, startMark, endMark, inner) {
   const s = content.indexOf(startMark), e = content.indexOf(endMark);
-  if (s < 0 || e < 0 || e < s) throw new Error('markers_missing');
+  if (s < 0 || e < 0 || e < s || content.indexOf(startMark, s + startMark.length) >= 0 || content.indexOf(endMark, e + endMark.length) >= 0) throw new Error('markers_missing');
   return content.slice(0, s + startMark.length) + inner + content.slice(e);
 }
 
@@ -542,7 +581,7 @@ module.exports = {
   escapeHtml, slugify, uniqueSlug, validSlug, validDate, todayISO, formatDate,
   sanitizeBody, bodyHasContent,
   gh, getHead, getFile, commitAll,
-  readManifest, sortArticles, manifestJSON,
+  readManifest, getPublicationSnapshot, sortArticles, manifestJSON,
   renderArticle, parseArticle, extractMeta,
   renderListingRegion, renderHomeRegion, renderSitemapRegion, replaceRegion,
 };

@@ -21,3 +21,9 @@
 ### Completion standards
 
 Each item is closed only with a link to the verifying PR, source, or redacted acceptance record, owner and verification date. Never mark security or production status verified solely because documentation says so.
+
+### SEO route change — 12 November 2026
+
+Services and Introducers now have independent public routes, using the existing content and template. The sitemap includes those routes and the existing eligibility entry, preserving the Publisher-managed article markers. Requirements and staff-route indexing restrictions are unchanged. See the release record in [Public website guide](guides/PUBLIC-SITE.md) for validation and deployment evidence.
+
+Search Console was read through the connected ARIE property `https://www.ariefinance.com/`. For 14 October–10 November 2026 it returned 78 clicks and 1,210 impressions, with only the homepage in the page report. Of 41 clicks disclosed at query level, 38 were exact ARIE-name searches; this is not the brand share of all clicks because other queries were withheld. The existing sitemap was registered with zero reported errors/warnings (last downloaded 4 November). The connector provides reporting, not URL inspection or sitemap submission. Follow up on crawling, non-brand impressions/clicks by landing page, and qualified enquiries; code deployment is not proof of indexing or ranking.

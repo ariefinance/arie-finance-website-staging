@@ -9,13 +9,14 @@ const script = fs.readFileSync(path.join(__dirname, '..', 'assets', 'analytics.v
 const siteHtml = fs.readFileSync(path.join(__dirname, '..', 'index.html'), 'utf8');
 
 test('marketing analytics script uses a versioned URL to avoid stale immutable caching', () => {
-  assert.match(siteHtml, /src="\/assets\/analytics\.v1\.js\?v=20261110"/);
+  assert.match(siteHtml, /src="\/assets\/analytics\.v1\.js\?v=20261112"/);
 });
 
-function createHarness() {
+function createHarness(initialLocation) {
   const vercel = [];
   const dataLayer = [];
   const listeners = {};
+  const windowListeners = {};
   const forms = {};
   const successes = {};
   for (const name of ['contact', 'careers', 'feedback']) {
@@ -60,12 +61,26 @@ function createHarness() {
   const window = {
     dataLayer,
     va(event, payload) { vercel.push({ event, payload }); },
-    addEventListener() {}
+    addEventListener(type, callback) { windowListeners[type] = callback; }
   };
-  const location = { hash: '#feedback', href: 'https://www.ariefinance.com/#feedback' };
+  const location = Object.assign({ pathname: '/', hash: '#feedback', href: 'https://www.ariefinance.com/#feedback' }, initialLocation);
   vm.runInNewContext(script, { window, document, location, MutationObserver: FakeObserver });
-  return { vercel, dataLayer, forms, successes, listeners };
+  return { vercel, dataLayer, forms, successes, listeners, windowListeners, location };
 }
+
+test('section views use public paths and route events without counting a section twice', () => {
+  for (const route of ['services', 'introducers', 'eligibility']) {
+    const h = createHarness({ pathname: '/' + route, hash: '', href: 'https://www.ariefinance.com/' + route });
+    assert.equal(h.dataLayer.find(event => event.event === 'section_view').section_name, route);
+    h.windowListeners['arie:routechange']();
+    h.windowListeners.hashchange();
+    assert.equal(h.dataLayer.filter(event => event.event === 'section_view').length, 1);
+    h.location.pathname = '/';
+    h.location.hash = '#contact';
+    h.windowListeners['arie:routechange']();
+    assert.deepEqual(h.dataLayer.filter(event => event.event === 'section_view').map(event => event.section_name), [route, 'contact']);
+  }
+});
 
 function recorded(h, name) { return h.vercel.filter(e => e.payload.name === name); }
 

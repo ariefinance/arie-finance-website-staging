@@ -4,7 +4,8 @@
 
 | Component | Expected path | Key files | Purpose | Documentation status |
 |---|---|---|---|---|
-| Public website | `/` and hash sections | `index.html` | Marketing, service pages, contact, careers, disclosures | [Public website guide](guides/PUBLIC-SITE.md) |
+| Public website | `/`, `/services`, `/introducers` and legacy hash sections | `index.html`, `api/marketing-page.js` | Marketing, independently addressable services and introducer pages, contact, careers, disclosures | [Public website guide](guides/PUBLIC-SITE.md) |
+| Eligibility check | `/eligibility` | `index.html`, `api/eligibility-page.js`, `api/eligibility.js` | Shareable preliminary eligibility and indicative pricing journey | [Eligibility guide](guides/ELIGIBILITY.md) |
 | Website form | `POST /api/website-form` | `api/website-form.js` | Contact and Careers enquiry emails | API notes in previous README; verify runtime |
 | Insights listing | `/insights/` | `insights/index.html`, `insights/insights.css` | Published editorial content | [Publishing](../insights/PUBLISHING.md) |
 | Insights publisher | `/insights/admin/` | `insights/admin/index.html`, `api/insights/*.js` | Admin publishing and article management | [Admin](../insights/ADMIN.md); branch guide historically PR-specific |
@@ -25,14 +26,16 @@
 
 ## Public website sections and legacy routes
 
-The website is primarily single-page: the Vercel redirects map legacy page URLs into anchors such as `/#services`, `/#about`, `/#contact`, `/#team`, `/#careers`, `/#compliance`, and `/#home`. There is no corresponding independent HTML page for each legacy URL.
+The website reuses one maintained HTML template. `/services` and `/introducers` now return that template with the requested section visible in the server response and its own title, description and canonical URL. `/eligibility` retains its existing shareable entry handler. Navigation uses these real paths; previous hash links still resolve through the router. Other sections remain homepage anchors.
 
-**Other published redirects:** `/services`, `/solutions`, `/about`, `/contact`, `/open-account`, `/team`, `/join`, `/events`, `/terms`, `/legal`, `/privacy`, `/cookie`, `/cookies`, `/customer-security`, `/security`, `/faqs` (see `vercel.json` for authoritative targets and redirect types). These redirects should **not** be mistaken for separately maintained policy or service pages.
+**Redirects:** `/solutions` now points to `/services`. `/services/`, `/introducers/` and `/eligibility/` use their corresponding paths without a trailing slash. Other legacy aliases such as `/about`, `/contact`, `/team` and legal aliases still point to homepage sections; see `vercel.json` for authoritative targets.
 
 **External system:** `https://online.ariefinance.com/online-banking` is a separately hosted banking portal, **not** part of this repository. Website operations must not change its DNS/access configuration.
 
 ## API inventory
 
+- `api/marketing-page.js` — initial HTML and metadata for the Services and Introducers public routes
+- `api/eligibility-page.js`, `api/eligibility.js` — shareable eligibility entry and rules endpoint
 - `api/website-form.js` — website enquiry and careers submission
 - `api/insights/login.js`, `logout.js`, `session.js`, `articles.js`, `publish.js`, `_lib.js` — publisher authentication/content workflows
 - `api/salestracker.js` — Sales Tracker backend

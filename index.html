@@ -1827,7 +1827,9 @@ input:focus,textarea:focus,select:focus{ border-color:#06113A!important; box-sha
 a.client-link:is(:hover,:focus-visible){ border-color:rgba(201,155,63,.55)!important; box-shadow:0 18px 40px -26px rgba(6,17,58,.35)!important; }
 a.client-link:is(:hover,:focus-visible) h3{ color:#201485!important; }
 /* Hero headline rag */
-@media (min-width:1061px){ html body #home-title{ font-size:clamp(40px,4.2vw,60px)!important; } }
+@media (min-width:1061px){ html body #home-title{ font-size:clamp(40px,3.2vw,46px)!important; line-height:1.05!important; } }
+/* Longer headline (Nov 2026): keep it to 3 lines on desktop and 4 on phones */
+@media (max-width:640px){ html body #home-title{ font-size:clamp(28px,8.2vw,34px)!important; line-height:1.08!important; } }
 /* Hero mock on tablet: capped width */
 @media (max-width:1060px){ .hero-preview{ max-width:640px; margin-inline:auto; width:100%; } }
 /* Inner page header bands: less empty height */

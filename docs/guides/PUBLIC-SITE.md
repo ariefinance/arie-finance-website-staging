@@ -1,12 +1,12 @@
 # Public website, contact and careers
 
-**Pages:** `/` and navigation anchors. **Sources:** `index.html`, `api/website-form.js`, `vercel.json`. **Reviewed:** 26 October 2026 (repository inventory).
+**Pages:** `/`, `/services`, `/introducers`, `/eligibility` and remaining navigation anchors. **Sources:** `index.html`, `api/marketing-page.js`, `api/eligibility-page.js`, `api/website-form.js`, `vercel.json`. **Routing updated:** 12 November 2026.
 
 ## Features
 Public company/service information, sections for different audiences, About/Team, Contact and Careers, compliance information, links to Insights and external online banking. Contact and Careers submissions are handled by an SMTP-backed serverless form endpoint with input validation and file restrictions.
 
 ## Editing
-The marketing site is a bundled single-file HTML/template. Changes require careful verification of the template structure and encoded content. Redirects in `vercel.json` map old paths to page anchors; they are not independent landing pages. The online-banking portal is a different system and must not be changed through this repository.
+The marketing site uses one maintained HTML template. `api/marketing-page.js` serves Services and Introducers with distinct metadata and the correct section already visible in the HTML response. It accepts only the configured route names. The browser router keeps normal navigation, legacy hashes, metadata and back/forward behaviour consistent. The existing eligibility handler remains separate. Other redirects in `vercel.json` still map legacy paths to homepage anchors. The online-banking portal is a different system and must not be changed through this repository.
 
 ## Release checks
 Obtain copy/regulatory approval, inspect desktop/mobile layouts and links, verify form handling using approved synthetic tests and check redirect/indexing rules. Do not commit customer or applicant documents.
@@ -14,6 +14,15 @@ Obtain copy/regulatory approval, inspect desktop/mobile layouts and links, verif
 **Unverified:** current form deliverability, live configuration and content approver.
 
 **Feedback:** the Leave Your Feedback page emails the customer-care inbox through `api/website-form.js`; see [FEEDBACK.md](FEEDBACK.md).
+
+## SEO route release — 12 November 2026
+
+- **Purpose:** make the existing international-payment and management-company propositions independently discoverable in search, while retaining the existing design and enquiry journeys.
+- **Changes:** Mauritius-related homepage metadata and factual Organization structured data; visible server-rendered Services and Introducers entries with distinct metadata; real internal links; sitemap entries for those pages and the existing eligibility route. Services has a descriptive heading and its introduction identifies the Mauritius-based team.
+- **Compatibility:** previous hash URLs, native section anchors, browser Back/Forward, eligibility history and clean sharing URLs remain supported. Route-aware analytics identify visits to the new paths. The Insights publisher accepts both old and root-relative footer anchors; no article is published by this change.
+- **Automated checks:** all 69 tests passed before the preview release, including route rendering, navigation/history, analytics, eligibility, form handling with mocked transport, and publishing compatibility. Browser preview and production results are recorded in the associated pull request.
+- **Release baseline/rollback:** previous production commit `03a67b79f7e592e7ee1e75cee1a7dbf3d3340f37`, Vercel deployment `dpl_JAXVtXjj9nyUwiMCRxHNfGdNywGr`. No DNS, credentials, portal, pricing or licence changes are part of this release.
+- **Measurement:** track non-brand search impressions/clicks and enquiries by landing page. Google already has `/sitemap.xml` registered. Its next crawl and indexing are external outcomes; deployment does not demonstrate a ranking improvement.
 
 ## Release record — final website refinements (11 November 2026)
 - **PR:** [#68](https://github.com/ariefinance/arie-finance-website-staging/pull/68), reviewed head `afbf7e0`, merged as `a5faf94`.

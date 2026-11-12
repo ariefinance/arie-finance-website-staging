@@ -40,7 +40,7 @@
     } catch (e) { /* analytics must never block customer actions */ }
   }
 
-  // ---------- section_view (single-page hash routes) ----------
+  // ---------- section_view (public paths and legacy hash routes) ----------
   var SECTIONS = [
     'home', 'about', 'services', 'direct-clients', 'introducers',
     'team', 'careers', 'contact', 'compliance', 'home-services',
@@ -50,9 +50,11 @@
   var seen = Object.create(null);
 
   function currentSection() {
-    var raw = (location.hash || '#home').replace(/^#/, '');
+    var raw = (location.hash || '').replace(/^#/, '');
     raw = raw.split('?')[0].split('&')[0];
-    return raw || 'home';
+    if (raw) return raw;
+    var route = (location.pathname || '/').replace(/^\/|\/$/g, '');
+    return ['services', 'introducers', 'eligibility'].indexOf(route) !== -1 ? route : 'home';
   }
   function fireSection() {
     var s = currentSection();
@@ -66,6 +68,7 @@
     });
   }
   window.addEventListener('hashchange', fireSection);
+  window.addEventListener('arie:routechange', fireSection);
   if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', fireSection);
   } else {

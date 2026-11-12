@@ -174,7 +174,7 @@ function activateNavigation(home) {
   const company = home.match(companyPattern);
   if (!company) fail('navigation_marker_missing');
   if (!/href="\/insights\/"/.test(company[2])) {
-    const careers = /<a\b[^>]*href="#careers"[^>]*>Careers<\/a>/;
+    const careers = /<a\b[^>]*href="\/?#careers"[^>]*>Careers<\/a>/;
     if (!careers.test(company[2])) fail('navigation_marker_missing');
     const links = company[2].replace(careers, (a) => a + '<a href="/insights/">Insights</a>');
     home = home.replace(company[0], company[1] + links + company[3]);

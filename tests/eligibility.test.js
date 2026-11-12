@@ -150,7 +150,8 @@ test('/eligibility serves the site with eligibility social-preview metadata and 
   assert.match(b, /<link rel="canonical" href="https:\/\/www.ariefinance.com\/eligibility">/);
   assert.match(b, /history.replaceState\(null,"",location.pathname\+location.search\+"#eligibility"\)/);
   assert.ok(b.includes('id="elig-root"'));
-  assert.ok(!/og-image\.png/.test(b), 'homepage preview image must not remain');
+  const socialImages = [...b.matchAll(/<meta (?:property="og:image"|name="twitter:image") content="([^"]*)">/g)].map(match => match[1]);
+  assert.deepEqual(socialImages, Array(2).fill('https://www.ariefinance.com/assets/og-eligibility.jpg'), 'active social-preview tags must use the eligibility image');
 });
 
 // ---------- Share button: clean URL for every method ----------

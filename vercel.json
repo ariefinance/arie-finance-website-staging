@@ -1,8 +1,13 @@
 {
   "redirects": [
     {
-      "source": "/services",
-      "destination": "/#services",
+      "source": "/services/",
+      "destination": "/services",
+      "permanent": true
+    },
+    {
+      "source": "/introducers/",
+      "destination": "/introducers",
       "permanent": true
     },
     {
@@ -27,7 +32,7 @@
     },
     {
       "source": "/solutions",
-      "destination": "/#services",
+      "destination": "/services",
       "permanent": true
     },
     {
@@ -88,11 +93,22 @@
   ],
   "rewrites": [
     {
+      "source": "/services",
+      "destination": "/api/marketing-page?route=services"
+    },
+    {
+      "source": "/introducers",
+      "destination": "/api/marketing-page?route=introducers"
+    },
+    {
       "source": "/eligibility",
       "destination": "/api/eligibility-page"
     }
   ],
   "functions": {
+    "api/marketing-page.js": {
+      "includeFiles": "index.html"
+    },
     "api/eligibility-page.js": {
       "includeFiles": "index.html"
     }

@@ -14,3 +14,18 @@ Obtain copy/regulatory approval, inspect desktop/mobile layouts and links, verif
 **Unverified:** current form deliverability, live configuration and content approver.
 
 **Feedback:** the Leave Your Feedback page emails the customer-care inbox through `api/website-form.js`; see [FEEDBACK.md](FEEDBACK.md).
+
+## Release record — final website refinements (11 November 2026)
+- **PR:** [#68](https://github.com/ariefinance/arie-finance-website-staging/pull/68), reviewed head `afbf7e0`, merged as `a5faf94`.
+- **Production:** Vercel deployment `dpl_AXRBvjDyR5ReRqyzfw85EFyxcVTJ`, READY; www.ariefinance.com serves the merged build.
+- **Six completed refinements:**
+  1. Homepage "Who we serve" cards link to Direct Clients (Cross-border businesses, Family offices) or Introducers (Professional intermediaries, Introducers & partners), with subtle hover and keyboard-focus states.
+  2. Homepage team-photo caption is a "Meet the team →" link to the Team page; the gold "Speak with our team" CTA is unchanged.
+  3. "Share your experience →" below the homepage testimonials links to Leave Feedback.
+  4. Introducers page: secondary "Share our eligibility check with a client →" link to `https://www.ariefinance.com/eligibility` (no tracking parameters).
+  5. Contact sidebar: the "Leave Your Feedback" arrow no longer wraps.
+  6. Services: Payment Accounts added as service 01 with the approved homepage description (services renumbered 01–05); footnote corrected to "Corporate Payment Desk scope".
+- **Production tests (desktop 1440 and mobile 390):** six changes 57/57; eligibility navigation 40/40; eligibility, forms and navigation regression 45/45; Share button returns the clean `/eligibility` URL for all four methods. Form submissions were intercepted in testing, so no emails were sent.
+- **Unresolved defects:** none.
+- **Status:** the website visual-polish exercise is complete. Future website work should be driven by enquiry, referral and conversion data, not further cosmetic changes.
+- **Open content decision (management, outside this release):** the team photograph shows eight people; Meet the Team has six profiles.

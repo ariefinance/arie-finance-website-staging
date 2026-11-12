@@ -1339,7 +1339,7 @@ textarea:focus-visible, select:focus-visible, [tabindex]:focus-visible,
 
 /* Headline — editorial Newsreader serif (brand serif), institutional navy */
 #home-title{ font-family:var(--serif) !important; font-weight:500; font-size:clamp(38px,4.6vw,60px); line-height:1.1; letter-spacing:-.005em; color:var(--navy); }
-/* emphasis line "global businesses" — italic gold serif */
+/* emphasis word "relationships" — gold accent */
 #home-title .hero-accent{ font-family:var(--serif); font-style:italic; font-weight:500; color:var(--gold-hair); }
 
 /* Scope guard — keep the featured testimonial exactly as before (Georgia), unaffected by loading Newsreader */
@@ -1827,7 +1827,9 @@ input:focus,textarea:focus,select:focus{ border-color:#06113A!important; box-sha
 a.client-link:is(:hover,:focus-visible){ border-color:rgba(201,155,63,.55)!important; box-shadow:0 18px 40px -26px rgba(6,17,58,.35)!important; }
 a.client-link:is(:hover,:focus-visible) h3{ color:#201485!important; }
 /* Hero headline rag */
-@media (min-width:1061px){ html body #home-title{ font-size:clamp(40px,4.2vw,60px)!important; } }
+@media (min-width:1061px){ html body #home-title{ font-size:clamp(40px,3.2vw,46px)!important; line-height:1.05!important; } }
+/* Longer headline (Nov 2026): keep it to 3 lines on desktop and 4 on phones */
+@media (max-width:640px){ html body #home-title{ font-size:clamp(28px,8.2vw,34px)!important; line-height:1.08!important; } }
 /* Hero mock on tablet: capped width */
 @media (max-width:1060px){ .hero-preview{ max-width:640px; margin-inline:auto; width:100%; } }
 /* Inner page header bands: less empty height */
@@ -2281,8 +2283,8 @@ body:has(section.page.is-active[data-page="eligibility"]) .wa-float{ display:non
                 <span class="l-lic">Payment Intermediary Services Licence&nbsp;·&nbsp;<span class="l-code">GB25205028</span></span>
               </span>
             </div>
-            <h1 class="display" id="home-title" aria-label="The international payment platform for global businesses">The international payment platform for <span class="hero-accent">global businesses</span></h1>
-            <p class="lead">Your next-generation payment service provider.</p>
+            <h1 class="display" id="home-title" aria-label="The global business account bringing relationships back into international payments">The global business account bringing <span class="hero-accent">relationships</span> back into international payments</h1>
+            <p class="lead">The international payment platform for global businesses</p>
             <div class="hero-actions" aria-label="Primary actions">
               <a class="btn btn-primary" href="#eligibility" data-route="eligibility">Check Your Eligibility <span aria-hidden="true">→</span></a>
               <a class="btn btn-secondary" href="#home-services">View Services</a>

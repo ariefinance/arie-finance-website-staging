@@ -249,3 +249,12 @@ test('Services keeps its metadata and standard payments stay within scope', () =
   assert.ok(!/documentation support|beneficiary coordination/i.test(payments), 'desk-only support stays out of standard payments');
   assert.match(services, /Beneficiary coordination and documentation support/);
 });
+
+test('onboarding page loads Vercel Web Analytics once, page views only', () => {
+  const page = fs.readFileSync(path.join(root, 'onboarding-requirements', 'index.html'), 'utf8');
+  assert.equal((page.match(/src="\/_vercel\/insights\/script\.js"/g) || []).length, 1);
+  assert.equal((page.match(/window\.va=window\.va\|\|function\(\)\{\(window\.vaq=window\.vaq\|\|\[\]\)\.push\(arguments\);\};/g) || []).length, 1);
+  assert.ok(!/googletagmanager|gtag\(|dataLayer|speed-insights|analytics\.v1\.js/.test(page), 'no GA4/GTM/Speed Insights/site event script');
+  const app = fs.readFileSync(path.join(root, 'onboarding-requirements', 'app.js'), 'utf8');
+  assert.ok(!/\bva\(|pushState|replaceState/.test(app), 'no custom events or URL changes that would add page views');
+});

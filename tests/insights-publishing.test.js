@@ -491,3 +491,22 @@ test('authenticated browser API still requires its explicit review confirmation 
   assert.equal(result.body.error, 'confirm_required');
   assert.equal(writes, 0);
 });
+
+test('article renderer emits indexable HTML with one self-canonical, description and BlogPosting data', () => {
+  const lib = require('../api/insights/_lib.js');
+  const out = lib.renderArticle({ slug: 'example-article', title: 'Example article', category: 'Guides', summary: 'A short example summary for search results.', published: '2026-11-01' }, '<p>Body</p>');
+  assert.match(out, /<meta name="robots" content="index, follow[^"]*">/);
+  assert.ok(!/noindex/.test(out));
+  const canon = [...out.matchAll(/<link rel="canonical" href="([^"]+)">/g)].map(m => m[1]);
+  assert.deepEqual(canon, ['https://www.ariefinance.com/insights/example-article/']);
+  assert.match(out, /<meta name="description" content="A short example summary for search results\.">/);
+  assert.match(out, /<title>Example article \| ARIE Insights<\/title>/);
+  const ld = [...out.matchAll(/<script type="application\/ld\+json">([\s\S]*?)<\/script>/g)].map(m => JSON.parse(m[1]));
+  const post = ld.find(x => x['@type'] === 'BlogPosting');
+  assert.ok(post && post.url === 'https://www.ariefinance.com/insights/example-article/' && post.headline === 'Example article');
+  const config = JSON.parse(require('node:fs').readFileSync(require('node:path').join(__dirname, '..', 'vercel.json'), 'utf8'));
+  for (const source of ['/insights/_template/(.*)', '/insights/admin', '/insights/admin/(.*)']) {
+    const rule = config.headers.find(item => item.source === source);
+    assert.ok(rule && rule.headers.some(h => h.key.toLowerCase() === 'x-robots-tag' && /noindex/.test(h.value)), source);
+  }
+});

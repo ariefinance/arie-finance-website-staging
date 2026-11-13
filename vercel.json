@@ -89,6 +89,11 @@
       "source": "/eligibility/",
       "destination": "/eligibility",
       "permanent": true
+    },
+    {
+      "source": "/onboarding-requirements/",
+      "destination": "/onboarding-requirements",
+      "permanent": true
     }
   ],
   "rewrites": [
@@ -301,15 +306,13 @@
     {
       "source": "/onboarding-requirements",
       "headers": [
-        { "key": "Cache-Control", "value": "no-store, max-age=0" },
-        { "key": "X-Robots-Tag", "value": "noindex, follow" }
+        { "key": "Cache-Control", "value": "no-store, max-age=0" }
       ]
     },
     {
       "source": "/onboarding-requirements/index.html",
       "headers": [
-        { "key": "Cache-Control", "value": "no-store, max-age=0" },
-        { "key": "X-Robots-Tag", "value": "noindex, follow" }
+        { "key": "Cache-Control", "value": "no-store, max-age=0" }
       ]
     },
     {

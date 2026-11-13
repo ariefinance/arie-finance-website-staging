@@ -9,7 +9,7 @@
 | Website form | `POST /api/website-form` | `api/website-form.js` | Contact and Careers enquiry emails | API notes in previous README; verify runtime |
 | Insights listing | `/insights/` | `insights/index.html`, `insights/insights.css` | Published editorial content | [Publishing](../insights/PUBLISHING.md) |
 | Insights publisher | `/insights/admin/` | `insights/admin/index.html`, `api/insights/*.js` | Admin publishing and article management | [Admin](../insights/ADMIN.md); branch guide historically PR-specific |
-| Onboarding requirements | `/onboarding-requirements/` | `onboarding-requirements/index.html`, `app.js` | Customer onboarding requirements | [Client resources guide](guides/CLIENT-RESOURCES.md) |
+| Onboarding requirements | `/onboarding-requirements` (indexable; `/onboarding-requirements/` redirects) | `onboarding-requirements/index.html`, `app.js` | Customer onboarding requirements | [Client resources guide](guides/CLIENT-RESOURCES.md) |
 | Onboarding pack PDF | `/documents/ARIE_Finance_Corporate_Onboarding_Pack.pdf` | `documents/*.pdf` | Downloadable corporate onboarding pack | Version/review owner to confirm |
 | Sales tracker | `/salestracker/` | `salestracker/index.html`, `api/salestracker.js` | Sales pipeline management | [Sales Tracker guide](guides/SALES-TRACKER.md) |
 | Pricing/document builder | `/internal/pricing/` | `internal/pricing/*`, `api/internal/pricing.js` | Pricing/proposal document preparation | [Pricing guide](guides/PRICING.md); [manifest](../internal/pricing/MANIFEST.txt) |
